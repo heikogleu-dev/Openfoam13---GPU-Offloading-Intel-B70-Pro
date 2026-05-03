@@ -85,3 +85,22 @@ valuable — it's an honest data point that other Battlemage CFD users can
 build on instead of repeating our 30+ failed runs.
 
 The hardware is great. The software is not yet ready. ¯\_(ツ)_/¯
+
+## Addendum: All Preconditioner Tests Completed (May 2026)
+
+After exhaustive testing, the situation is clear:
+
+**No viable GPU preconditioner exists in Ginkgo 1.10 SYCL for this mesh.**
+
+The only working option (BJ maxBlockSize=1) is mathematically equivalent to
+diagonal scaling — far too weak for a 34M-cell CFD pressure system.
+It never converges; the solver always hits maxIter=200 cap.
+
+**Path forward: OGL rebuild with Ginkgo 2.0**
+
+Ginkgo 2.0 (already installed at /opt/ginkgo) includes:
+- Improved SYCL BJ generate (potential fix for maxBlockSize>1 OOM)
+- Better distributed multigrid
+- More complete SYCL preconditioner support
+
+This rebuild is the only remaining avenue for meaningful GPU acceleration.

@@ -98,3 +98,36 @@ Steady-state per step (Time=8-10 mean):
   CPU np=8 GAMG:  43.3 s
   CPU np=16 GAMG: 35.7 s  ← winner
 ```
+
+## Updated: BJ np=8 Fair Baseline (Sub-Dict Syntax, nNonOrth=2)
+
+| Test | np | Precond | nNonOrth | maxIter | s/Step | p-Iter |
+|---|---|---|---|---|---|---|
+| GPU BJ(1) np=8 fair | 8 | BJ maxBS=1 | 2 | 200 | **53.5** | 200 (cap, never converges) |
+
+Note: BJ with maxBlockSize=1 (point-Jacobi) NEVER converges to relTol=0.01
+for this 34M-cell pressure system. Solver always hits maxIter cap.
+With real convergence target it would need 1000+ iterations → 5-10× slower.
+
+## Multigrid Test Result
+
+| Test | np | Precond | Result |
+|---|---|---|---|
+| GPU Multigrid | 8 | PGM 5-level | ❌ Diverges (Final > Initial) + DEVICE_LOST |
+
+Root cause: PGM coarsening OOM in Ginkgo 1.10 SYCL during generate_local().
+
+## Ginkgo 1.10 SYCL Preconditioner Final Status
+
+| Preconditioner | Status | Failure Mode |
+|---|---|---|
+| BJ maxBlockSize=1 | ✅ Runs | Never converges (point-Jacobi too weak) |
+| BJ maxBlockSize>1 | ❌ OOM | SYCL workspace O(N×BS²) bug |
+| ISAI | ✅ Runs | Diverges for pressure system |
+| IC | ❌ Crash | sparselib_ic NotImplemented |
+| ICT | ❌ DEVICE_LOST | GPU hardware hang |
+| Hybrid matrixFormat | ❌ Error | Not supported in distributed mode |
+| Multigrid | ❌ OOM+Diverge | PGM coarsening OOM + algorithmic failure |
+
+**Conclusion: No viable strong preconditioner exists for SYCL+distributed
+in Ginkgo 1.10. Only path forward: rebuild OGL with Ginkgo 2.0.**
