@@ -1,5 +1,11 @@
 # Intel Arc Pro B70 Pro + OpenFOAM CFD — Pioneer Documentation
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![OpenFOAM](https://img.shields.io/badge/OpenFOAM-Foundation%2013-green)](https://openfoam.org)
+[![Ginkgo](https://img.shields.io/badge/Ginkgo-1.10%20SYCL-orange)](https://github.com/ginkgo-project/ginkgo)
+[![Intel Arc Pro B70](https://img.shields.io/badge/Intel%20Arc%20Pro-B70%20Pro%2032GB-blue)](https://www.intel.com/content/www/us/en/products/sku/245797)
+[![GPU CFD Status](https://img.shields.io/badge/GPU%20CFD%20Status-Software%20Not%20Ready-red)]()
+
 > **TL;DR: The hardware is excellent. The software stack is not ready yet.**
 >
 > GPU FP64: 1335 GFLOPS (93% of spec) ✅
@@ -149,3 +155,36 @@ latency improvements. Re-evaluate in 12–18 months.
 
 *Co-documented with Claude (Anthropic) over an extended debugging session.*
 *Full reproducibility intended for the next Battlemage CFD pioneer.*
+
+---
+
+## How to Cite
+
+If this documentation helped your research or work, please cite:
+
+```bibtex
+@misc{gleu2026battlemage,
+  author = {Gleu, Heiko},
+  title  = {Intel Arc Pro B70 Pro + OpenFOAM CFD: Pioneer Documentation
+             of GPU Acceleration via OGL/Ginkgo/SYCL on Battlemage},
+  year   = {2026},
+  url    = {https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro}
+}
+```
+
+## Related Projects
+
+- [hpsim/OGL](https://github.com/hpsim/OGL) — OpenFOAM Ginkgo Layer (GPU solver plugin)
+- [ginkgo-project/ginkgo](https://github.com/ginkgo-project/ginkgo) — Ginkgo linear algebra library
+- [OpenFOAM/OpenFOAM-Intel](https://github.com/OpenFOAM/OpenFOAM-Intel) — Intel's official OpenFOAM contributions
+- [Phoronix B70 Pro Linux Benchmarks](https://www.phoronix.com/review/intel-arc-pro-b70-linux) — Reference benchmarks, same hardware
+
+## Community & Discussion
+
+Found different results on your hardware? Have a fix?
+→ [Open an Issue](https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro/issues)
+
+General GPU-accelerated CFD discussion:
+→ [CFD-Online OpenFOAM Forum](https://www.cfd-online.com/Forums/openfoam/)
+→ [Reddit r/CFD](https://reddit.com/r/CFD)
+→ [Reddit r/IntelArc](https://reddit.com/r/IntelArc)
