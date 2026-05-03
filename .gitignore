@@ -1,0 +1,20 @@
+# Build artifacts
+*.log
+*.out
+*.o
+*.so
+
+# OpenFOAM run artifacts
+processor*/
+postProcessing/
+log.foamRun
+log.timing
+
+# Editor
+*.swp
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
