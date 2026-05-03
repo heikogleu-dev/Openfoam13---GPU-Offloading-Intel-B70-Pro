@@ -65,6 +65,39 @@
 | D2H (64 MB) | 14.4 GB/s | ~50 GB/s | 29% |
 | Kernel Launch Latency | ~100 µs | ~5 µs (CUDA) | 5% |
 
+## Updated GPU Bandwidth (sustained STREAM-Triad, 3 arrays)
+
+Sustained over realistic working-set sizes. The 16 MiB outlier is a cache
+artifact (data fits in on-die SLC); the 87% plateau holds from 64 MiB up
+to 4 GiB per array (12 GiB total touched).
+
+| Per-array | Total VRAM | Triad GB/s | Spec % |
+|---|---|---|---|
+| 16 MiB | 48 MiB | 1672.6 | 275% (cache hit) |
+| 64 MiB | 192 MiB | 524.0 | 86% |
+| 256 MiB | 768 MiB | 525.7 | 87% |
+| 1 GiB | 3 GiB | 531.6 | 87% |
+| **2 GiB** | **6 GiB** | **531.3** | **87%** |
+| 4 GiB | 12 GiB | 528.8 | 87% |
+
+**Key correction:** Earlier 260 GB/s @ 256 MB was likely D2D copy not Triad,
+or a less optimal kernel. Sustained Triad is **~530 GB/s** = 87% of spec —
+clearly bandwidth-good silicon.
+
+## GPU Compute (FP64 / FP32 FMA throughput, custom SYCL bench)
+
+8-way unrolled `sycl::fma()` loop, 16M work-items × 4096 inner iters × 5 reps.
+
+| Type | Measured GFLOPS | Spec GFLOPS | Efficiency |
+|---|---|---|---|
+| **FP64** | **1335** | 1430 | **93%** ✅ |
+| FP32 | 12364 | 22940 | 54% |
+
+**FP64 hits 93% of theoretical peak** — this is the strongest indicator that
+the silicon is good for double-precision compute (CFD-relevant). FP32 lower
+likely because the 22.9 TFLOPS spec assumes XMX-style packed math; pure SIMD
+FMA gets 1× throughput per ALU.
+
 ## VRAM Usage Profile
 
 Idle baseline: 2.27 GiB (display server on B70 Pro). With display on iGPU
