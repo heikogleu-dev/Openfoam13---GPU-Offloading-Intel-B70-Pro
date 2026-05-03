@@ -49,6 +49,24 @@ This severely caps achievable convergence rate vs Foundation OF13's GAMG
 (algebraic multigrid). See [conclusions](../conclusions.md) for the
 overall impact.
 
+## Final Tuning Survey (May 2026, scotch decomposition, np=8)
+
+After exhausting algorithmic alternatives at the BJ-only baseline:
+
+| Test | Solver | Precond | s/Step | Result |
+|---|---|---|---|---|
+| Baseline | GKOCG | BJ(1) | 53.5 | ✅ |
+| BJ maxBlockSize=2 | GKOCG | BJ(2) | — | ❌ `gko::AllocationError` (T=1) |
+| BJ maxBlockSize=4 | — | — | — | ⏭ Skipped (BJ(2) already failed) |
+| GKOBiCGStab | GKOBiCGStab | BJ(1) | 70.5 | ✅ but **+32% slower** (2 vec-reductions/iter) |
+| evalFrequency=10 | GKOCG | BJ(1) | 54.1 | ✅ but **null effect** (cap dominates) |
+
+**Confirmed:** No fvSolution tuning recovers performance. `GKOCG + BJ(1)`
+at 53.5 s/step is the absolute ceiling in Ginkgo 1.10 SYCL.
+
+scotch decomposition does not affect the BJ>1 OOM — confirms it is a
+per-block workspace allocation bug, not mesh-layout dependent.
+
 ## Hopeful Future
 
 Ginkgo 2.0 develop (`/opt/ginkgo` in our setup) may have:
@@ -56,6 +74,7 @@ Ginkgo 2.0 develop (`/opt/ginkgo` in our setup) may have:
 - IC/ILU SYCL kernels filled in
 - More robust ICT/ILUT (no DEVICE_LOST)
 
-OGL would need to be rebuilt against external Ginkgo 2.0 (option
-`OGL_USE_EXTERNAL_GINKGO=TRUE`) — untested in our session due to API
-break risk.
+**Attempted in our session — see [findings/10](10_ginkgo2_api_breaks.md):**
+OGL build against external Ginkgo 2.0 fails with 36+ errors due to 3
+API breaks in Preconditioner.hpp. Stack is effectively bound to
+Ginkgo 1.x until OGL upstream migrates.

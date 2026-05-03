@@ -164,3 +164,23 @@ Root cause: PGM coarsening OOM in Ginkgo 1.10 SYCL during generate_local().
 
 **Conclusion: No viable strong preconditioner exists for SYCL+distributed
 in Ginkgo 1.10. Only path forward: rebuild OGL with Ginkgo 2.0.**
+
+## Final fvSolution Tuning Survey (May 2026, scotch decomposition, np=8)
+
+After exhausting algorithmic alternatives at the BJ-only baseline, four
+final tests confirmed `GKOCG + BJ(1)` is the absolute ceiling:
+
+| Test | Solver | Precond | s/Step | Status / Notes |
+|---|---|---|---|---|
+| Baseline | GKOCG | BJ(1) | **53.5** | ✅ reference |
+| BJ maxBlockSize=2 (scotch) | GKOCG | BJ(2) | — | ❌ `gko::AllocationError` at T=1 |
+| BJ maxBlockSize=4 | — | — | — | ⏭ skipped (BJ(2) failed) |
+| GKOBiCGStab + BJ(1) | GKOBiCGStab | BJ(1) | **70.5** | ✅ but +32% slower (2 vec-reductions/iter) |
+| GKOCG + BJ(1) + evalFrequency=10 | GKOCG | BJ(1) | **54.1** | ✅ but null effect (cap dominates) |
+
+Confirmed: scotch partitioning does not affect BJ>1 OOM (it's a per-block
+workspace bug, not mesh-layout dependent). evalFrequency does nothing when
+the solver always hits the maxIter cap. BiCGStab is algorithmically inferior
+to CG for SPD systems like the pressure equation.
+
+**No fvSolution-level tuning recovers performance with Ginkgo 1.10 SYCL.**
