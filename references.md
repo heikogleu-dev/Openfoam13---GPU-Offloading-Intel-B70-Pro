@@ -12,11 +12,15 @@
 - **Tsai et al. 2023** — *Providing performance portable numerics for
   Intel GPUs*, Wiley CCPE
   [doi:10.1002/cpe.7400](https://doi.org/10.1002/cpe.7400)
-  → Claims `ParIC` / `ParILU` / `ParICT` / `ISAI` ported to DPC++.
-  **Discrepancy with our experience:** Ginkgo 1.10 release notes only list
-  *"New IC/ILU for CUDA, HIP, OpenMP, Reference"* — SYCL absent. We see
-  `gko::NotImplemented` for IC and `DEVICE_LOST` for ICT
-  ([findings/05](findings/05_sycl_preconditioner_status.md)).
+  → Documents `ParIC` / `ParILU` / `ParICT` / `ISAI` work on DPC++.
+  **Earlier versions of this repo claimed a discrepancy with the paper —
+  that was wrong.** Per Ginkgo team feedback (issue #2013), `ParIc/ParIlu`
+  factorization *does* work on SYCL. The gap we hit on Battlemage is on
+  the *apply* side: `lower_trs` / `upper_trs` kernels are missing in
+  `dpcpp/solver/`, and `ParIct::add_candidates` SIGABRTs. The classic
+  `Ic`/`Ilu` (sparselib-based) is genuinely not in SYCL. See
+  [findings/05](findings/05_sycl_preconditioner_status.md) for the
+  corrected mapping.
 
 - **Anzt et al. 2022** — *Ginkgo: A Modern Linear Operator Algebra
   Framework for High Performance Computing*, ACM TOMS

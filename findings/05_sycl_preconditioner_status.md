@@ -1,80 +1,99 @@
-# Ginkgo 1.10 SYCL Preconditioner Support Matrix
+# Finding 05: SYCL Preconditioner Status (Corrected May 2026)
 
-Tested on Intel Arc Pro B70 Pro, Ubuntu 26.04, Ginkgo 1.10 (OGL-bundled,
-commit 061ccc3a from `ogl_0600_gko190` tag).
+## Important Correction (after KIT/Ginkgo team feedback, issue #2013)
 
-## Test Configuration
+Earlier versions of this document conflated two different algorithm
+families. The Ginkgo team clarified:
 
-- 34M-cell vehicle aero case
-- np=8 (4.25M cells/rank)
-- nNonOrthogonalCorrectors=2
-- ONEAPI_DEVICE_SELECTOR=level_zero:0
-- forceHostBuffer=true (no GPU-aware MPI)
-
-## Support Matrix
-
-| Preconditioner | OGL String | Ginkgo Class | SYCL Status | Notes |
-|---|---|---|---|---|
-| Block Jacobi (BS=1) | `BJ` | `Jacobi` | ✅ Stable | Point-Jacobi, only working option |
-| Block Jacobi (BS>1) | `BJ` + maxBlockSize | `Jacobi` | ❌ OOM | SYCL workspace bug |
-| ISAI | `ISAI` | `Isai` | ✅ Runs | Diverges for pressure system |
-| Generalized ISAI | `GISAI` | `Isai` (variant) | not tested | likely similar to ISAI |
-| Incomplete Cholesky | `IC` | `Ic` + `sparselib_ic` | ❌ NotImplemented | sparselib_ic not in SYCL |
-| Incomplete Cholesky T | `ICT` | `Ic` + `ParIct` | ❌ DEVICE_LOST | GPU hardware hang during generate |
-| Incomplete LU | `ILU` | `Ilu` + `Lu` | not tested | likely NotImplemented |
-| Incomplete LU T | `ILUT` | `Ilu` + `ParIlut` | not tested | hardware hang risk |
-| Iterative Refined ILU | `IRILU` | `Ilu` + `ParIlut` | not tested | hardware hang risk |
-| Multigrid | `Multigrid` | `Multigrid::Pgm` | ⚠️ Listed experimental | Not tested due to time |
-
-## Matrix Format Support
-
-| Format | OGL Distributed Mode | Notes |
+| Algorithm Family | Type | Where it can fail in SYCL |
 |---|---|---|
-| `Csr` | ✅ Supported | Default; works |
-| `Coo` | ✅ Supported | Listed in source |
-| `Ell` | ✅ Supported | Listed in source |
-| `Hybrid` | ❌ Not supported | "Matrix format Hybrid not supported. Supported formats are: Ell, Csr, and Coo." (Distributed.cpp:742) |
+| **Classic IC / ILU** | Sequential, sparselib-based (cuSPARSE / hipSPARSE) | factorization itself (`sparselib_ic` not in SYCL) |
+| **ParIC / ParILU** (Anzt 2018) | Iterative parallel | factorization runs, but **triangular-solve apply** missing in SYCL |
+| **ParICT / ParILUT** | Parallel + dynamic sparsity refinement | SYCL implementation has internal bugs (`add_candidates`) |
 
-OGL's README mentions Hybrid as a supported matrix format, but it's
-explicitly rejected in the distributed-mode code path — likely only
-single-rank works.
+Tsai 2023 refers to the **ParIC / ParILU** family, NOT the classic IC/ILU.
+We were originally wrong to claim a "discrepancy" with the paper — the
+factorization side is real. **The gap is in the triangular-solve apply
+side that any IC/ILU-style preconditioner needs at runtime.**
 
-## Implication for Production CFD
+Per Ginkgo team:
+> "There is a branch where @yhmtsai is working on getting direct
+> factorizations working for SYCL, but we have run into issues on some
+> Intel hardware (the A770, for example) that we haven't yet figured out."
 
-For 34M-cell vehicle aero on B70 Pro with current OGL+Ginkgo 1.10 stack,
-the **only stable, performance-viable preconditioner is point-Jacobi**
-(`BJ` with `maxBlockSize 1`).
+So direct factorization on SYCL is in development, with known A770 issues.
+B70 Pro (Battlemage) status unknown — possibly different bugs.
 
-This severely caps achievable convergence rate vs Foundation OF13's GAMG
-(algebraic multigrid). See [conclusions](../conclusions.md) for the
-overall impact.
+## OGL Preconditioner-Name Mapping
 
-## Final Tuning Survey (May 2026, scotch decomposition, np=8)
+OGL accepts six preconditioner names. Internally they map to Ginkgo
+classes as follows (see `OGL/Preconditioner.hpp`):
 
-After exhausting algorithmic alternatives at the BJ-only baseline:
+| OGL `preconditioner` | Internal Ginkgo class | Algorithm category |
+|---|---|---|
+| `none` | identity | — |
+| `BJ` | `gko::preconditioner::Jacobi` | Block-Jacobi |
+| `IC` | `gko::factorization::Ic` (classic) | sparselib-based |
+| `ICT` | `gko::factorization::ParIct` | parallel + threshold |
+| `ILU` | `gko::factorization::ParIlu` | parallel iterative |
+| `ISAI` | `gko::preconditioner::Isai<spd>` | sparse approximate inverse |
+| `Multigrid` | `gko::solver::Multigrid` (PGM) | algebraic multigrid |
 
-| Test | Solver | Precond | s/Step | Result |
-|---|---|---|---|---|
-| Baseline | GKOCG | BJ(1) | 53.5 | ✅ |
-| BJ maxBlockSize=2 | GKOCG | BJ(2) | — | ❌ `gko::AllocationError` (T=1) |
-| BJ maxBlockSize=4 | — | — | — | ⏭ Skipped (BJ(2) already failed) |
-| GKOBiCGStab | GKOBiCGStab | BJ(1) | 70.5 | ✅ but **+32% slower** (2 vec-reductions/iter) |
-| evalFrequency=10 | GKOCG | BJ(1) | 54.1 | ✅ but **null effect** (cap dominates) |
+The names `ParIc` / `ParILU` are **not** valid OGL keywords — when used
+they cause:
+```
+OGL does not support the preconditioner: ParIc
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+```
 
-**Confirmed:** No fvSolution tuning recovers performance. `GKOCG + BJ(1)`
-at 53.5 s/step is the absolute ceiling in Ginkgo 1.10 SYCL.
+So to test ParIc family, use OGL's `ICT` (= ParIct) or `ILU` (= ParIlu).
+This was a non-obvious naming mismatch.
 
-scotch decomposition does not affect the BJ>1 OOM — confirms it is a
-per-block workspace allocation bug, not mesh-layout dependent.
+## Tested Preconditioners on B70 Pro / Ginkgo 1.10 SYCL (May 2026, post-rollback)
 
-## Hopeful Future
+| OGL Name | Maps to | Status | Failure mode |
+|---|---|---|---|
+| `BJ maxBlockSize=1` | Jacobi (point) | ✅ Runs | Never converges — too weak (always 200-iter cap) |
+| `BJ maxBlockSize > 1` | Jacobi (block) | ❌ OOM | SYCL workspace allocation O(N × BS²) |
+| `IC` | `gko::Ic` (classic) | ❌ NotImplemented | `sparselib_ic` not in SYCL backend |
+| `IC` + `scaling=-1.0` | (same) | ❌ NotImplemented | unchanged — `sparselib_ic` is absent code, scaling does not help |
+| `ILU` | `ParIlu` factorisation + `Ilu` apply | ❌ NotImplemented in apply | `dpcpp/solver/lower_trs_kernels.dp.cpp:43: generate is not implemented` |
+| `ICT` | `ParIct` factorisation + `Ic` apply | ❌ Crash | `par_ict_factorization::add_candidates` SIGABRT (or DEVICE_LOST in earlier driver) |
+| `ICT` + `scaling=-1.0` | (same) | ❌ Crash (different path) | SIGABRT in `add_candidates`, scaling exposed a different code path |
+| `ISAI sparsityPower=1` | `Isai<spd>` | ✅ Runs | Diverges (final residual > initial) |
+| `ISAI sparsityPower=1` + `scaling=-1.0` | (same) | ✅ Runs | Still diverges (worse than without scaling) |
+| `ISAI sparsityPower=3` + `scaling=-1.0` | (same) | ❌ Crash | `range/offset does not fit in int` — SYCL int32 overflow on 34M-cell sparsity pattern |
+| `Multigrid` (PGM) | `solver::Multigrid` | ❌ OOM + Diverge | PGM coarsening OOM during `generate_local`; first solve also diverges |
 
-Ginkgo 2.0 develop (`/opt/ginkgo` in our setup) may have:
-- Optimized SYCL BJ generate (no OOM at maxBlockSize > 1)
-- IC/ILU SYCL kernels filled in
-- More robust ICT/ILUT (no DEVICE_LOST)
+## Bottom Line
 
-**Attempted in our session — see [findings/10](10_ginkgo2_api_breaks.md):**
-OGL build against external Ginkgo 2.0 fails with 36+ errors due to 3
-API breaks in Preconditioner.hpp. Stack is effectively bound to
-Ginkgo 1.x until OGL upstream migrates.
+**Only `BJ maxBlockSize=1` is stable on Ginkgo 1.10 SYCL distributed.** The
+single working preconditioner is mathematically too weak for a 34M-cell
+CFD pressure system (point-Jacobi never converges to `relTol=0.01`).
+
+Every stronger option fails for one of three reasons:
+1. **Not implemented in SYCL** (classic IC, lower/upper trs, ISAI sp>1)
+2. **SYCL kernel bug** (ParIct add_candidates, BJ block workspace)
+3. **Numerical divergence** (ISAI for the pressure operator, Multigrid first solve)
+
+## What `scaling -1.0` IS Useful For
+
+If/when the implementation gaps close, `scaling -1.0` is the correct
+fvSolution setting for the OpenFOAM pressure equation (which has a
+negative-definite system matrix by construction). We have it documented as
+a pre-requisite knob, not a current fix — it is a no-op against any of the
+implementation gaps documented above.
+
+## Future Outlook
+
+Per the KIT/Ginkgo team, there is active SYCL development including
+`@yhmtsai`'s direct-factorization branch. The most realistic path to a
+working strong preconditioner on Battlemage is:
+
+1. Direct factorization (classic IC/ILU) lands in main Ginkgo + SYCL kernels
+2. OGL adds `ParIc`/`ParIlu` keyword mapping (not currently present)
+3. `lower_trs`/`upper_trs` SYCL kernels implemented for the apply side
+4. ParIct `add_candidates` kernel bug fixed
+
+All four would need to materialise to enable practical strong-preconditioner
+GPU CFD on this stack. We are currently at zero of four.

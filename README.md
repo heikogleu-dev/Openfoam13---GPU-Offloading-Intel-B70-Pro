@@ -141,6 +141,8 @@ wait time.
 | [14](findings/14_kernel_launch_latency_revision.md) | Kernel-launch latency is 5.6 µs sync (CUDA-par), NOT ~100 µs as initially documented | Bottleneck story revised |
 | [15](findings/15_scaling_for_spd_preconditioners.md) | `scaling -1.0` doesn't recover ISAI/IC: ISAI sp=1 diverges, sp=3 hits SYCL int-range overflow, IC stays NotImplemented | KIT recommendation tested directly |
 | [16](findings/16_splitcomm_test.md) | `splitComm false` no effect (+1.5 % noise) — tuning blocked by `forceHostBuffer` mandate | Confirms no fvSolution knob remains |
+| [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) = 48 s/step — slower than CPU-only, faster than GPU-only | GPU offload of easy fields is no win |
+| [05 (rev.)](findings/05_sycl_preconditioner_status.md) | OGL `IC`=classic, `ILU`=ParIlu, `ICT`=ParIct (per KIT clarification). Triangular-solve apply (`lower_trs`) absent in SYCL → ALL IC/ILU/ParIct paths broken | Corrects earlier "Tsai discrepancy" — actual gap is apply-side, not factorisation |
 
 ---
 
