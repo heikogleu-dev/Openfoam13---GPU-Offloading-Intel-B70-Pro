@@ -6,11 +6,13 @@
 [![Intel Arc Pro B70](https://img.shields.io/badge/Intel%20Arc%20Pro-B70%20Pro%2032GB-blue)](https://www.intel.com/content/www/us/en/products/sku/245797)
 [![GPU CFD Status](https://img.shields.io/badge/GPU%20CFD%20Status-Software%20Not%20Ready-red)]()
 
-> **TL;DR: The hardware is excellent. The software stack is not ready yet.**
+> **TL;DR: The hardware is excellent. The plumbing around it is not.**
 >
-> GPU FP64: 1335 GFLOPS (93% of spec) ✅
+> GPU FP64: 1374 GFLOPS (96% of spec) ✅
 > VRAM: 530 GB/s sustained (87% of spec) ✅
-> OpenFOAM GPU acceleration: limited by Ginkgo 1.10 SYCL maturity ❌
+> Kernel-launch: 5.6 µs sync (CUDA-par) ✅
+> **GPU active during CFD: only 34% of wall clock** ❌
+> **GPU idle: 66% — waiting for MPI Allreduce + forced host-buffer copies** ❌
 
 First public documentation of OpenFOAM GPU acceleration (OGL/Ginkgo/SYCL)
 on Intel Arc Pro B70 Pro (Battlemage) for automotive CFD.
@@ -22,12 +24,14 @@ Honest results, real bugs found, practical fixes documented.
 
 | Metric | Measured | Spec | Efficiency |
 |---|---|---|---|
-| **FP64 Compute** | **1335 GFLOPS** | 1430 GFLOPS | **93%** ✅ |
+| **FP64 Compute** | **1374 GFLOPS** | 1430 GFLOPS | **96%** ✅ |
 | FP32 Compute | 12364 GFLOPS | 22940 GFLOPS | 54% |
 | **VRAM Bandwidth (sustained)** | **530 GB/s** | 608 GB/s | **87%** ✅ |
+| **Kernel-launch latency (sync)** | **5.6 µs** | ~5 µs (CUDA) | **on par** ✅ |
 | PCIe H2D Transfer | 15.5 GB/s | ~50 GB/s | 31% (SYCL driver limit) |
-| GPU Utilization (CFD) | **99%** | — | Full boost at 2800 MHz |
-| Power (CFD load) | 181 W | 275 W max | 66% TDP |
+| **GPU active during CFD** | **34 % of wall clock** | — | direct xe gtidle measurement |
+| GPU clock when active | 2528 MHz avg / 2800 max | 2800 MHz | 90 % of boost |
+| Power (CFD load, when active) | 181 W | 275 W max | 66% TDP |
 
 **The B70 Pro delivers excellent raw performance for compute workloads.**
 FP64 and VRAM bandwidth — the two metrics that matter most for CFD —
@@ -39,17 +43,19 @@ are both above 87% efficiency. This is better than many data center GPUs.
 
 | Root Cause | Impact |
 |---|---|
-| **No GPU-aware MPI** (`forceHostBuffer=true` required) | Host↔Device copy on every halo exchange — 1600+ PCIe round-trips per p-solve |
-| **Ginkgo 1.10 SYCL: BJ only viable preconditioner** | Too weak for 34M-cell CFD pressure system — never converges, hits 200-iter cap |
-| **Ginkgo 1.10 SYCL: IC/ICT/Multigrid crash or OOM** | No strong alternative |
-| **OGL/Ginkgo framework overhead per operation** | Each device-side op carries OGL DevicePersistent state lookups + Ginkgo executor dispatch |
+| ~~Level Zero kernel launch latency: ~100 µs~~ → **CORRECTED: 5.6 µs (fine)** | none — see [findings/14](findings/14_kernel_launch_latency_revision.md) |
+| **No GPU-aware MPI for xe driver** | `forceHostBuffer=true` mandatory → PCIe round-trip per halo exchange |
+| **GPU idle 66% of wall clock** | MPI Allreduce + PCIe copies dominate over compute — see [profiling/bottleneck_analysis.md](profiling/bottleneck_analysis.md) |
+| **BJ(1) hits maxIter=200 cap** | every CG iteration triggers another Allreduce |
+| **No working SYCL preconditioner for distributed CFD** | Multigrid OOM, IC NotImplemented, ICT DEVICE_LOST |
 
-The GPU itself is fast — **kernel launch is only 5.6 µs sync, on par with
-CUDA** (see [findings/14](findings/14_kernel_launch_latency_revision.md)).
-The dominant cost is the per-iteration MPI Allreduce + PCIe host-buffer
-copies forced by the lack of GPU-aware MPI.
+GPU active fraction during CFD measured directly via xe driver
+`gtidle/idle_residency_ms`: only **34 % of wall clock**. When active, the
+GPU runs at full boost (avg 2528 MHz). The other **66 % is idle** —
+waiting for MPI Allreduce barriers and PCIe host-buffer copies.
 
-> "It's not the GPU. It's the plumbing around the GPU."
+> "It's not the GPU compute. It's the wait between compute calls —
+> 66 % of wall clock spent on MPI synchronisation and PCIe host-buffer copies."
 
 ---
 
