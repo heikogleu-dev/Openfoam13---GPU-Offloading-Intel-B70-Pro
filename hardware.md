@@ -68,4 +68,8 @@ See [findings/01_pcie_reporting_bug.md](findings/01_pcie_reporting_bug.md).
 | 1024 MB | 9.9 | 6.1 | 259.0 | 108310 |
 
 > **Key finding:** PCIe bandwidth is NOT the bottleneck for our CFD case.
-> Level Zero kernel launch latency (~100 µs per operation) is.
+> ~~Level Zero kernel launch latency~~ NOT the bottleneck — measured at
+> **5.6 µs sync / 1.5 µs async**, on par with CUDA. See
+> [findings/14](findings/14_kernel_launch_latency_revision.md). The real
+> bottleneck is PCIe host-buffer copies forced by lack of GPU-aware MPI in
+> OGL, plus per-operation framework overhead in OGL+Ginkgo.

@@ -39,17 +39,17 @@ are both above 87% efficiency. This is better than many data center GPUs.
 
 | Root Cause | Impact |
 |---|---|
-| **Level Zero kernel launch latency: ~100 µs** | 20× worse than CUDA (~5 µs) |
-| **No GPU-aware MPI** | Host↔Device copy on every AllToAll iteration |
-| **Ginkgo 1.10 SYCL: BJ only viable preconditioner** | Too weak for 34M-cell CFD pressure system |
+| **No GPU-aware MPI** (`forceHostBuffer=true` required) | Host↔Device copy on every halo exchange — 1600+ PCIe round-trips per p-solve |
+| **Ginkgo 1.10 SYCL: BJ only viable preconditioner** | Too weak for 34M-cell CFD pressure system — never converges, hits 200-iter cap |
 | **Ginkgo 1.10 SYCL: IC/ICT/Multigrid crash or OOM** | No strong alternative |
+| **OGL/Ginkgo framework overhead per operation** | Each device-side op carries OGL DevicePersistent state lookups + Ginkgo executor dispatch |
 
-The GPU computes correctly and fast — but the overhead *around* each
-GPU operation dominates the total runtime. With 200 CG iterations per
-pressure solve, ~100 µs per kernel launch adds up to seconds of pure
-synchronization overhead per timestep.
+The GPU itself is fast — **kernel launch is only 5.6 µs sync, on par with
+CUDA** (see [findings/14](findings/14_kernel_launch_latency_revision.md)).
+The dominant cost is the per-iteration MPI Allreduce + PCIe host-buffer
+copies forced by the lack of GPU-aware MPI.
 
-> "It's not the GPU that's slow. It's the calls to the GPU."
+> "It's not the GPU. It's the plumbing around the GPU."
 
 ---
 

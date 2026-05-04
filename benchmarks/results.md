@@ -63,7 +63,14 @@
 | VRAM D2D Triad (256 MB) | 260 GB/s | 608 GB/s | 43% |
 | H2D (64 MB) | 15.5 GB/s | ~50 GB/s (PCIe 5×16) | 31% |
 | D2H (64 MB) | 14.4 GB/s | ~50 GB/s | 29% |
-| Kernel Launch Latency | ~100 µs | ~5 µs (CUDA) | 5% |
+| Kernel Launch Latency (sync) | **5.6 µs** | ~5 µs (CUDA) | **on par** |
+| Kernel Launch Latency (async batched) | 1.5 µs | — | — |
+
+> **Revision May 2026:** earlier "~100 µs" figure was wrong — see
+> [findings/14](../findings/14_kernel_launch_latency_revision.md). Pure
+> kernel launch on B70 Pro Level Zero is competitive with CUDA. The
+> per-operation framework overhead in OGL+Ginkgo is what creates the
+> "feels like 100 µs" effect, but it's a software artifact, not hardware.
 
 ## Updated GPU Bandwidth (sustained STREAM-Triad, 3 arrays)
 

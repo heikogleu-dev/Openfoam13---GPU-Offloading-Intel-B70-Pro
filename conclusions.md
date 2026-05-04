@@ -16,7 +16,7 @@ maxIter=80) that would also speed up CPU GAMG to an estimated ~24 s/step.
 
 | Factor | Impact |
 |---|---|
-| Level Zero kernel launch latency: ~100 µs vs CUDA's ~5 µs | 20× overhead per Compute-Submit |
+| ~~Level Zero kernel launch latency~~ — measured at **5.6 µs**, on par with CUDA (see [findings/14](findings/14_kernel_launch_latency_revision.md)) | NOT a bottleneck — earlier "100 µs" claim was wrong |
 | No GPU-aware MPI: forced D2H→MPI→H2D round-trip per AllToAll | 5-10× extra communication cost |
 | No GPU-side Multigrid: BJ vs GAMG = O(√N) vs O(log N) iterations | algorithmic disadvantage |
 | SYCL preconditioner gaps: IC/ILU/IRILU/Hybrid not implemented or broken | Limited tuning options |
