@@ -1,0 +1,65 @@
+name: Bug Report / Different Result
+description: Report a bug, crash, or different benchmark result
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. Real reproduction data
+        is genuinely useful — please be specific.
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware
+      description: GPU, CPU, RAM
+      placeholder: "Intel Arc Pro B70 Pro / Core Ultra 9 285K / 96 GB DDR5-6800"
+    validations:
+      required: true
+
+  - type: input
+    id: software
+    attributes:
+      label: Software versions
+      description: kernel, oneAPI, Compute Runtime, OGL, Ginkgo, OpenFOAM
+      placeholder: "Kernel 7.0.0-15, oneAPI 2026.0.0, CR 26.14.37833, OGL dev, Ginkgo 1.10, OF13"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Crash, wrong result, performance change, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What this repo says should happen — or what you expected based on docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Exact commands run, fvSolution / decomposeParDict if relevant
+      render: shell
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace / dmesg
+      description: Paste relevant lines (terminate, AllocationError, FOAM FATAL, dmesg xe entries)
+      render: shell
+
+  - type: input
+    id: finding
+    attributes:
+      label: Related finding (if any)
+      description: e.g. findings/02_bj_maxblocksize_oom.md
+      placeholder: findings/##_*.md

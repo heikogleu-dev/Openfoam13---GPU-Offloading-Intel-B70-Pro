@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: OGL upstream issues
+    url: https://github.com/hpsim/OGL/issues
+    about: For OGL-specific bugs (not Battlemage/SYCL specific)
+  - name: Ginkgo upstream issues
+    url: https://github.com/ginkgo-project/ginkgo/issues
+    about: For SYCL preconditioner / kernel bugs
+  - name: Intel Compute Runtime issues
+    url: https://github.com/intel/compute-runtime/issues
+    about: For Level Zero / driver bugs
+  - name: CFD-Online OpenFOAM Forum
+    url: https://www.cfd-online.com/Forums/openfoam/
+    about: General OpenFOAM discussion

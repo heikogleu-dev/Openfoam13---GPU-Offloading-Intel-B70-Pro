@@ -1,0 +1,29 @@
+name: Question / Discussion
+description: Ask about results, configuration, or B70 Pro CFD setup
+title: "[Q]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For general OpenFOAM-on-Battlemage questions or to discuss results.
+        For confirmed bugs or different test results, use the bug report template.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Your hardware (if relevant)
+      placeholder: "Intel Arc Pro B70 Pro / B580 / B570 / A770 / etc."
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: What you've tried, related findings, links to your own attempts
