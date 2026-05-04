@@ -84,16 +84,20 @@ would make CPU GAMG equally or more faster at those settings.
 
 ## What Would Make GPU Win
 
-| Improvement | Expected Effect | Timeline |
-|---|---|---|
-| Ginkgo 2.0 SYCL migration (OGL) | BJ maxBlockSize > 1, ParIC/ParICT available | When OGL migrates |
-| Level Zero latency reduction | 5–10× less kernel overhead | 1–2 years |
-| SYCL Graph in Ginkgo/OGL | Batch kernel launches → single overhead | 1–2 years |
-| GPU-aware MPI for Xe | Eliminate host↔device copies | 2–3 years |
+Concrete s/step estimates derived from the bottleneck breakdown
+(see [profiling/bottleneck_analysis.md](profiling/bottleneck_analysis.md)):
 
-With **ParIC or Multigrid** as preconditioner (converging in 20–50 iter
-instead of never), and **lower kernel latency**, GPU would likely win
-by 2–5× over CPU for this mesh size.
+| Improvement | Estimated effect on s/step | Timeline |
+|---|---|---|
+| **GPU-aware MPI for xe driver** | **−10 to −20 s/step** (eliminate PCIe round-trip + reduce Allreduce serialisation) | 2–3 years |
+| **Working SYCL Multigrid** (or any strong preconditioner) | **−20 to −30 s/step** (5–10× fewer iterations) | Ginkgo 2.0+ migration of OGL |
+| **SYCL Graph batched submission** | −5 s/step (collapse 600 launches/step into a few) | 1–2 years |
+| All three combined | could plausibly reach **<10 s/step** = ~3.5× faster than CPU GAMG (35.7 s/step) | uncertain |
+
+The idle-time-dominated profile (66 % wall-clock idle) means **fixing the
+preconditioner has higher ROI than optimising kernels** — every iteration
+saved removes both its compute share AND its share of the MPI Allreduce
+wait time.
 
 ---
 
@@ -112,10 +116,11 @@ by 2–5× over CPU for this mesh size.
 | Component | Version |
 |---|---|
 | OpenFOAM | Foundation 13 |
-| OGL (OpenFOAM-Ginkgo Layer) | dev branch |
+| OGL (OpenFOAM-Ginkgo Layer) | dev branch, rebuilt with `GINKGO_JACOBI_FULL_OPTIMIZATIONS=ON` + `-fp-model=precise` |
 | Ginkgo | 1.10 (OGL-internal) |
 | Intel oneAPI | 2026.0.0 |
-| Intel Compute Runtime | 26.05.37020 |
+| Intel Compute Runtime | **26.05.37020.3-1** (pinned/held — see [findings/13](findings/13_stack_update_zeinit_race.md): 26.14 breaks multi-rank) |
+| Intel Graphics Compiler | **2.32.7** (Intel rolling, kept after rollback) |
 
 ---
 
@@ -131,6 +136,11 @@ by 2–5× over CPU for this mesh size.
 | [08](findings/08_multigrid_device_lost.md) | Multigrid OOM in PGM coarsening + divergence | No GPU multigrid |
 | [09](findings/09_pcie_nvtop_confirmation.md) | nvtop confirms real PCIe GEN 5@16x (lspci wrong) | lspci bug confirmed |
 | [10](findings/10_ginkgo2_api_breaks.md) | Ginkgo 2.0 API breaks OGL (3 locations) | Cannot upgrade |
+| [12](findings/12_cpu_tuning_no_effect.md) | CPU tunings (governor/THP/swappiness) all within ±1.7% noise | Arrow Lake GAMG is DDR5-bound |
+| [13](findings/13_stack_update_zeinit_race.md) | Compute Runtime 26.14 incompatible with multi-rank OGL (`resource_info.cpp:15` abort) | Stack pinned at 26.05 |
+| [14](findings/14_kernel_launch_latency_revision.md) | Kernel-launch latency is 5.6 µs sync (CUDA-par), NOT ~100 µs as initially documented | Bottleneck story revised |
+| [15](findings/15_scaling_for_spd_preconditioners.md) | `scaling -1.0` doesn't recover ISAI/IC: ISAI sp=1 diverges, sp=3 hits SYCL int-range overflow, IC stays NotImplemented | KIT recommendation tested directly |
+| [16](findings/16_splitcomm_test.md) | `splitComm false` no effect (+1.5 % noise) — tuning blocked by `forceHostBuffer` mandate | Confirms no fvSolution knob remains |
 
 ---
 
@@ -139,13 +149,17 @@ by 2–5× over CPU for this mesh size.
 ```
 ├── README.md              — This file
 ├── hardware.md            — Full hardware specs and measured performance
+├── conclusions.md         — Honest CPU-vs-GPU verdict
+├── references.md          — Cross-references to upstream papers + projects
 ├── setup/
 │   ├── install_stack.md   — OGL/Ginkgo/oneAPI installation + required patches
 │   └── bios_settings.md   — BIOS optimization for compute workloads
 ├── benchmarks/
 │   ├── results.md         — All CFD benchmark results
 │   └── hardware_results.json — Machine-readable hardware metrics
-├── findings/              — Documented bugs (01–10)
+├── profiling/
+│   └── bottleneck_analysis.md — Where do the 53 s/step actually go?
+├── findings/              — 12 documented bugs (01–14, with 06/07/11 reserved for upstream)
 └── configs/               — Working fvSolution configurations
 ```
 
