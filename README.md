@@ -178,6 +178,25 @@ latency improvements. Re-evaluate in 12–18 months.
 
 ---
 
+## When to Re-evaluate GPU Offloading
+
+The current limitation is not hardware — it is the software stack.
+Re-test when **at least one** of these conditions is met:
+
+| Condition | Expected Gain | Status |
+|---|---|---|
+| OGL migrates to Ginkgo 2.0 | BJ maxBlockSize > 1, ParIC / Multigrid available | Waiting on KIT — see [findings/10](findings/10_ginkgo2_api_breaks.md) |
+| Ginkgo SYCL IC / ILU production-ready | Real preconditioner: 20–50 iter vs current 200 (cap) | Unclear — see [findings/05](findings/05_sycl_preconditioner_status.md) |
+| GPU-aware MPI for `xe` driver | Eliminates `forceHostBuffer`: ~−13 % per step | 1–2 years |
+| Compute Runtime ≥ 26.14 stable for multi-rank | Removes the 26.05 pinning — see [findings/13](findings/13_stack_update_zeinit_race.md) | Filed upstream |
+
+**Minimum viable re-test:** Ginkgo 2.0 + OGL migration complete.
+**Optimistic timeline:** 12–18 months (mid-2027).
+**Watch:** [hpsim/OGL](https://github.com/hpsim/OGL) and
+[ginkgo-project/ginkgo releases](https://github.com/ginkgo-project/ginkgo/releases)
+
+---
+
 ## How to Cite
 
 If this documentation helped your research or work, please cite:

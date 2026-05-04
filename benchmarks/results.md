@@ -191,3 +191,30 @@ the solver always hits the maxIter cap. BiCGStab is algorithmically inferior
 to CG for SPD systems like the pressure equation.
 
 **No fvSolution-level tuning recovers performance with Ginkgo 1.10 SYCL.**
+
+## Decomposition Sweep (np = 4 / 8 / 16) — May 2026
+
+**Stack:** CR 26.05 + IGC 2.32.7 + libOGL.so rebuilt with JACOBI_OPT, BJ(1), scotch
+**Note:** OGL requires `numberOfSubdomains` to be a multiple of `ranksPerGPU`,
+so `ranksPerGPU` was matched per test (4/8/16 respectively).
+
+| np | ranksPerGPU | s/Step (T=4,5 mean) | vs np=8 | Note |
+|---|---|---|---|---|
+| 4 | 4 | **68.1** | +28 % slower | larger subdomain (8.5M cells/rank), CPU phases bottleneck |
+| 8 | 8 | **53.3** | baseline | current standard |
+| 16 | 16 | **51.2** | −3.9 % faster | more CPU cores for U/k/ω, marginal MPI cost increase |
+
+**Interpretation:**
+- **np=4 is significantly worse:** With only 4 ranks, the CPU-side U/k/ω
+  solvers (which OGL does not offload) become the bottleneck of the
+  non-GPU phase. Each rank handles ~8.5 M cells, doubling per-rank CPU work.
+- **np=16 is marginally better:** More CPU parallelism for U/k/ω, but the
+  GPU p-solve still serialises through the same Allreduce barriers.
+  The −3.9 % gain is real but small — within ±2× the run-to-run noise band.
+- **np=8 remains the practical recommendation:** Best balance of CPU vs MPI
+  overhead, and it matches the 8 P-cores on Arrow Lake S — clean placement
+  without competing with E-cores.
+
+The decomposition sweep is a **6 % envelope around np=8** (from 51.2 to
+54.1 s/step). The 53 s/step ceiling for BJ(1) is robust to decomposition
+choice — confirming again that the bottleneck is upstream of partitioning.
