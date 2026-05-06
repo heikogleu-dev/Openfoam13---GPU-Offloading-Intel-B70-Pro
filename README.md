@@ -129,7 +129,7 @@ wait time.
 | # | Bug | Impact |
 |---|---|---|
 | [01](findings/01_pcie_reporting_bug.md) | lspci reports PCIe 1.0×1 (xe SR-IOV PF bug) | Diagnostic confusion |
-| [02](findings/02_bj_maxblocksize_oom.md) | Ginkgo 1.10 SYCL: BJ maxBlockSize>1 → OOM | No strong BJ available |
+| [02](findings/02_bj_blocksize_int_underflow.md) | Ginkgo 1.10 SYCL: BJ maxBlockSize>1 → `size_t` underflow in `dpcpp::jacobi::find_blocks` (NOT VRAM — peak 8.4 GB / 27.9 GB available, see `profiling/vram_analysis.md`) | No strong BJ available |
 | [03](findings/03_preconditioner_subdict_syntax.md) | OGL preconditioner sub-dict syntax undocumented | Options silently ignored |
 | [04](findings/04_sycl_device_selector.md) | ONEAPI_DEVICE_SELECTOR: level_zero:0 not level_zero:gpu:0 | Crash on startup |
 | [05](findings/05_sycl_preconditioner_status.md) | IC/ICT NotImplemented/DEVICE_LOST on SYCL | No ILU family available |
@@ -160,7 +160,9 @@ wait time.
 │   ├── results.md         — All CFD benchmark results
 │   └── hardware_results.json — Machine-readable hardware metrics
 ├── profiling/
-│   └── bottleneck_analysis.md — Where do the 53 s/step actually go?
+│   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
+│   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement (Phase 5)
+├── logs/vram-traces/      — Raw CSVs + mpirun logs for the VRAM measurement
 ├── findings/              — 12 documented bugs (01–14, with 06/07/11 reserved for upstream)
 └── configs/               — Working fvSolution configurations
 ```
@@ -183,6 +185,11 @@ latency improvements. Re-evaluate in 12–18 months.
 ## When to Re-evaluate GPU Offloading
 
 The current limitation is not hardware — it is the software stack.
+Direct VRAM measurement (see [`profiling/vram_analysis.md`](profiling/vram_analysis.md))
+shows BJ(1) peaks at 9.4 GB of 27.9 GB available — **19.9 GB headroom**
+exists for stronger preconditioners. The blockers are integer-arithmetic
+bugs and missing kernels in the SYCL backend, not memory pressure.
+
 Re-test when **at least one** of these conditions is met:
 
 | Condition | Expected Gain | Status |

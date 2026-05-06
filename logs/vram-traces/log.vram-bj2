@@ -1,0 +1,508 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  13
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 13-441953dfbb42
+Exec   : foamRun -parallel -solver incompressibleFluid
+Date   : May 06 2026
+Time   : 17:12:09
+Host   : "Tavea-Station"
+PID    : 36838
+I/O    : uncollated
+Case   : /home/heiko/CFD-Cases/Testcase-GPU
+nProcs : 8
+Slaves : 
+7
+(
+"Tavea-Station.36839"
+"Tavea-Station.36840"
+"Tavea-Station.36841"
+"Tavea-Station.36842"
+"Tavea-Station.36843"
+"Tavea-Station.36844"
+"Tavea-Station.36845"
+)
+
+Pstream initialised with:
+    floatTransfer      : false
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 0)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Selecting solver incompressibleFluid
+Selecting viscosity model Newtonian
+Selecting turbulence model type RAS
+    Selecting RAS turbulence model kOmegaSST
+Creating MRF zone list from MRFProperties
+Selecting patchDistMethod meshWave
+--> FOAM Warning : Creating fvConstraints from "system/fvOptions"
+
+--> FOAM Warning : Creating fvModels from "system/fvOptions" rather than constant/fvModels
+
+SIMPLE: No convergence criteria found
+
+
+SIMPLE: Operating solver in steady-state mode with 1 outer corrector
+SIMPLE: Operating solver in SIMPLE mode
+
+
+
+Starting time loop
+
+wallShearStress wallShearStress:
+    processing all wall patches
+
+Time = 1s
+
+DILUPBiCGStab:  Solving for Ux, Initial residual = 1, Final residual = 0.05486391, No Iterations 2
+DILUPBiCGStab:  Solving for Uy, Initial residual = 1, Final residual = 0.0816295, No Iterations 2
+DILUPBiCGStab:  Solving for Uz, Initial residual = 1, Final residual = 0.05666546, No Iterations 2
+[OGL LOG][lduLduBase.hpp:106] Initialising OGL
+	OGL commit:  15f81d2+
+	Branch: dev 
+	Build type: Release
+	Ginkgo version: 1.10.0 ( develop)
+	Ginkgo commit: ogl_0600_gko190
+	MPI is GPU aware: 0
+	Fuses matrix interface: 1
+	Forces host buffer based communication: 1
+	Splits MPI communicator: 1
+	CPU ranks per GPU: 8
+	Matrix format: Csr
+	End OGL_INFO
+[OGL LOG]0][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [0/7]
+[OGL LOG]3][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [3/7]
+[OGL LOG]5][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [5/7]
+[OGL LOG]2][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [2/7]
+[OGL LOG]6][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [6/7]
+[OGL LOG]1][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [1/7]
+[OGL LOG]7][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [7/7]
+[OGL LOG]4][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [4/7]
+[OGL LOG][Base.hpp:104] initialising p_distributed_matrix
+[OGL LOG]0][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]0][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]1][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]3][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]6][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]5][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]7][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]4][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]0][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG][Proc: 4]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 4]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 5]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_all_to_all_update_data: 0.006 [ms]
+[OGL LOG][Proc: 7]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 1]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 2]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 2]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 3]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 6]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 2]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_all_to_all_update_data: 0.025 [ms]
+[OGL LOG][Proc: 0]: generate_local_pairwise_data: 0.002 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_local_reorder_map: 453.451 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_reorder_map: 0.007 [ms]
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 16944.61 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 16957.37 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 16970.09 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 16983.13 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 16995.91 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 17008.66 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 17018.63 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1041.063 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 66.172 [ms]
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 53.498 [ms]
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 43.641 [ms]
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 105.087 [ms]
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 79.47 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.578 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 17062.68 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.417 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 17062.7 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.536 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 17062.71 [ms]
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 92.644 [ms]
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 118.245 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.637 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 17063.11 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.498 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 17063.11 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.583 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 17063.33 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.577 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 17063.46 [ms]
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 1.647 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_init: 21534.49 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4247861
+[OGL LOG][Proc: 5]p_distributed_matrix: call_init: 21534.76 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4246941
+[OGL LOG][Proc: 4]p_distributed_matrix: call_init: 21535.59 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4267161
+[OGL LOG][Proc: 7]p_distributed_matrix: call_init: 21536.3 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4248005
+[OGL LOG][Proc: 2]p_distributed_matrix: call_init: 21536.58 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4271945
+[OGL LOG][Proc: 1]p_distributed_matrix: call_init: 21536.92 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4266093
+[OGL LOG][Proc: 3]p_distributed_matrix: call_init: 21537.01 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4251060
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 36.224 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1078.968 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_init: 21652.07 [ms]
+[OGL LOG][Base.hpp:104] initialising p_rhs
+[OGL LOG]0][Vector.hpp:88] initialising vector p_rhs of size 34088573 orig size 4289507
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 5]p_rhs: call_init: 211.777 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4246941
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 2]p_rhs: call_init: 209.963 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4271945
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 1]p_rhs: call_init: 209.622 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4266093
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 4]p_rhs: call_init: 210.95 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4267161
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 7]p_rhs: call_init: 210.234 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4248005
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 6]p_rhs: call_init: 212.043 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4247861
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 3]p_rhs: call_init: 209.529 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4251060
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 0]p_rhs: call_init: 220.703 [ms]
+[OGL LOG][Base.hpp:104] initialising p_initial_guess
+[OGL LOG]0][Vector.hpp:88] initialising vector p_initial_guess of size 34088573 orig size 4289507
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 6]p_initial_guess: call_init: 220.168 [ms]
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 7]p_initial_guess: call_init: 220.168 [ms]
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 3]p_initial_guess: call_init: 220.168 [ms]
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 2]p_initial_guess: call_init: 220.168 [ms]
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 5]p_initial_guess: call_init: 220.168 [ms]
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 1]p_initial_guess: call_init: 220.168 [ms]
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 4]p_initial_guess: call_init: 220.168 [ms]
+terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36839] *** Process received signal ***
+[Tavea-Station:36839] Signal: Aborted (6)
+[Tavea-Station:36839] Signal code:  (-6)
+[Tavea-Station:36839] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x75ba0d845cb0]
+[Tavea-Station:36839] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x75ba0d8a648c]
+[Tavea-Station:36839] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x75ba0d845b7e]
+[Tavea-Station:36839] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x75ba0d8288ec]
+[Tavea-Station:36839] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x75ba0dcac275]
+[Tavea-Station:36839] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x75ba0dcc364a]
+[Tavea-Station:36839] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x75ba0dcabc6c]
+[Tavea-Station:36839] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x75ba0dcc3901]
+[Tavea-Station:36839] [ 8] terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36842] *** Process received signal ***
+[Tavea-Station:36842] Signal: Aborted (6)
+[Tavea-Station:36842] Signal code:  (-6)
+[Tavea-Station:36842] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x74e25d845cb0]
+[Tavea-Station:36842] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x74e25d8a648c]
+[Tavea-Station:36842] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x74e25d845b7e]
+[Tavea-Station:36842] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x74e25d8288ec]
+[Tavea-Station:36842] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x74e25dcac275]
+[Tavea-Station:36842] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x74e25dcc364a]
+[Tavea-Station:36842] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x74e25dcabc6c]
+[Tavea-Station:36842] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x74e25dcc3901]
+[Tavea-Station:36842] [ 8] terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36840] *** Process received signal ***
+[Tavea-Station:36840] Signal: Aborted (6)
+[Tavea-Station:36840] Signal code:  (-6)
+[Tavea-Station:36840] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x74bfe2c45cb0]
+[Tavea-Station:36840] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x74bfe2ca648c]
+[Tavea-Station:36840] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x74bfe2c45b7e]
+[Tavea-Station:36840] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x74bfe2c288ec]
+[Tavea-Station:36840] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x74bfe30ac275]
+[Tavea-Station:36840] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x74bfe30c364a]
+[Tavea-Station:36840] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x74bfe30abc6c]
+[Tavea-Station:36840] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x74bfe30c3901]
+[Tavea-Station:36840] [ 8] terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36843] *** Process received signal ***
+[Tavea-Station:36843] Signal: Aborted (6)
+[Tavea-Station:36843] Signal code:  (-6)
+[Tavea-Station:36843] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x79b6f1645cb0]
+[Tavea-Station:36843] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x79b6f16a648c]
+[Tavea-Station:36843] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x79b6f1645b7e]
+[Tavea-Station:36843] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x79b6f16288ec]
+[Tavea-Station:36843] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x79b6f1aac275]
+[Tavea-Station:36843] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x79b6f1ac364a]
+[Tavea-Station:36843] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x79b6f1aabc6c]
+[Tavea-Station:36843] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x79b6f1ac3901]
+[Tavea-Station:36843] [ 8] terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36845] *** Process received signal ***
+[Tavea-Station:36845] Signal: Aborted (6)
+[Tavea-Station:36845] Signal code:  (-6)
+[Tavea-Station:36845] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x78c69f045cb0]
+[Tavea-Station:36845] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x78c69f0a648c]
+[Tavea-Station:36845] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x78c69f045b7e]
+[Tavea-Station:36845] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x78c69f0288ec]
+[Tavea-Station:36845] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x78c69f4ac275]
+[Tavea-Station:36845] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x78c69f4c364a]
+[Tavea-Station:36845] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x78c69f4abc6c]
+[Tavea-Station:36845] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x78c69f4c3901]
+[Tavea-Station:36845] [ 8] terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36844] *** Process received signal ***
+[Tavea-Station:36844] Signal: Aborted (6)
+[Tavea-Station:36844] Signal code:  (-6)
+[Tavea-Station:36844] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x77d839445cb0]
+[Tavea-Station:36844] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x77d8394a648c]
+[Tavea-Station:36844] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x77d839445b7e]
+[Tavea-Station:36844] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x77d8394288ec]
+[Tavea-Station:36844] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x77d8398ac275]
+[Tavea-Station:36844] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x77d8398c364a]
+[Tavea-Station:36844] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x77d8398abc6c]
+[Tavea-Station:36844] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x77d8398c3901]
+[Tavea-Station:36844] [ 8] terminate called after throwing an instance of 'gko::AllocationError'
+  what():  /opt/ogl-src/build/_deps/ginkgo-src/dpcpp/base/executor.dp.cpp:104: DPC++: failed to allocate memory block of 18446744073709551615B
+[Tavea-Station:36841] *** Process received signal ***
+[Tavea-Station:36841] Signal: Aborted (6)
+[Tavea-Station:36841] Signal code:  (-6)
+[Tavea-Station:36841] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x767a4c245cb0]
+[Tavea-Station:36841] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x767a4c2a648c]
+[Tavea-Station:36841] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x767a4c245b7e]
+[Tavea-Station:36841] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x767a4c2288ec]
+[Tavea-Station:36841] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x767a4c6ac275]
+[Tavea-Station:36841] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x767a4c6c364a]
+[Tavea-Station:36841] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x767a4c6abc6c]
+[Tavea-Station:36841] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x767a4c6c3901]
+[Tavea-Station:36841] [ 8] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x79b6bb8b533a]
+[Tavea-Station:36843] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x74e227cb533a]
+[Tavea-Station:36842] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x767a166b533a]
+[Tavea-Station:36841] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x78c6690b533a]
+[Tavea-Station:36845] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x77d8038b533a]
+[Tavea-Station:36844] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x75b9d7cb533a]
+[Tavea-Station:36839] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko13DpcppExecutor9raw_allocEm+0x13a) [0x74bfaccb533a]
+[Tavea-Station:36840] [ 9] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x77d81ff1b68d]
+[Tavea-Station:36844] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x767a32d1b68d]
+[Tavea-Station:36841] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x74e243f1b68d]
+[Tavea-Station:36842] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x75b9f3f1b68d]
+[Tavea-Station:36839] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x78c684f1b68d]
+[Tavea-Station:36845] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x79b6d7f1b68d]
+[Tavea-Station:36843] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko5arrayIbEC2ESt10shared_ptrIKNS_8ExecutorEEm+0x1cd) [0x74bfc8f1b68d]
+[Tavea-Station:36840] [10] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x79b6bbef87d3]
+[Tavea-Station:36843] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x77d803ef87d3]
+[Tavea-Station:36844] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x78c6696f87d3]
+[Tavea-Station:36845] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x767a16cf87d3]
+[Tavea-Station:36841] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x74e2282f87d3]
+[Tavea-Station:36842] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x74bfad2f87d3]
+[Tavea-Station:36840] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZN3gko7kernels5dpcpp6jacobi11find_blocksIdiEEvSt10shared_ptrIKNS_13DpcppExecutorEEPKNS_6matrix3CsrIT_T0_EEjRmRNS_5arrayISB_EE+0x193) [0x75b9d82f87d3]
+[Tavea-Station:36839] [11] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x79b6d9dbe6c2]
+[Tavea-Station:36843] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x78c686dbe6c2]
+[Tavea-Station:36845] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x77d821dbe6c2]
+[Tavea-Station:36844] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x74e245dbe6c2]
+[Tavea-Station:36842] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x767a34bbe6c2]
+[Tavea-Station:36841] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x74bfcadbe6c2]
+[Tavea-Station:36840] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(+0x39be6c2) [0x75b9f5dbe6c2]
+[Tavea-Station:36839] [12] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x79b6bdcccd33]
+[Tavea-Station:36843] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x78c66b4ccd33]
+[Tavea-Station:36845] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x77d805cccd33]
+[Tavea-Station:36844] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x74e22a0ccd33]
+[Tavea-Station:36842] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x767a18accd33]
+[Tavea-Station:36841] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x74bfaf0ccd33]
+[Tavea-Station:36840] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo_dpcpp.so.1.10.0(_ZNK3gko6detail12ExecutorBaseINS_13DpcppExecutorEE3runERKNS_9OperationE+0xd3) [0x75b9da0ccd33]
+[Tavea-Station:36839] [13] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x79b6d9e454bf]
+[Tavea-Station:36843] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x78c686e454bf]
+[Tavea-Station:36845] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x77d821e454bf]
+[Tavea-Station:36844] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x74e245e454bf]
+[Tavea-Station:36842] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x767a34c454bf]
+[Tavea-Station:36841] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x74bfcae454bf]
+[Tavea-Station:36840] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE13detect_blocksEPKNS_6matrix3CsrIdiEE+0xaf) [0x75b9f5e454bf]
+[Tavea-Station:36839] [14] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x79b6d9e43834]
+[Tavea-Station:36843] [15] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x78c686e43834]
+[Tavea-Station:36845] [15] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x77d821e43834]
+[Tavea-Station:36844] [15] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x79b6ec590fd3]
+[Tavea-Station:36843] [16] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x78c694d90fd3]
+[Tavea-Station:36845] [16] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x767a34c43834]
+[Tavea-Station:36841] [15] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x74e245e43834]
+[Tavea-Station:36842] [15] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x77d834390fd3]
+[Tavea-Station:36844] [16] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x74bfcae43834]
+[Tavea-Station:36840] [15] /opt/ogl-src/build/_deps/ginkgo-build/lib/libginkgo.so.1.10.0(_ZN3gko14preconditioner6JacobiIdiE8generateEPKNS_5LinOpEb+0x354) [0x75b9f5e43834]
+[Tavea-Station:36839] [15] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x79b6ec5a13f7]
+[Tavea-Station:36843] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x78c694da13f7]
+[Tavea-Station:36845] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x77d8343a13f7]
+[Tavea-Station:36844] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x74e258790fd3]
+[Tavea-Station:36842] [16] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x767a36b90fd3]
+[Tavea-Station:36841] [16] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x74bfd8990fd3]
+[Tavea-Station:36840] [16] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x79b6ec578d10]
+[Tavea-Station:36843] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko20EnableDefaultFactoryINS_14preconditioner6JacobiIdiE7FactoryES3_NS3_15parameters_typeENS_12LinOpFactoryEE13generate_implESt10shared_ptrIKNS_5LinOpEE+0xa13) [0x75ba08790fd3]
+[Tavea-Station:36839] [16] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x78c694d78d10]
+[Tavea-Station:36845] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x77d834378d10]
+[Tavea-Station:36844] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x74e2587a13f7]
+[Tavea-Station:36842] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x767a36ba13f7]
+[Tavea-Station:36841] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x74bfd89a13f7]
+[Tavea-Station:36840] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x79b6ec5629ff]
+[Tavea-Station:36843] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x78c694d629ff]
+[Tavea-Station:36845] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko12LinOpFactory8generateESt10shared_ptrIKNS_5LinOpEE+0x617) [0x75ba087a13f7]
+[Tavea-Station:36839] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x77d8343629ff]
+[Tavea-Station:36844] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x767a36b78d10]
+[Tavea-Station:36841] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x74e258778d10]
+[Tavea-Station:36842] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x74bfd8978d10]
+[Tavea-Station:36840] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x79b6ec556e97]
+[Tavea-Station:36843] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x78c694d56e97]
+[Tavea-Station:36845] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner24init_preconditioner_implENS_4wordERKNS_10dictionaryESt10shared_ptrIKN3gko5LinOpEES5_INS6_8ExecutorEE+0xe020) [0x75ba08778d10]
+[Tavea-Station:36839] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x77d834356e97]
+[Tavea-Station:36844] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x767a36b629ff]
+[Tavea-Station:36841] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x74e2587629ff]
+[Tavea-Station:36842] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x74bfd89629ff]
+[Tavea-Station:36840] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x79b6ec543593]
+[Tavea-Station:36843] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x78c694d43593]
+[Tavea-Station:36845] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x77d834343593]
+[Tavea-Station:36844] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam14Preconditioner19init_preconditionerESt10shared_ptrIKN3gko5LinOpEES1_INS2_8ExecutorEE+0x90f) [0x75ba087629ff]
+[Tavea-Station:36839] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x767a36b56e97]
+[Tavea-Station:36841] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x79b6ec543046]
+[Tavea-Station:36843] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x74e258756e97]
+[Tavea-Station:36842] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x74bfd8956e97]
+[Tavea-Station:36840] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x78c694d43046]
+[Tavea-Station:36845] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x77d834343046]
+[Tavea-Station:36844] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_12GKOCGFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x3447) [0x75ba08756e97]
+[Tavea-Station:36839] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x767a36b43593]
+[Tavea-Station:36841] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x74bfd8943593]
+[Tavea-Station:36840] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x74e258743593]
+[Tavea-Station:36842] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_12GKOCGFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x75ba08743593]
+[Tavea-Station:36839] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x767a36b43046]
+[Tavea-Station:36841] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x74bfd8943046]
+[Tavea-Station:36840] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x74e258743046]
+[Tavea-Station:36842] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam5GKOCG5solveERNS_5FieldIdEERKS2_h+0xa6) [0x75ba08743046]
+[Tavea-Station:36839] [22] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x77d83b6ecf47]
+[Tavea-Station:36844] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x79b6f38ecf47]
+[Tavea-Station:36843] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x78c6a12ecf47]
+[Tavea-Station:36845] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x767a4e4ecf47]
+[Tavea-Station:36841] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x74bfe4eecf47]
+[Tavea-Station:36840] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x74e25faecf47]
+[Tavea-Station:36842] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x75ba0faecf47]
+[Tavea-Station:36839] [23] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x78c6a0d5a3a2]
+[Tavea-Station:36845] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x79b6f335a3a2]
+[Tavea-Station:36843] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x77d83b15a3a2]
+[Tavea-Station:36844] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x767a4df5a3a2]
+[Tavea-Station:36841] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x74bfe495a3a2]
+[Tavea-Station:36840] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x74e25f55a3a2]
+[Tavea-Station:36842] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x75ba0f55a3a2]
+[Tavea-Station:36839] [24] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x78c6a0d6ff6a]
+[Tavea-Station:36845] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x79b6f336ff6a]
+[Tavea-Station:36843] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x77d83b16ff6a]
+[Tavea-Station:36844] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x78c67f71564a]
+[Tavea-Station:36845] [26] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x79b6d139664a]
+[Tavea-Station:36843] [26] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x77d7fd59664a]
+[Tavea-Station:36844] [26] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x78c67f73fbec]
+[Tavea-Station:36845] [27] foamRun(+0x416e) [0x60f4e510416e]
+[Tavea-Station:36845] [28] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x79b6d13c0bec]
+[Tavea-Station:36843] [27] foamRun(+0x416e) [0x58375aa7b16e]
+[Tavea-Station:36843] [28] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x77d7fd5c0bec]
+[Tavea-Station:36844] [27] foamRun(+0x416e) [0x5a42cbcd916e]
+[Tavea-Station:36844] [28] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x767a4df6ff6a]
+[Tavea-Station:36841] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x74bfe496ff6a]
+[Tavea-Station:36840] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x74e25f56ff6a]
+[Tavea-Station:36842] [25] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x78c69f02a601]
+[Tavea-Station:36845] [29] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x79b6f162a601]
+[Tavea-Station:36843] [29] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x77d83942a601]
+[Tavea-Station:36844] [29] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x767a1039664a]
+[Tavea-Station:36841] [26] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x74bfc279664a]
+[Tavea-Station:36840] [26] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x74e23d77564a]
+[Tavea-Station:36842] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x79b6f162a718]
+[Tavea-Station:36843] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x78c69f02a718]
+[Tavea-Station:36845] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x77d83942a718]
+[Tavea-Station:36844] *** End of error message ***
+/opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x767a103c0bec]
+[Tavea-Station:36841] [27] foamRun(+0x416e) [0x561f8aebd16e]
+[Tavea-Station:36841] [28] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x74bfc27c0bec]
+[Tavea-Station:36840] [27] foamRun(+0x416e) [0x5be2c6aa616e]
+[Tavea-Station:36840] [28] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x75ba0f56ff6a]
+[Tavea-Station:36839] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x74e23d79fbec]
+[Tavea-Station:36842] [27] foamRun(+0x416e) [0x561842f2216e]
+[Tavea-Station:36842] [28] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x767a4c22a601]
+[Tavea-Station:36841] [29] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x74bfe2c2a601]
+[Tavea-Station:36840] [29] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x74e25d82a601]
+[Tavea-Station:36842] [29] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x75b9ed77564a]
+[Tavea-Station:36839] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x767a4c22a718]
+[Tavea-Station:36841] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x74bfe2c2a718]
+[Tavea-Station:36840] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x74e25d82a718]
+[Tavea-Station:36842] *** End of error message ***
+/opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x75b9ed79fbec]
+[Tavea-Station:36839] [27] foamRun(+0x416e) [0x586eae8b316e]
+[Tavea-Station:36839] [28] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x75ba0d82a601]
+[Tavea-Station:36839] [29] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x75ba0d82a718]
+[Tavea-Station:36839] *** End of error message ***
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 0]p_initial_guess: call_init: 214.914 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 2
+--------------------------------------------------------------------------
+Sorry!  You were supposed to get help about:
+    prun:proc-aborted-strsignal
+But I couldn't open the help file:
+    /usr/lib/x86_64-linux-gnu/pmix2/share/pmix/help-prun.txt: No such file or directory
+    /usr/lib/x86_64-linux-gnu/prrte3/share/prte/help-prun.txt: No such file or directory.
+Sorry!
+--------------------------------------------------------------------------
+ 
