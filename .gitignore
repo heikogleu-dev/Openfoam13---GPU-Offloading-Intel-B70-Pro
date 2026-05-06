@@ -4,6 +4,10 @@
 *.o
 *.so
 
+# Exception: keep curated crash/debug logs under logs/
+!logs/
+!logs/*.log
+
 # OpenFOAM run artifacts
 processor*/
 postProcessing/
