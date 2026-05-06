@@ -22,9 +22,9 @@
 | 9 | U+k+ω on GPU too | 8 | GKOBiCGStab | BJ | 2 | 50 | >200 | 22 s/k-solve overhead |
 | 10 | **CPU GAMG np=8 P-only** | 8 | GAMG | DIC | 2 | 50 | **43.3** | Native Linux baseline |
 | 11 | **CPU GAMG np=16 P+E** | 16 | GAMG | DIC | 2 | 50 | **35.7** | **Best overall** |
-| 12 | maxBlockSize 32 | 16 | GKOCG | BJ(32) | 2 | 200 | OOM | 70 GB VRAM needed |
-| 13 | maxBlockSize 16 | 8 | GKOCG | BJ(16) | 2 | 200 | OOM | SYCL workspace bug |
-| 14 | maxBlockSize 8 | 8 | GKOCG | BJ(8) | 2 | 200 | OOM | even at smallest BS>1 |
+| 12 | maxBlockSize 32 | 16 | GKOCG | BJ(32) | 2 | 200 | abort | size_t underflow in `find_blocks` (see findings/02) |
+| 13 | maxBlockSize 16 | 8 | GKOCG | BJ(16) | 2 | 200 | abort | size_t underflow (peak VRAM 8.4 GB / 27.9 GB available) |
+| 14 | maxBlockSize 8 | 8 | GKOCG | BJ(8) | 2 | 200 | abort | size_t underflow — same crash signature for any BS>1 |
 | 15 | Hybrid format | 8 | GKOCG | BJ | 2 | 200 | error | "not supported in distributed mode" |
 | 16 | ICT (ParICT) | 8 | GKOCG | ICT | 2 | 200 | DEVICE_LOST | GPU hardware hang |
 
@@ -97,10 +97,10 @@ clearly bandwidth-good silicon.
 
 | Type | Measured GFLOPS | Spec GFLOPS | Efficiency |
 |---|---|---|---|
-| **FP64** | **1335** | 1430 | **93%** ✅ |
+| **FP64** | **1374** | 1430 | **96%** ✅ |
 | FP32 | 12364 | 22940 | 54% |
 
-**FP64 hits 93% of theoretical peak** — this is the strongest indicator that
+**FP64 hits 96% of theoretical peak** — this is the strongest indicator that
 the silicon is good for double-precision compute (CFD-relevant). FP32 lower
 likely because the 22.9 TFLOPS spec assumes XMX-style packed math; pure SIMD
 FMA gets 1× throughput per ALU.
@@ -162,10 +162,12 @@ Root cause: PGM coarsening OOM in Ginkgo 1.10 SYCL during generate_local().
 | Preconditioner | Status | Failure Mode |
 |---|---|---|
 | BJ maxBlockSize=1 | ✅ Runs | Never converges (point-Jacobi too weak) |
-| BJ maxBlockSize>1 | ❌ OOM | SYCL workspace O(N×BS²) bug |
-| ISAI | ✅ Runs | Diverges for pressure system |
-| IC | ❌ Crash | sparselib_ic NotImplemented |
-| ICT | ❌ DEVICE_LOST | GPU hardware hang |
+| BJ maxBlockSize>1 | ❌ Abort | `size_t` underflow in `dpcpp::jacobi::find_blocks` (NOT VRAM — see findings/02) |
+| ISAI sparsityPower=1 | ✅ Runs | Diverges for pressure system |
+| ISAI sparsityPower=3 | ❌ Crash | SYCL int32 overflow on 34M-cell sparsity pattern |
+| IC | ❌ NotImplemented | classic `sparselib_ic` absent in SYCL |
+| ICT | ❌ Abort | `par_ict_factorization::add_candidates` SIGABRT |
+| ILU | ❌ NotImplemented | `lower_trs` apply absent in `dpcpp/solver/` |
 | Hybrid matrixFormat | ❌ Error | Not supported in distributed mode |
 | Multigrid | ❌ OOM+Diverge | PGM coarsening OOM + algorithmic failure |
 

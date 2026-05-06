@@ -18,9 +18,9 @@
     "cpu_dgemm_gflops": 1500
   },
   "measured": {
-    "gpu_fp64_gflops": 1335.0,
+    "gpu_fp64_gflops": 1374.0,
     "gpu_fp32_gflops": 12363.7,
-    "gpu_fp64_efficiency_percent": 93.4,
+    "gpu_fp64_efficiency_percent": 96.1,
     "gpu_fp32_efficiency_percent": 53.9,
     "vram_triad_4mib_gbs": 508,
     "vram_triad_64mib_gbs": 524.0,
@@ -32,7 +32,8 @@
     "vram_triad_efficiency_percent": 87.2,
     "pcie_h2d_64mib_gbs": 15.5,
     "pcie_d2h_64mib_gbs": 14.4,
-    "kernel_launch_latency_us": 100,
+    "kernel_launch_latency_us": 5.6,
+    "gpu_active_fraction_during_cfd": 0.34,
     "ram_triad_8core_gbs": 77,
     "ram_triad_efficiency_percent": 71,
     "cpu_dgemm_8t_mkl_gflops": 592,
@@ -50,12 +51,15 @@
   },
   "ginkgo_status": {
     "ginkgo_1_10_works_for": ["BJ_maxBlockSize_1", "ISAI_diverges"],
-    "ginkgo_1_10_broken": ["BJ_maxBlockSize_gt1_OOM", "IC_NotImplemented",
-                           "ICT_DEVICE_LOST", "Multigrid_OOM_diverge",
+    "ginkgo_1_10_broken": ["BJ_maxBlockSize_gt1_size_t_underflow_in_find_blocks",
+                           "IC_NotImplemented_classic_sparselib_absent",
+                           "ICT_par_ict_add_candidates_SIGABRT",
+                           "ILU_lower_trs_apply_NotImplemented",
+                           "Multigrid_PGM_OOM_and_diverge",
                            "Hybrid_format_distributed"],
     "ginkgo_2_0_status": "API_incompatible_with_OGL",
     "ginkgo_2_0_breaking_changes": 3,
     "next_step": "Wait for OGL maintainers to migrate to Ginkgo 2.0 API"
   },
-  "documentation_date": "2026-05-03"
+  "documentation_date": "2026-05-06"
 }

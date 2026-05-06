@@ -40,7 +40,7 @@ See [findings/01_pcie_reporting_bug.md](findings/01_pcie_reporting_bug.md).
 
 | Test | Result | Theory | Efficiency |
 |---|---|---|---|
-| **GPU FP64 FMA** | **1335 GFLOPS** | 1430 GFLOPS | **93%** |
+| **GPU FP64 FMA** | **1374 GFLOPS** | 1430 GFLOPS | **96%** |
 | GPU FP32 FMA | 12364 GFLOPS | 22940 GFLOPS | 54% |
 | **VRAM Triad sustained (2 GiB)** | **531 GB/s** | 608 GB/s | **87%** |
 | VRAM D2D Triad (4 MB) | 508 GB/s | 608 GB/s | 83% |
@@ -49,7 +49,7 @@ See [findings/01_pcie_reporting_bug.md](findings/01_pcie_reporting_bug.md).
 | CPU DGEMM FP64 (8T MKL) | 592 GFLOPS | ~1500 GFLOPS | 39% |
 | CPU DGEMM FP64 (24T MKL) | 1106 GFLOPS | ~1500 GFLOPS | 74% |
 
-> **GPU FP64 hits 93% of theoretical peak** — the silicon is excellent for
+> **GPU FP64 hits 96% of theoretical peak** — the silicon is excellent for
 > double-precision compute. The FP32 spec (22.94 TFLOPS) assumes XMX-style
 > packed math; pure SIMD FMA gets 1× per ALU.
 >

@@ -129,20 +129,19 @@ wait time.
 | # | Bug | Impact |
 |---|---|---|
 | [01](findings/01_pcie_reporting_bug.md) | lspci reports PCIe 1.0×1 (xe SR-IOV PF bug) | Diagnostic confusion |
-| [02](findings/02_bj_blocksize_int_underflow.md) | Ginkgo 1.10 SYCL: BJ maxBlockSize>1 → `size_t` underflow in `dpcpp::jacobi::find_blocks` (NOT VRAM — peak 8.4 GB / 27.9 GB available, see `profiling/vram_analysis.md`) | No strong BJ available |
+| [02](findings/02_bj_blocksize_int_underflow.md) | `size_t` underflow in `dpcpp::jacobi::find_blocks` for BJ>1 | Confirmed via direct VRAM measurement (peak 8.4/27.9 GB) |
 | [03](findings/03_preconditioner_subdict_syntax.md) | OGL preconditioner sub-dict syntax undocumented | Options silently ignored |
-| [04](findings/04_sycl_device_selector.md) | ONEAPI_DEVICE_SELECTOR: level_zero:0 not level_zero:gpu:0 | Crash on startup |
-| [05](findings/05_sycl_preconditioner_status.md) | IC/ICT NotImplemented/DEVICE_LOST on SYCL | No ILU family available |
+| [04](findings/04_sycl_device_selector.md) | `ONEAPI_DEVICE_SELECTOR=level_zero:0` (not `gpu:0`) | Crash on startup |
+| [05](findings/05_sycl_preconditioner_status.md) | IC `NotImplemented` + ICT/ILU SYCL apply gaps (`lower_trs` absent) | No ILU family on SYCL — see KIT clarification |
 | [08](findings/08_multigrid_device_lost.md) | Multigrid OOM in PGM coarsening + divergence | No GPU multigrid |
-| [09](findings/09_pcie_nvtop_confirmation.md) | nvtop confirms real PCIe GEN 5@16x (lspci wrong) | lspci bug confirmed |
-| [10](findings/10_ginkgo2_api_breaks.md) | Ginkgo 2.0 API breaks OGL (3 locations) | Cannot upgrade |
-| [12](findings/12_cpu_tuning_no_effect.md) | CPU tunings (governor/THP/swappiness) all within ±1.7% noise | Arrow Lake GAMG is DDR5-bound |
-| [13](findings/13_stack_update_zeinit_race.md) | Compute Runtime 26.14 incompatible with multi-rank OGL (`resource_info.cpp:15` abort) | Stack pinned at 26.05 |
-| [14](findings/14_kernel_launch_latency_revision.md) | Kernel-launch latency is 5.6 µs sync (CUDA-par), NOT ~100 µs as initially documented | Bottleneck story revised |
-| [15](findings/15_scaling_for_spd_preconditioners.md) | `scaling -1.0` doesn't recover ISAI/IC: ISAI sp=1 diverges, sp=3 hits SYCL int-range overflow, IC stays NotImplemented | KIT recommendation tested directly |
-| [16](findings/16_splitcomm_test.md) | `splitComm false` no effect (+1.5 % noise) — tuning blocked by `forceHostBuffer` mandate | Confirms no fvSolution knob remains |
-| [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) = 48 s/step — slower than CPU-only, faster than GPU-only | GPU offload of easy fields is no win |
-| [05 (rev.)](findings/05_sycl_preconditioner_status.md) | OGL `IC`=classic, `ILU`=ParIlu, `ICT`=ParIct (per KIT clarification). Triangular-solve apply (`lower_trs`) absent in SYCL → ALL IC/ILU/ParIct paths broken | Corrects earlier "Tsai discrepancy" — actual gap is apply-side, not factorisation |
+| [09](findings/09_pcie_nvtop_confirmation.md) | nvtop confirms PCIe Gen5×16 (lspci wrong) | Diagnostic only |
+| [10](findings/10_ginkgo2_api_breaks.md) | Ginkgo 2.0 API breaks OGL (3 locations) | Cannot upgrade yet |
+| [12](findings/12_cpu_tuning_no_effect.md) | CPU tuning has zero effect (DDR5 bandwidth-bound) | 35.7 s/step is hard CPU limit |
+| [13](findings/13_stack_update_zeinit_race.md) | CR 26.14 incompatible with multi-rank OGL | Stack pinned at 26.05 |
+| [14](findings/14_kernel_launch_latency_revision.md) | Kernel-launch latency 5.6 µs (NOT ~100 µs) | Bottleneck story revised |
+| [15](findings/15_scaling_for_spd_preconditioners.md) | `scaling -1.0` correct for SPD but cannot bridge SYCL impl gaps | OGL doc was right, blocked by separate bugs |
+| [16](findings/16_splitcomm_test.md) | `splitComm=false` has no effect | Eliminated as tuning knob |
+| [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) shows no net gain | Tight coupling needs tighter integration |
 
 ---
 
@@ -159,12 +158,13 @@ wait time.
 ├── benchmarks/
 │   ├── results.md         — All CFD benchmark results
 │   └── hardware_results.json — Machine-readable hardware metrics
-├── profiling/
+├── profiling/             — Bottleneck + VRAM analysis
 │   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
-│   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement (Phase 5)
-├── logs/vram-traces/      — Raw CSVs + mpirun logs for the VRAM measurement
-├── findings/              — 12 documented bugs (01–14, with 06/07/11 reserved for upstream)
-└── configs/               — Working fvSolution configurations
+│   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
+├── findings/              — 14 bug findings (01–05, 08–10, 12–17)
+├── configs/               — Working fvSolution configurations
+└── logs/                  — Raw diagnostic logs for upstream debugging
+    └── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
 ```
 
 ---
@@ -172,12 +172,13 @@ wait time.
 ## Status: May 2026
 
 **Current recommendation:** Use CPU GAMG for production CFD on this hardware.
-Reserve GPU for LLM inference (32 GB VRAM is excellent for this).
+The 32 GB ECC VRAM is excellent for LLM inference workloads in the meantime.
 
-**Watch for:** OGL Ginkgo 2.0 migration, SYCL Graph support, Level Zero
-latency improvements. Re-evaluate in 12–18 months.
+**Watch for:** OGL Ginkgo 2.0 migration, SYCL triangular-solve kernel
+implementation, GPU-aware MPI for the `xe` driver. Re-evaluate when at
+least one of these materialises.
 
-*Co-documented with Claude (Anthropic) over an extended debugging session.*
+*Pioneer documentation independently maintained.*
 *Full reproducibility intended for the next Battlemage CFD pioneer.*
 
 ---
