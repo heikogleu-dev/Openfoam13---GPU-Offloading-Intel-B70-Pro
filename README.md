@@ -142,6 +142,7 @@ wait time.
 | [15](findings/15_scaling_for_spd_preconditioners.md) | `scaling -1.0` correct for SPD but cannot bridge SYCL impl gaps | OGL doc was right, blocked by separate bugs |
 | [16](findings/16_splitcomm_test.md) | `splitComm=false` has no effect | Eliminated as tuning knob |
 | [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) shows no net gain | Tight coupling needs tighter integration |
+| [18](findings/18_v2_adapter_ruled_out.md) | V2 L0 adapter ruled out as cause of finding 02 underflow (V1+V2 produce bit-identical `0xFFFFFFFFFFFFFFFF`) | Bug is in Ginkgo `dpcpp/jacobi`, not L0 runtime |
 
 ---
 
@@ -161,10 +162,11 @@ wait time.
 ├── profiling/             — Bottleneck + VRAM analysis
 │   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
 │   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
-├── findings/              — 14 bug findings (01–05, 08–10, 12–17)
+├── findings/              — 15 bug findings (01–05, 08–10, 12–18)
 ├── configs/               — Working fvSolution configurations
 └── logs/                  — Raw diagnostic logs for upstream debugging
-    └── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
+    ├── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
+    └── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
 ```
 
 ---
