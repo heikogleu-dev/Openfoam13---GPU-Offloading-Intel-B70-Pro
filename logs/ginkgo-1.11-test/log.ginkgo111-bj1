@@ -1,0 +1,1416 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  13
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 13-441953dfbb42
+Exec   : foamRun -parallel -solver incompressibleFluid
+Date   : May 08 2026
+Time   : 17:42:25
+Host   : "Tavea-Station"
+PID    : 12313
+I/O    : uncollated
+Case   : /home/heiko/CFD-Cases/Testcase-GPU
+nProcs : 8
+Slaves : 
+7
+(
+"Tavea-Station.12314"
+"Tavea-Station.12315"
+"Tavea-Station.12316"
+"Tavea-Station.12317"
+"Tavea-Station.12318"
+"Tavea-Station.12319"
+"Tavea-Station.12320"
+)
+
+Pstream initialised with:
+    floatTransfer      : false
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 0)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Selecting solver incompressibleFluid
+Selecting viscosity model Newtonian
+Selecting turbulence model type RAS
+    Selecting RAS turbulence model kOmegaSST
+Creating MRF zone list from MRFProperties
+Selecting patchDistMethod meshWave
+--> FOAM Warning : Creating fvConstraints from "system/fvOptions"
+
+--> FOAM Warning : Creating fvModels from "system/fvOptions" rather than constant/fvModels
+
+SIMPLE: No convergence criteria found
+
+
+SIMPLE: Operating solver in steady-state mode with 1 outer corrector
+SIMPLE: Operating solver in SIMPLE mode
+
+
+
+Starting time loop
+
+wallShearStress wallShearStress:
+    processing all wall patches
+
+Time = 1s
+
+DILUPBiCGStab:  Solving for Ux, Initial residual = 1, Final residual = 0.05486391, No Iterations 2
+DILUPBiCGStab:  Solving for Uy, Initial residual = 1, Final residual = 0.0816295, No Iterations 2
+DILUPBiCGStab:  Solving for Uz, Initial residual = 1, Final residual = 0.05666546, No Iterations 2
+[OGL LOG][lduLduBase.hpp:106] Initialising OGL
+	OGL commit:  15f81d2+
+	Branch: dev 
+	Build type: Release
+	Ginkgo version: 1.11.0 ( develop)
+	Ginkgo commit: ogl_0600_gko110
+	MPI is GPU aware: 1
+	Fuses matrix interface: 1
+	Forces host buffer based communication: 1
+	Splits MPI communicator: 1
+	CPU ranks per GPU: 8
+	Matrix format: Csr
+	End OGL_INFO
+[OGL LOG]0][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [0/7]
+[OGL LOG]7][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [7/7]
+[OGL LOG]2][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [2/7]
+[OGL LOG]4][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [4/7]
+[OGL LOG]6][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [6/7]
+[OGL LOG]5][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [5/7]
+[OGL LOG]3][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [3/7]
+[OGL LOG]1][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [1/7]
+[OGL LOG][Base.hpp:104] initialising p_distributed_matrix
+[OGL LOG]0][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]0][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]1][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]3][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]6][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]5][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]7][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]4][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]0][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG][Proc: 2]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 2]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 6]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 1]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 7]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 3]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 5]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 4]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 2]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 5]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_all_to_all_update_data: 0.024 [ms]
+[OGL LOG][Proc: 0]: generate_local_pairwise_data: 0.002 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_local_reorder_map: 455.636 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_reorder_map: 0.008 [ms]
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 16969.37 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 16982.22 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 16994.92 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 17007.86 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 17020.66 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 17033.41 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 17043.39 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1038.397 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 67.298 [ms]
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 54.635 [ms]
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 44.771 [ms]
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 106.115 [ms]
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 80.616 [ms]
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 93.69 [ms]
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 119.356 [ms]
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 1.185 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 37.445 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 17125.44 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 36.799 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 17125.44 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 36.672 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 17125.44 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 37.365 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 17125.44 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 36.931 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 17125.44 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 37.247 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 17125.44 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 37.569 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 17125.93 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_init: 21598.05 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4247861
+[OGL LOG][Proc: 3]p_distributed_matrix: call_init: 21598.68 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4251060
+[OGL LOG][Proc: 5]p_distributed_matrix: call_init: 21598.74 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4246941
+[OGL LOG][Proc: 2]p_distributed_matrix: call_init: 21600.06 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4271945
+[OGL LOG][Proc: 7]p_distributed_matrix: call_init: 21600.22 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4248005
+[OGL LOG][Proc: 1]p_distributed_matrix: call_init: 21600.28 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4266093
+[OGL LOG][Proc: 4]p_distributed_matrix: call_init: 21600.31 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4267161
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 64.96 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1104.583 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_init: 21706.72 [ms]
+[OGL LOG][Base.hpp:104] initialising p_rhs
+[OGL LOG]0][Vector.hpp:88] initialising vector p_rhs of size 34088573 orig size 4289507
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 7]p_rhs: call_init: 200.63 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4248005
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 3]p_rhs: call_init: 202.172 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4251060
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 4]p_rhs: call_init: 200.532 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4267161
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 6]p_rhs: call_init: 202.797 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4247861
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 5]p_rhs: call_init: 202.108 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4246941
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 2]p_rhs: call_init: 200.796 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4271945
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 1]p_rhs: call_init: 200.581 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4266093
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 0]p_rhs: call_init: 221.766 [ms]
+[OGL LOG][Base.hpp:104] initialising p_initial_guess
+[OGL LOG]0][Vector.hpp:88] initialising vector p_initial_guess of size 34088573 orig size 4289507
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 7]p_initial_guess: call_init: 221.153 [ms]
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 6]p_initial_guess: call_init: 221.152 [ms]
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 3]p_initial_guess: call_init: 221.153 [ms]
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 4]p_initial_guess: call_init: 221.153 [ms]
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 2]p_initial_guess: call_init: 221.153 [ms]
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 5]p_initial_guess: call_init: 221.154 [ms]
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 1]p_initial_guess: call_init: 221.141 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 25.186 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: init_precond: 25.186 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: init_precond: 25.187 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: init_precond: 25.186 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: init_precond: 25.186 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: init_precond: 25.187 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: init_precond: 25.186 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.163 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.165 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.164 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.165 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.164 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.165 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.166 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 0]p_initial_guess: call_init: 221.651 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 25.837 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 0 frequency 10
+[OGL LOG][Proc: 0]p: generate_solver: 0.04 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7384.386 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7618.269 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7618.294 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7618.634 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7618.75 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7618.759 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7618.762 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7618.767 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 109.615 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 36738 [mu s]
+	Time per residual norm calculation: 10236.000000 [mu s]
+	Time per DOF: 216.623500 [ns]
+	Time per iteration and DOF: 1.077722 [ns]
+	Retrieve results bandwidth 0.313000 [GByte/s]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 29671.72 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 29673.15 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 1, Final residual = 0.8738505, No Iterations 201
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 930.304 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 943.175 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 955.905 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 965.533 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 978.465 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 991.163 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1001.483 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1030.957 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 52.687 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.116 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1031.286 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1031.291 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 40.071 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.088 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1031.34 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1031.345 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 29.877 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.082 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1031.46 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1031.464 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 88.379 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.082 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1031.657 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1031.661 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 66.175 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.078 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1031.804 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1031.808 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 75.938 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.08 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1031.94 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1031.945 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 101.671 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.08 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1032.078 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1032.083 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.012 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 35.176 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1068.17 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1068.173 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 56.305 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 69.303 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 82.2 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 95.205 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 105.44 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 118.341 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 131.133 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 123.432 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 123.28 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.098 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.011 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.13 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.067 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.007 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.183 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.062 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.007 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.049 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.061 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.006 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 122.977 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.063 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.007 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 122.885 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.063 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.006 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 122.804 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.066 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.007 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 122.748 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.822 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 3
+[OGL LOG][Proc: 0]p: generate_solver: 0.01 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7128.969 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7288.147 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7349.046 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7336.585 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7323.924 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7314.008 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7301.323 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7362.254 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 109.626 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35291 [mu s]
+	Time per residual norm calculation: 607.000000 [mu s]
+	Time per DOF: 209.130755 [ns]
+	Time per iteration and DOF: 1.035274 [ns]
+	Retrieve results bandwidth 0.313000 [GByte/s]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8577.937 [ms]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8577.934 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8577.937 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8577.936 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8577.936 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8577.937 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8577.938 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8579.537 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.01545088, Final residual = 0.00471455, No Iterations 202
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 926.931 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 939.811 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 952.548 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 965.372 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 978.192 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 990.895 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1001.227 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1030.342 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 52.353 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.099 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1030.664 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1030.666 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 39.741 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.086 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1030.74 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1030.742 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 29.539 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.074 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1030.857 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1030.859 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 91.157 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.076 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1031.064 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1031.066 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 65.752 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.073 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1031.215 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1031.217 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 78.718 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.075 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1031.357 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1031.359 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 104.474 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.075 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1031.503 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1031.505 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.403 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 39.448 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1072.22 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1072.223 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 60.713 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 73.598 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 86.404 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 99.421 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 109.697 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 122.635 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 135.581 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 123.399 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 123.642 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.095 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.009 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.615 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.064 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.006 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.747 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.056 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.006 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.672 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.058 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.006 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 123.564 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.056 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.006 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 123.495 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.057 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.005 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 123.336 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.064 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.007 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 123.18 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.698 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 161 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.009 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7103.819 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7323.096 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7262.103 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7335.949 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7310.643 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7287.968 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7297.934 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7275.234 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 108.916 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35342 [mu s]
+	Time per residual norm calculation: 605.000000 [mu s]
+	Time per DOF: 208.392971 [ns]
+	Time per iteration and DOF: 1.036770 [ns]
+	Retrieve results bandwidth 0.315000 [GByte/s]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8556.384 [ms]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8556.387 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8556.385 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8556.386 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8556.386 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8556.387 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8556.386 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8557.114 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.00170075, Final residual = 0.0007565485, No Iterations 201
+time step continuity errors : sum local = 0.0920975, global = 0.006491118, cumulative = 0.006491118
+DILUPBiCGStab:  Solving for omega, Initial residual = 0.06490371, Final residual = 0.006177144, No Iterations 1
+DILUPBiCGStab:  Solving for k, Initial residual = 1, Final residual = 0.03986147, No Iterations 1
+ExecutionTime = 95.66513 s  ClockTime = 98 s
+
+Time = 2s
+
+DILUPBiCGStab:  Solving for Ux, Initial residual = 0.04423854, Final residual = 0.002160841, No Iterations 1
+DILUPBiCGStab:  Solving for Uy, Initial residual = 0.3034897, Final residual = 0.007776605, No Iterations 1
+DILUPBiCGStab:  Solving for Uz, Initial residual = 0.1505221, Final residual = 0.004158545, No Iterations 1
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 928.745 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 941.598 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 954.508 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 967.174 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 979.928 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 992.775 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1003.085 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1032.593 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 52.9 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.109 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1032.956 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1032.958 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 40.155 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.093 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1033.041 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1033.043 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 30.012 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.078 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1033.196 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1033.198 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 91.743 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.08 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1033.441 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1033.443 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 66.342 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.08 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1033.616 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1033.618 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 79.191 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.081 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1033.799 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1033.802 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 105.113 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.081 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1033.964 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1033.966 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.353 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 42.268 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1077.242 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1077.244 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 63.519 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 76.529 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 89.568 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 102.76 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 113.065 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 126.13 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 139.046 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 124.109 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 124.076 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.092 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.01 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.908 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.067 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.007 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.839 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.061 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.006 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.665 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.058 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.006 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 123.542 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.057 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.006 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 123.293 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.06 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.006 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 123.112 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.064 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.007 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 122.952 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.637 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.01 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7109.322 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7266.948 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7327.857 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7340.697 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7315.388 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7292.626 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7280.057 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7302.659 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 108.096 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35369 [mu s]
+	Time per residual norm calculation: 605.000000 [mu s]
+	Time per DOF: 208.554403 [ns]
+	Time per iteration and DOF: 1.037562 [ns]
+	Retrieve results bandwidth 0.317000 [GByte/s]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8566.517 [ms]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8566.518 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8566.518 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8566.518 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8566.518 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8566.519 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8566.519 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8568.957 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.03858669, Final residual = 0.001644815, No Iterations 201
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 930.691 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 943.534 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 956.315 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 969.003 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 981.758 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 994.653 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1004.958 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1033.748 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 52.22 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.098 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1034.093 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1034.095 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 39.433 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.081 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1034.185 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1034.187 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 29.288 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.074 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1034.339 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1034.341 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 90.96 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.073 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1034.587 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1034.59 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 65.669 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.076 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1034.766 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1034.768 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 78.546 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.077 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1034.956 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1034.958 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 104.333 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.073 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1035.122 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1035.125 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.435 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 40.584 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1076.792 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1076.794 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 61.778 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 74.684 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 87.765 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 100.712 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 111.117 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 124.127 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 136.991 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 123.724 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 123.599 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.092 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.01 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.557 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.064 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.007 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.479 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.057 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.006 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.452 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.056 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.005 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 123.238 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.057 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.006 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 123.039 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.055 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.006 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 122.904 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.058 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.006 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 122.714 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.807 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.008 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7108.129 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7327.382 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7266.628 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7340.281 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7314.94 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7292.267 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7302.29 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7279.713 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 108.752 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35363 [mu s]
+	Time per residual norm calculation: 607.000000 [mu s]
+	Time per DOF: 208.519406 [ns]
+	Time per iteration and DOF: 1.037386 [ns]
+	Retrieve results bandwidth 0.315000 [GByte/s]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8565.072 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8565.074 [ms]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8565.075 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8565.073 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8565.075 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8565.076 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8565.075 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8566.772 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.003822874, Final residual = 0.0004725658, No Iterations 201
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 928.173 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 940.996 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 953.739 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 966.32 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 979.081 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 992.053 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1002.341 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1031.769 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 52.881 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.107 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1032.088 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1032.091 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 39.992 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.085 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1032.147 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1032.149 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 29.829 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.075 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1032.262 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1032.264 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 91.37 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.075 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1032.464 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1032.467 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 66.195 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.076 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1032.611 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1032.613 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 78.914 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.079 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1032.749 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1032.752 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 104.609 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.076 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1032.884 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1032.887 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 1.96 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 34.937 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1068.692 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1068.695 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 56.075 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 68.97 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 82.126 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 95.134 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 105.376 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 118.407 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 131.295 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 123.943 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 123.705 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.093 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.009 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.711 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.066 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.006 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.531 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.056 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.006 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.498 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.055 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.005 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 123.435 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.055 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.006 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 123.285 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.056 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.006 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 123.177 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.059 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.006 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 122.939 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.58 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.009 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7101.739 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7320.177 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7259.085 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7294.974 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7307.822 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7272.33 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7285.097 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7333.461 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 108.121 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35332 [mu s]
+	Time per residual norm calculation: 605.000000 [mu s]
+	Time per DOF: 208.331953 [ns]
+	Time per iteration and DOF: 1.036476 [ns]
+	Retrieve results bandwidth 0.317000 [GByte/s]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8550.173 [ms]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8550.173 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8550.171 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8550.174 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8550.171 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8550.172 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8550.174 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8551.232 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.0009735772, Final residual = 0.0003855945, No Iterations 201
+time step continuity errors : sum local = 0.07697691, global = -0.0008655936, cumulative = 0.005625524
+DILUPBiCGStab:  Solving for omega, Initial residual = 0.01380498, Final residual = 0.0001745677, No Iterations 1
+DILUPBiCGStab:  Solving for k, Initial residual = 0.196823, Final residual = 0.005366993, No Iterations 1
+bounding k, min: -22.00765 max: 66.81992 average: 4.192783
+ExecutionTime = 149.1328 s  ClockTime = 152 s
+
+Time = 3s
+
+DILUPBiCGStab:  Solving for Ux, Initial residual = 0.02444389, Final residual = 0.001846182, No Iterations 1
+DILUPBiCGStab:  Solving for Uy, Initial residual = 0.1261189, Final residual = 0.002179928, No Iterations 1
+DILUPBiCGStab:  Solving for Uz, Initial residual = 0.07407742, Final residual = 0.006862015, No Iterations 1
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 1008.792 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 1021.646 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 1034.39 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 1047.24 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 1060.074 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 1072.95 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1085.843 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1115.468 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 55.628 [ms]
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 42.861 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.111 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1115.834 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1115.836 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.089 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1115.92 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1115.924 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 30.135 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.082 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1116.08 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1116.083 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 94.578 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.077 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1116.321 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1116.324 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 69.161 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.081 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1116.501 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1116.504 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 82.205 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.081 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1116.695 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1116.697 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 107.962 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.08 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1116.859 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1116.862 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.418 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 39.806 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1157.724 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1157.727 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 60.807 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 73.825 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 86.748 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 99.769 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 110.377 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 123.205 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 136.25 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 124.151 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 124.393 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.095 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.009 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 124.323 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.07 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.006 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 124.542 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.062 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.007 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 124.71 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.071 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.008 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 124.449 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.082 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.007 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 124.688 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.079 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.009 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 124.677 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.089 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.01 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 125.038 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 26.617 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.018 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7111.506 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7334.496 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7272.554 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7322.049 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7309.093 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7347.822 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7299.007 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7286.108 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 108.778 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35380 [mu s]
+	Time per residual norm calculation: 605.000000 [mu s]
+	Time per DOF: 208.618472 [ns]
+	Time per iteration and DOF: 1.037884 [ns]
+	Retrieve results bandwidth 0.315000 [GByte/s]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8654.001 [ms]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8654 [ms]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8654.001 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8654.003 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8654.001 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8654.001 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8654.003 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8655.942 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.008698038, Final residual = 0.0003339864, No Iterations 201
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 933.442 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 946.238 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 959.172 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 972.056 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 984.884 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 997.794 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1010.824 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1039.821 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 55.127 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.101 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1040.13 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1040.132 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 42.301 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.084 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1040.197 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1040.199 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 29.394 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.078 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1040.314 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1040.316 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 94.172 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.072 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1040.501 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1040.503 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 68.5 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.072 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1040.646 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1040.647 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 81.518 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.075 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1040.782 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1040.784 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 107.38 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.076 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1040.923 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1040.925 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 1.94 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 32.998 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1074.783 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1074.785 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 53.755 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 66.79 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 79.589 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 92.701 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 103.267 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 116.275 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 129.125 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 123.744 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 123.907 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.091 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.009 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.761 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.064 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.007 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.975 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.056 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.005 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.824 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.055 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.005 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 123.481 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.056 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.006 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 123.36 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.057 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.006 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 123.338 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.06 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.006 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 123.166 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.502 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.009 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7117.933 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7335.902 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7274.732 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7323.358 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7348.952 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7300.529 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7310.622 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7287.859 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 107.405 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35412 [mu s]
+	Time per residual norm calculation: 607.000000 [mu s]
+	Time per DOF: 208.807010 [ns]
+	Time per iteration and DOF: 1.038823 [ns]
+	Retrieve results bandwidth 0.319000 [GByte/s]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8571.692 [ms]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8571.691 [ms]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8571.69 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8571.692 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8571.693 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8571.694 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8571.695 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8573.738 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.001090986, Final residual = 0.0006333564, No Iterations 201
+[OGL LOG][Base.hpp:87] reading p_distributed_matrix from registry
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 931.625 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 944.457 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 957.558 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 970.281 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 983.079 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 995.995 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 1008.853 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1038.282 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 55.447 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.102 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 1038.648 [ms]
+[OGL LOG][Proc: 7]p_distributed_matrix: call_update: 1038.65 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_rhs of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 42.639 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.082 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 1038.735 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_update: 1038.737 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_rhs of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 29.934 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.07 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 1038.875 [ms]
+[OGL LOG][Proc: 5]p_distributed_matrix: call_update: 1038.877 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_rhs of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 94.574 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.07 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 1039.121 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_update: 1039.123 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_rhs of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 68.917 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.072 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 1039.288 [ms]
+[OGL LOG][Proc: 3]p_distributed_matrix: call_update: 1039.291 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_rhs of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 81.822 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.075 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 1039.474 [ms]
+[OGL LOG][Proc: 2]p_distributed_matrix: call_update: 1039.476 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_rhs of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 107.923 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.077 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 1039.651 [ms]
+[OGL LOG][Proc: 1]p_distributed_matrix: call_update: 1039.654 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_rhs of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.756 [ms]
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 41.887 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1082.953 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_update: 1082.955 [ms]
+[OGL LOG][Base.hpp:87] reading p_rhs from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_rhs of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_rhs: call_update: 63.197 [ms]
+[OGL LOG]1][Vector.hpp:63] updating array p_initial_guess of host size 4266093 repartitioned size 0
+[OGL LOG][Proc: 2]p_rhs: call_update: 76.115 [ms]
+[OGL LOG]2][Vector.hpp:63] updating array p_initial_guess of host size 4271945 repartitioned size 0
+[OGL LOG][Proc: 3]p_rhs: call_update: 88.984 [ms]
+[OGL LOG]3][Vector.hpp:63] updating array p_initial_guess of host size 4251060 repartitioned size 0
+[OGL LOG][Proc: 4]p_rhs: call_update: 102.029 [ms]
+[OGL LOG]4][Vector.hpp:63] updating array p_initial_guess of host size 4267161 repartitioned size 0
+[OGL LOG][Proc: 5]p_rhs: call_update: 112.678 [ms]
+[OGL LOG]5][Vector.hpp:63] updating array p_initial_guess of host size 4246941 repartitioned size 0
+[OGL LOG][Proc: 6]p_rhs: call_update: 125.474 [ms]
+[OGL LOG]6][Vector.hpp:63] updating array p_initial_guess of host size 4247861 repartitioned size 0
+[OGL LOG][Proc: 7]p_rhs: call_update: 138.351 [ms]
+[OGL LOG]7][Vector.hpp:63] updating array p_initial_guess of host size 4248005 repartitioned size 0
+[OGL LOG][Proc: 0]p_rhs: call_update: 123.456 [ms]
+[OGL LOG][Base.hpp:87] reading p_initial_guess from registry
+[OGL LOG]0][Vector.hpp:63] updating array p_initial_guess of host size 4289507 repartitioned size 34088573
+[OGL LOG][Proc: 1]p_initial_guess: call_update: 123.652 [ms]
+[OGL LOG][Proc: 1]p: init_precond: 0.087 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.01 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p_initial_guess: call_update: 123.688 [ms]
+[OGL LOG][Proc: 2]p: init_precond: 0.062 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.006 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p_initial_guess: call_update: 123.874 [ms]
+[OGL LOG][Proc: 3]p: init_precond: 0.06 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.006 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p_initial_guess: call_update: 123.799 [ms]
+[OGL LOG][Proc: 4]p: init_precond: 0.055 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.005 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p_initial_guess: call_update: 123.431 [ms]
+[OGL LOG][Proc: 5]p: init_precond: 0.058 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.006 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p_initial_guess: call_update: 123.506 [ms]
+[OGL LOG][Proc: 6]p: init_precond: 0.055 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.005 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 7]p_initial_guess: call_update: 123.45 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.062 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.006 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p_initial_guess: call_update: 123.431 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 24.915 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 160 frequency 1
+[OGL LOG][Proc: 0]p: generate_solver: 0.011 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 0]p: solve: 7124.966 [ms]
+[OGL LOG][Proc: 2]p: copy_x_back: 7344.69 [ms]
+[OGL LOG][Proc: 7]p: copy_x_back: 7283.561 [ms]
+[OGL LOG][Proc: 1]p: copy_x_back: 7357.68 [ms]
+[OGL LOG][Proc: 3]p: copy_x_back: 7332.161 [ms]
+[OGL LOG][Proc: 5]p: copy_x_back: 7309.35 [ms]
+[OGL LOG][Proc: 4]p: copy_x_back: 7319.457 [ms]
+[OGL LOG][Proc: 6]p: copy_x_back: 7296.715 [ms]
+[OGL LOG][Proc: 0]p: copy_x_back: 108.552 [ms]
+[OGL LOG][lduLduBase.hpp:339] 
+Statistics:
+	Number DOFs: 34088573 [#]
+	Time per iteration: 35447 [mu s]
+	Time per residual norm calculation: 609.000000 [mu s]
+	Time per DOF: 209.013325 [ns]
+	Time per iteration and DOF: 1.039850 [ns]
+	Retrieve results bandwidth 0.316000 [GByte/s]
+[OGL LOG][Proc: 6]p: solve_multi_gpu: 8588.429 [ms]
+[OGL LOG][Proc: 4]p: solve_multi_gpu: 8588.429 [ms]
+[OGL LOG][Proc: 1]p: solve_multi_gpu: 8588.428 [ms]
+[OGL LOG][Proc: 5]p: solve_multi_gpu: 8588.429 [ms]
+[OGL LOG][Proc: 7]p: solve_multi_gpu: 8588.429 [ms]
+[OGL LOG][Proc: 3]p: solve_multi_gpu: 8588.43 [ms]
+[OGL LOG][Proc: 2]p: solve_multi_gpu: 8588.43 [ms]
+[OGL LOG][Proc: 0]p: solve_multi_gpu: 8590.318 [ms]
+BJsyclGKOCG:  Solving for p, Initial residual = 0.00145978, Final residual = 0.0005853191, No Iterations 201
+time step continuity errors : sum local = 0.07280005, global = 0.0002566994, cumulative = 0.005882223
+DILUPBiCGStab:  Solving for omega, Initial residual = 0.142929, Final residual = 0.002673734, No Iterations 1
+DILUPBiCGStab:  Solving for k, Initial residual = 0.09042372, Final residual = 0.00654148, No Iterations 1
+bounding k, min: -42.84568 max: 244.1851 average: 4.337459
+ExecutionTime = 202.0927 s  ClockTime = 205 s
+
+End
+
+Finalising parallel run

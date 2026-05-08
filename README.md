@@ -143,6 +143,7 @@ wait time.
 | [16](findings/16_splitcomm_test.md) | `splitComm=false` has no effect | Eliminated as tuning knob |
 | [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) shows no net gain | Tight coupling needs tighter integration |
 | [18](findings/18_v2_adapter_ruled_out.md) | V2 L0 adapter ruled out as cause of finding 02 underflow (V1+V2 produce bit-identical `0xFFFFFFFFFFFFFFFF`) | Bug is in Ginkgo `dpcpp/jacobi`, not L0 runtime |
+| [19](findings/19_ginkgo_111_upgrade_bug_persists.md) | Ginkgo 1.11 upgrade — `find_blocks` underflow bit-identical to 1.10. BJ(1) perf-neutral (53.2 vs 53.5 s/step) | Bug deterministic across two minor versions, not addressed by 1.11 fixes |
 
 ---
 
@@ -162,11 +163,12 @@ wait time.
 ├── profiling/             — Bottleneck + VRAM analysis
 │   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
 │   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
-├── findings/              — 15 bug findings (01–05, 08–10, 12–18)
+├── findings/              — 16 bug findings (01–05, 08–10, 12–19)
 ├── configs/               — Working fvSolution configurations
 └── logs/                  — Raw diagnostic logs for upstream debugging
     ├── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
-    └── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
+    ├── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
+    └── ginkgo-1.11-test/  — Ginkgo 1.11 upgrade BJ(1)+BJ(2) traces
 ```
 
 ---
