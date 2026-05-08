@@ -117,7 +117,7 @@ wait time.
 |---|---|
 | OpenFOAM | Foundation 13 |
 | OGL (OpenFOAM-Ginkgo Layer) | dev branch, rebuilt with `GINKGO_JACOBI_FULL_OPTIMIZATIONS=ON` + `-fp-model=precise` |
-| Ginkgo | 1.10 (OGL-internal) |
+| Ginkgo | 1.11.0 (KIT branch `ogl_0600_gko110`, see [findings/20](findings/20_ginkgo_1.11_upgrade.md)) |
 | Intel oneAPI | 2026.0.0 |
 | Intel Compute Runtime | **26.05.37020.3-1** (pinned/held — see [findings/13](findings/13_stack_update_zeinit_race.md): 26.14 breaks multi-rank) |
 | Intel Graphics Compiler | **2.32.7** (Intel rolling, kept after rollback) |
@@ -144,6 +144,9 @@ wait time.
 | [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) shows no net gain | Tight coupling needs tighter integration |
 | [18](findings/18_v2_adapter_ruled_out.md) | V2 L0 adapter ruled out as cause of finding 02 underflow (V1+V2 produce bit-identical `0xFFFFFFFFFFFFFFFF`) | Bug is in Ginkgo `dpcpp/jacobi`, not L0 runtime |
 | [19](findings/19_ginkgo_111_upgrade_bug_persists.md) | Ginkgo 1.11 upgrade — `find_blocks` underflow bit-identical to 1.10. BJ(1) perf-neutral (53.2 vs 53.5 s/step) | Bug deterministic across two minor versions, not addressed by 1.11 fixes |
+| [20](findings/20_ginkgo_1.11_upgrade.md) | Upgrade procedure: KIT branch `ogl_0600_gko110` + 2 patches against icpx 2026 (`-fsycl-device-lib=all` removed, `foam-shim/` include path) | Reproducible upgrade path for next pioneers |
+| [21](findings/21_preconditioner_mapping_bmg.md) | Systematic preconditioner sweep on BMG-G31. Only `GKOCG + BJ(1)` runs across both 1.10 and 1.11; ICT/ISAI/Multigrid/Chebyshev each fail in distinct ways | First full SYCL-preconditioner mapping on this hardware |
+| [22](findings/22_vram_pressure_gmres_oom.md) | GKOGMRES on 34M cells hits hardware VRAM limit (27.87/27.9 GB), USM spills 7 GB into DDR5. `krylovDim` reduction has no effect (~26 GB fixed overhead) | 32 GB VRAM insufficient for GMRES on automotive-CFD scale; not a Ginkgo bug |
 
 ---
 
@@ -163,12 +166,13 @@ wait time.
 ├── profiling/             — Bottleneck + VRAM analysis
 │   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
 │   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
-├── findings/              — 16 bug findings (01–05, 08–10, 12–19)
+├── findings/              — 19 findings (01–05, 08–10, 12–22)
 ├── configs/               — Working fvSolution configurations
 └── logs/                  — Raw diagnostic logs for upstream debugging
     ├── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
     ├── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
-    └── ginkgo-1.11-test/  — Ginkgo 1.11 upgrade BJ(1)+BJ(2) traces
+    ├── ginkgo-1.11-test/  — Ginkgo 1.11 upgrade BJ(1)+BJ(2) traces
+    └── stufe4-ginkgo111/  — Preconditioner sweep + GMRES VRAM characterization
 ```
 
 ---
@@ -189,11 +193,19 @@ least one of these materialises.
 
 ## When to Re-evaluate GPU Offloading
 
-The current limitation is not hardware — it is the software stack.
-Direct VRAM measurement (see [`profiling/vram_analysis.md`](profiling/vram_analysis.md))
-shows BJ(1) peaks at 9.4 GB of 27.9 GB available — **19.9 GB headroom**
-exists for stronger preconditioners. The blockers are integer-arithmetic
-bugs and missing kernels in the SYCL backend, not memory pressure.
+The current limitation is **partly** software, **partly** hardware:
+
+- **CG-based solvers + BJ/ISAI**: peak 9.4 GB / 27.9 GB available
+  ([`profiling/vram_analysis.md`](profiling/vram_analysis.md)). Plenty of
+  headroom for stronger SYCL preconditioners *if and when* the integer
+  underflow ([finding 02](findings/02_bj_blocksize_int_underflow.md)) and
+  triangular-solve gaps ([finding 05](findings/05_sycl_preconditioner_status.md))
+  are fixed.
+- **GMRES-based solvers**: peak **27.87 GB / 27.9 GB** — the 32 GB VRAM
+  ceiling on B70 Pro is reached on this 34M-cell mesh, regardless of
+  `krylovDim` ([finding 22](findings/22_vram_pressure_gmres_oom.md)).
+  For GMRES, BMG-G31 hardware is currently undersized for automotive-CFD
+  scale; that is not a software gap.
 
 Re-test when **at least one** of these conditions is met:
 
