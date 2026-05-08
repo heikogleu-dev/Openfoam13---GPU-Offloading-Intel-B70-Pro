@@ -1,0 +1,325 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  13
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 13-441953dfbb42
+Exec   : foamRun -parallel -solver incompressibleFluid
+Date   : May 08 2026
+Time   : 18:09:46
+Host   : "Tavea-Station"
+PID    : 21470
+I/O    : uncollated
+Case   : /home/heiko/CFD-Cases/Testcase-GPU
+nProcs : 8
+Slaves : 
+7
+(
+"Tavea-Station.21471"
+"Tavea-Station.21472"
+"Tavea-Station.21473"
+"Tavea-Station.21474"
+"Tavea-Station.21475"
+"Tavea-Station.21476"
+"Tavea-Station.21477"
+)
+
+Pstream initialised with:
+    floatTransfer      : false
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 0)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Selecting solver incompressibleFluid
+Selecting viscosity model Newtonian
+Selecting turbulence model type RAS
+    Selecting RAS turbulence model kOmegaSST
+Creating MRF zone list from MRFProperties
+Selecting patchDistMethod meshWave
+--> FOAM Warning : Creating fvConstraints from "system/fvOptions"
+
+--> FOAM Warning : Creating fvModels from "system/fvOptions" rather than constant/fvModels
+
+SIMPLE: No convergence criteria found
+
+
+SIMPLE: Operating solver in steady-state mode with 1 outer corrector
+SIMPLE: Operating solver in SIMPLE mode
+
+
+
+Starting time loop
+
+wallShearStress wallShearStress:
+    processing all wall patches
+
+Time = 1s
+
+DILUPBiCGStab:  Solving for Ux, Initial residual = 1, Final residual = 0.05486391, No Iterations 2
+DILUPBiCGStab:  Solving for Uy, Initial residual = 1, Final residual = 0.0816295, No Iterations 2
+DILUPBiCGStab:  Solving for Uz, Initial residual = 1, Final residual = 0.05666546, No Iterations 2
+[OGL LOG][lduLduBase.hpp:106] Initialising OGL
+	OGL commit:  15f81d2+
+	Branch: dev 
+	Build type: Release
+	Ginkgo version: 1.11.0 ( develop)
+	Ginkgo commit: ogl_0600_gko110
+	MPI is GPU aware: 1
+	Fuses matrix interface: 1
+	Forces host buffer based communication: 1
+	Splits MPI communicator: 1
+	CPU ranks per GPU: 8
+	Matrix format: Csr
+	End OGL_INFO
+[OGL LOG]2][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [2/7]
+[OGL LOG]3][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [3/7]
+[OGL LOG]6][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [6/7]
+[OGL LOG]1][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [1/7]
+[OGL LOG]4][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [4/7]
+[OGL LOG]0][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [0/7]
+[OGL LOG]7][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [7/7]
+[OGL LOG]5][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [5/7]
+[OGL LOG][Base.hpp:104] initialising p_distributed_matrix
+[OGL LOG]0][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]0][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]1][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]3][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]6][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]5][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]7][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]4][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]0][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG][Proc: 6]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 6]: generate_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 4]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 7]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 3]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_all_to_all_update_data: 0.006 [ms]
+[OGL LOG][Proc: 1]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 2]: generate_all_to_all_update_data: 0.006 [ms]
+[OGL LOG][Proc: 2]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 5]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_pairwise_data: 0.002 [ms]
+[OGL LOG][Proc: 6]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 2]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 1]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_all_to_all_update_data: 0.024 [ms]
+[OGL LOG][Proc: 0]: generate_local_pairwise_data: 0.003 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_pairwise_data: 0.002 [ms]
+[OGL LOG][Proc: 0]: generate_local_reorder_map: 455.907 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_reorder_map: 0.006 [ms]
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 16927.78 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 16940.6 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 16953.38 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 16966.44 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 16979.45 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 16992.24 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 17002.29 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1032.265 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 66.974 [ms]
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 54.263 [ms]
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 44.333 [ms]
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 106.207 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.427 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 17046.95 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.505 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 17046.95 [ms]
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 80.511 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.385 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 17047.02 [ms]
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 93.701 [ms]
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 119.437 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.355 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 17047.32 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.505 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 17047.33 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.476 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 17047.58 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.378 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 17047.61 [ms]
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 1.861 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_init: 21515.23 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4247861
+[OGL LOG][Proc: 5]p_distributed_matrix: call_init: 21515.4 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4246941
+[OGL LOG][Proc: 7]p_distributed_matrix: call_init: 21515.64 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4248005
+[OGL LOG][Proc: 3]p_distributed_matrix: call_init: 21515.83 [ms]
+[OGL LOG][Proc: 4]p_distributed_matrix: call_init: 21515.83 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4251060
+[OGL LOG]4][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4267161
+[OGL LOG][Proc: 1]p_distributed_matrix: call_init: 21516.8 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4266093
+[OGL LOG][Proc: 2]p_distributed_matrix: call_init: 21516.84 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4271945
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 33.379 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1067.545 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_init: 21629.73 [ms]
+[OGL LOG][Base.hpp:104] initialising p_rhs
+[OGL LOG]0][Vector.hpp:88] initialising vector p_rhs of size 34088573 orig size 4289507
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 5]p_rhs: call_init: 208.188 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4246941
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 3]p_rhs: call_init: 207.76 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4251060
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 2]p_rhs: call_init: 206.748 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4271945
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 6]p_rhs: call_init: 208.355 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4247861
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 7]p_rhs: call_init: 207.946 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4248005
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 4]p_rhs: call_init: 207.756 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4267161
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 1]p_rhs: call_init: 206.79 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4266093
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 0]p_rhs: call_init: 218.747 [ms]
+[OGL LOG][Base.hpp:104] initialising p_initial_guess
+[OGL LOG]0][Vector.hpp:88] initialising vector p_initial_guess of size 34088573 orig size 4289507
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 7]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 4]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 3]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 6]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 5]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 2]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 1]p_initial_guess: call_init: 218.291 [ms]
+[OGL LOG][Proc: 7]p: init_precond: 0.547 [ms]
+[OGL LOG]7][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 7]p: generate_solver: 0.034 [ms]
+[OGL LOG]7][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 5]p: init_precond: 0.546 [ms]
+[OGL LOG]5][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 5]p: generate_solver: 0.034 [ms]
+[OGL LOG]5][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 2]p: init_precond: 0.546 [ms]
+[OGL LOG]2][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 2]p: generate_solver: 0.034 [ms]
+[OGL LOG]2][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 3]p: init_precond: 0.546 [ms]
+[OGL LOG]3][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 3]p: generate_solver: 0.034 [ms]
+[OGL LOG]3][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 4]p: init_precond: 0.546 [ms]
+[OGL LOG]4][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 4]p: generate_solver: 0.034 [ms]
+[OGL LOG]4][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 6]p: init_precond: 0.547 [ms]
+[OGL LOG]6][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 6]p: generate_solver: 0.034 [ms]
+[OGL LOG]6][lduLduBase.hpp:294] done create solver
+[OGL LOG][Proc: 1]p: init_precond: 0.547 [ms]
+[OGL LOG]1][lduLduBase.hpp:288] start create solver
+[OGL LOG][Proc: 1]p: generate_solver: 0.034 [ms]
+[OGL LOG]1][lduLduBase.hpp:294] done create solver
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 0]p_initial_guess: call_init: 217.797 [ms]
+[OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 1
+[OGL LOG][Proc: 0]p: init_precond: 25.847 [ms]
+[OGL LOG]0][lduLduBase.hpp:288] start create solver
+[OGL LOG][StoppingCriterion.hpp:216] Creating stopping criterion with minIter 0 frequency 10
+[OGL LOG][Proc: 0]p: generate_solver: 0.033 [ms]
+[OGL LOG]0][lduLduBase.hpp:294] done create solver
+terminate called after throwing an instance of 'sycl::_V1::exception'
+  what():  level_zero backend failed with error: 20 (UR_RESULT_ERROR_DEVICE_LOST)
+[Tavea-Station:21470] *** Process received signal ***
+[Tavea-Station:21470] Signal: Aborted (6)
+[Tavea-Station:21470] Signal code:  (-6)
+[Tavea-Station:21470] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x73e4adc45cb0]
+[Tavea-Station:21470] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x73e4adca648c]
+[Tavea-Station:21470] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x73e4adc45b7e]
+[Tavea-Station:21470] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x73e4adc288ec]
+[Tavea-Station:21470] [ 4] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xac275) [0x73e4ae0ac275]
+[Tavea-Station:21470] [ 5] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc364a) [0x73e4ae0c364a]
+[Tavea-Station:21470] [ 6] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(_ZSt10unexpectedv+0x0) [0x73e4ae0abc6c]
+[Tavea-Station:21470] [ 7] /usr/lib/x86_64-linux-gnu/libstdc++.so.6(+0xc3901) [0x73e4ae0c3901]
+[Tavea-Station:21470] [ 8] /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9(+0x1bbf84) [0x73e470bbbf84]
+[Tavea-Station:21470] [ 9] /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9(+0x20b830) [0x73e470c0b830]
+[Tavea-Station:21470] [10] /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9(+0x20b9ed) [0x73e470c0b9ed]
+[Tavea-Station:21470] [11] /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9(+0x20cdbc) [0x73e470c0cdbc]
+[Tavea-Station:21470] [12] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZN3gko6detail8run_implIvNS_12experimental11distributed6VectorISt7complexINS_4halfEEEEJNS4_INS_8bfloat16EEENS4_IS5_IS9_EEENS4_IdEENS4_IfEENS4_IS5_IdEEENS4_IS5_IfEEEEKNS_5LinOpEZNKS3_11RowGathererIiE14apply_finalizeENS_9ptr_paramISK_EENSN_ISJ_EESt10shared_ptrIKNS0_5EventEERNS_5arrayIcEEEUlPKT_E_JEEESX_PT2_OT3_DpOT4_+0x10bd) [0x73e496c7e7bd]
+[Tavea-Station:21470] [13] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZNK3gko12experimental11distributed11RowGathererIiE14apply_finalizeENS_9ptr_paramIKNS_5LinOpEEENS4_IS5_EESt10shared_ptrIKNS_6detail5EventEERNS_5arrayIcEE+0x336) [0x73e496c70916]
+[Tavea-Station:21470] [14] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZNK3gko12experimental11distributed11RowGathererIiE14apply_finalizeENS_9ptr_paramIKNS_5LinOpEEENS4_IS5_EESt10shared_ptrIKNS_6detail5EventEE+0x49) [0x73e496c70289]
+[Tavea-Station:21470] [15] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZZNK3gko12experimental11distributed6MatrixIdiiE10apply_implEPKNS_5LinOpES6_S6_PS4_ENKUlT_T0_E_clIPKNS1_6VectorIdEEPSD_EEDaS8_S9_+0x7bb) [0x73e496b8fc3b]
+[Tavea-Station:21470] [16] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZNK3gko12experimental11distributed6MatrixIdiiE10apply_implEPKNS_5LinOpES6_S6_PS4_+0xa2) [0x73e496a65782]
+[Tavea-Station:21470] [17] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK16RepartDistMatrix10apply_implEPKN3gko5LinOpES3_S3_PS1_+0x41b) [0x73e4a8b313fb]
+[Tavea-Station:21470] [18] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK3gko5LinOp5applyENS_9ptr_paramIKS0_EES3_S3_NS1_IS0_EE+0x5bb) [0x73e4a8bbe1cb]
+[Tavea-Station:21470] [19] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZNK3gko6solver5GmresIdE16apply_dense_implINS_12experimental11distributed6VectorIdEEEEvPKT_PS8_+0x48c) [0x73e4964f34fc]
+[Tavea-Station:21470] [20] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libginkgo.so.1.11.0(_ZNK3gko6solver5GmresIdE10apply_implEPKNS_5LinOpEPS3_+0x11f) [0x73e4964bdd8f]
+[Tavea-Station:21470] [21] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZN3gko5LinOp5applyENS_9ptr_paramIKS0_EENS1_IS0_EE+0x377) [0x73e4a8b99927]
+[Tavea-Station:21470] [22] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam10lduLduBaseINS_9lduMatrixENS_15GKOGMRESFactoryEE20solve_multi_gpu_implERNS_5FieldIdEERKS5_RNS_17SolverPerformanceIdEE+0x6ad6) [0x73e4a8c4c3f6]
+[Tavea-Station:21470] [23] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam16GKOlduBaseSolverINS_15GKOGMRESFactoryEE10solve_implENS_4wordERNS_5FieldIdEERKS5_h+0x4f3) [0x73e4a8c420d3]
+[Tavea-Station:21470] [24] /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/libOGL.so(_ZNK4Foam8GKOGMRES5solveERNS_5FieldIdEERKS2_h+0xa6) [0x73e4a8c41b86]
+[Tavea-Station:21470] [25] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE15solveSegregatedERKNS_10dictionaryE+0x1b7) [0x73e4afeecf47]
+[Tavea-Station:21470] [26] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveERKNS_10dictionaryE+0x312) [0x73e4af95a3a2]
+[Tavea-Station:21470] [27] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libfiniteVolume.so(_ZN4Foam8fvMatrixIdE5solveEv+0x8a) [0x73e4af96ff6a]
+[Tavea-Station:21470] [28] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid15correctPressureEv+0x70a) [0x73e47199664a]
+[Tavea-Station:21470] [29] /opt/openfoam13/platforms/linux64GccDPInt32Opt/lib/libincompressibleFluid.so(_ZN4Foam7solvers19incompressibleFluid17pressureCorrectorEv+0x2c) [0x73e4719c0bec]
+[Tavea-Station:21470] *** End of error message ***
+--------------------------------------------------------------------------
+Sorry!  You were supposed to get help about:
+    prun:proc-aborted-strsignal
+But I couldn't open the help file:
+    /usr/lib/x86_64-linux-gnu/pmix2/share/pmix/help-prun.txt: No such file or directory
+    /usr/lib/x86_64-linux-gnu/prrte3/share/prte/help-prun.txt: No such file or directory.
+Sorry!
+--------------------------------------------------------------------------
+ 

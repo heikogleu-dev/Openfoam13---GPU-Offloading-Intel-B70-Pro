@@ -1,0 +1,480 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  13
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+Build  : 13-441953dfbb42
+Exec   : foamRun -parallel -solver incompressibleFluid
+Date   : May 08 2026
+Time   : 17:58:11
+Host   : "Tavea-Station"
+PID    : 18589
+I/O    : uncollated
+Case   : /home/heiko/CFD-Cases/Testcase-GPU
+nProcs : 8
+Slaves : 
+7
+(
+"Tavea-Station.18590"
+"Tavea-Station.18591"
+"Tavea-Station.18592"
+"Tavea-Station.18593"
+"Tavea-Station.18594"
+"Tavea-Station.18595"
+"Tavea-Station.18596"
+)
+
+Pstream initialised with:
+    floatTransfer      : false
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 0)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Selecting solver incompressibleFluid
+Selecting viscosity model Newtonian
+Selecting turbulence model type RAS
+    Selecting RAS turbulence model kOmegaSST
+Creating MRF zone list from MRFProperties
+Selecting patchDistMethod meshWave
+--> FOAM Warning : Creating fvConstraints from "system/fvOptions"
+
+--> FOAM Warning : Creating fvModels from "system/fvOptions" rather than constant/fvModels
+
+SIMPLE: No convergence criteria found
+
+
+SIMPLE: Operating solver in steady-state mode with 1 outer corrector
+SIMPLE: Operating solver in SIMPLE mode
+
+
+
+Starting time loop
+
+wallShearStress wallShearStress:
+    processing all wall patches
+
+Time = 1s
+
+DILUPBiCGStab:  Solving for Ux, Initial residual = 1, Final residual = 0.05486391, No Iterations 2
+DILUPBiCGStab:  Solving for Uy, Initial residual = 1, Final residual = 0.0816295, No Iterations 2
+DILUPBiCGStab:  Solving for Uz, Initial residual = 1, Final residual = 0.05666546, No Iterations 2
+[OGL LOG][lduLduBase.hpp:106] Initialising OGL
+	OGL commit:  15f81d2+
+	Branch: dev 
+	Build type: Release
+	Ginkgo version: 1.11.0 ( develop)
+	Ginkgo commit: ogl_0600_gko110
+	MPI is GPU aware: 1
+	Fuses matrix interface: 1
+	Forces host buffer based communication: 1
+	Splits MPI communicator: 1
+	CPU ranks per GPU: 8
+	Matrix format: Csr
+	End OGL_INFO
+[OGL LOG]0][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [0/7]
+[OGL LOG]1][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [1/7]
+[OGL LOG]2][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [2/7]
+[OGL LOG]4][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [4/7]
+[OGL LOG]3][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [3/7]
+[OGL LOG]6][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [6/7]
+[OGL LOG]5][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [5/7]
+[OGL LOG]7][ExecutorHandler.hpp:170] Create sycl executor, on node: Tavea-Station device: 0 local rank [0/-1] global rank [7/7]
+[OGL LOG][Base.hpp:104] initialising p_distributed_matrix
+[OGL LOG]0][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:273] start init host sparsity pattern
+[OGL LOG]0][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]1][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]5][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]7][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]3][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]6][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]4][HostMatrix.cpp:318] done init host sparsity pattern
+[OGL LOG]2][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]1][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]3][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]6][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]5][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]7][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]4][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG]0][Repartitioner.cpp:28] start repartition sparsity pattern
+[OGL LOG][Proc: 2]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 2]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 2]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 2]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 6]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 6]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 6]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 3]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 3]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 3]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 1]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 1]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 1]: generate_non_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 5]: generate_all_to_all_update_data: 0.005 [ms]
+[OGL LOG][Proc: 5]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 5]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 7]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 7]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 7]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_all_to_all_update_data: 0.004 [ms]
+[OGL LOG][Proc: 4]: generate_local_pairwise_data: 0 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 4]: generate_local_reorder_map: 0.002 [ms]
+[OGL LOG][Proc: 4]: generate_non_local_reorder_map: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_all_to_all_update_data: 0.024 [ms]
+[OGL LOG][Proc: 0]: generate_local_pairwise_data: 0.002 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_pairwise_data: 0.001 [ms]
+[OGL LOG][Proc: 0]: generate_local_reorder_map: 476.495 [ms]
+[OGL LOG][Proc: 0]: generate_non_local_reorder_map: 0.006 [ms]
+[OGL LOG][Proc: 1]p: perform_all_to_all_update: 17219.28 [ms]
+[OGL LOG][Proc: 4]p: perform_all_to_all_update: 17232.1 [ms]
+[OGL LOG][Proc: 2]p: perform_all_to_all_update: 17244.9 [ms]
+[OGL LOG][Proc: 3]p: perform_all_to_all_update: 17257.9 [ms]
+[OGL LOG][Proc: 7]p: perform_all_to_all_update: 17270.76 [ms]
+[OGL LOG][Proc: 6]p: perform_all_to_all_update: 17283.53 [ms]
+[OGL LOG][Proc: 5]p: perform_all_to_all_update: 17293.56 [ms]
+[OGL LOG][Proc: 0]p: perform_all_to_all_update: 1046.801 [ms]
+[OGL LOG][Proc: 7]p: perform_pairwise_update: 52.843 [ms]
+[OGL LOG][Proc: 6]p: perform_pairwise_update: 40.165 [ms]
+[OGL LOG][Proc: 5]p: perform_pairwise_update: 30.288 [ms]
+[OGL LOG][Proc: 4]p: perform_pairwise_update: 91.982 [ms]
+[OGL LOG][Proc: 7]p: reorder_matrix_data: 0.599 [ms]
+[OGL LOG][Proc: 7]: perform_matrix_update: 17324.22 [ms]
+[OGL LOG][Proc: 6]p: reorder_matrix_data: 0.506 [ms]
+[OGL LOG][Proc: 6]: perform_matrix_update: 17324.22 [ms]
+[OGL LOG][Proc: 3]p: perform_pairwise_update: 66.362 [ms]
+[OGL LOG][Proc: 5]p: reorder_matrix_data: 0.485 [ms]
+[OGL LOG][Proc: 5]: perform_matrix_update: 17324.34 [ms]
+[OGL LOG][Proc: 2]p: perform_pairwise_update: 79.539 [ms]
+[OGL LOG][Proc: 1]p: perform_pairwise_update: 105.326 [ms]
+[OGL LOG][Proc: 4]p: reorder_matrix_data: 0.702 [ms]
+[OGL LOG][Proc: 4]: perform_matrix_update: 17324.8 [ms]
+[OGL LOG][Proc: 3]p: reorder_matrix_data: 0.577 [ms]
+[OGL LOG][Proc: 3]: perform_matrix_update: 17324.85 [ms]
+[OGL LOG][Proc: 2]p: reorder_matrix_data: 0.424 [ms]
+[OGL LOG][Proc: 2]: perform_matrix_update: 17324.88 [ms]
+[OGL LOG][Proc: 1]p: reorder_matrix_data: 0.548 [ms]
+[OGL LOG][Proc: 1]: perform_matrix_update: 17325.17 [ms]
+[OGL LOG][Proc: 0]p: perform_pairwise_update: 2.996 [ms]
+[OGL LOG][Proc: 6]p_distributed_matrix: call_init: 21844.44 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4247861
+[OGL LOG][Proc: 7]p_distributed_matrix: call_init: 21845.12 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4248005
+[OGL LOG][Proc: 5]p_distributed_matrix: call_init: 21845.19 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4246941
+[OGL LOG][Proc: 4]p_distributed_matrix: call_init: 21845.62 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4267161
+[OGL LOG][Proc: 3]p_distributed_matrix: call_init: 21846.01 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4251060
+[OGL LOG][Proc: 1]p_distributed_matrix: call_init: 21846.88 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4266093
+[OGL LOG][Proc: 2]p_distributed_matrix: call_init: 21847.09 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_rhs of size 0 orig size 4271945
+[OGL LOG][Proc: 0]p: reorder_matrix_data: 39.343 [ms]
+[OGL LOG][Proc: 0]: perform_matrix_update: 1089.177 [ms]
+[OGL LOG][Proc: 0]p_distributed_matrix: call_init: 21970.06 [ms]
+[OGL LOG][Base.hpp:104] initialising p_rhs
+[OGL LOG]0][Vector.hpp:88] initialising vector p_rhs of size 34088573 orig size 4289507
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 5]p_rhs: call_init: 219.214 [ms]
+[OGL LOG]5][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4246941
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 3]p_rhs: call_init: 218.392 [ms]
+[OGL LOG]3][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4251060
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 2]p_rhs: call_init: 217.313 [ms]
+[OGL LOG]2][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4271945
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 7]p_rhs: call_init: 219.278 [ms]
+[OGL LOG]7][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4248005
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 4]p_rhs: call_init: 218.78 [ms]
+[OGL LOG]4][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4267161
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 6]p_rhs: call_init: 219.959 [ms]
+[OGL LOG]6][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4247861
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 1]p_rhs: call_init: 217.517 [ms]
+[OGL LOG]1][Vector.hpp:88] initialising vector p_initial_guess of size 0 orig size 4266093
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_rhs
+[OGL LOG][Proc: 0]p_rhs: call_init: 223.802 [ms]
+[OGL LOG][Base.hpp:104] initialising p_initial_guess
+[OGL LOG]0][Vector.hpp:88] initialising vector p_initial_guess of size 34088573 orig size 4289507
+[OGL LOG]4][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 4]p_initial_guess: call_init: 223.549 [ms]
+[OGL LOG]6][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 6]p_initial_guess: call_init: 223.549 [ms]
+[OGL LOG]3][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 3]p_initial_guess: call_init: 223.549 [ms]
+[OGL LOG]1][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 1]p_initial_guess: call_init: 223.55 [ms]
+[OGL LOG]7][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 7]p_initial_guess: call_init: 223.55 [ms]
+[OGL LOG]2][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 2]p_initial_guess: call_init: 223.55 [ms]
+[OGL LOG]5][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 5]p_initial_guess: call_init: 223.551 [ms]
+[1] 
+[1] 
+[1] --> FOAM FATAL ERROR: 
+[1] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[1] 
+[1]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[1]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[1] 
+FOAM parallel run aborting
+[1] 
+[4] 
+[4] 
+[4] --> FOAM FATAL ERROR: 
+[4] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[4] 
+[4]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[4]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[4] 
+FOAM parallel run aborting
+[4] 
+[7] 
+[7] 
+[7] --> FOAM FATAL ERROR: 
+[7] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[7] 
+[7]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[7]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[7] 
+FOAM parallel run aborting
+[7] 
+[3] 
+[3] 
+[3] --> FOAM FATAL ERROR: 
+[3] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[3] 
+[3]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[3]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[3] 
+FOAM parallel run aborting
+[3] 
+[5] 
+[5] 
+[5] --> FOAM FATAL ERROR: 
+[5] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[5] 
+[5]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[5]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[5] 
+FOAM parallel run aborting
+[5] 
+[2] 
+[2] 
+[2] --> FOAM FATAL ERROR: 
+[2] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[2] 
+[2]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[2]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[2] 
+FOAM parallel run aborting
+[2] 
+[6] 
+[6] 
+[6] --> FOAM FATAL ERROR: 
+[6] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[6] 
+[6]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[6]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[6] 
+FOAM parallel run aborting
+[6] 
+[2] #0  Foam::error::printStack(Foam::Ostream&)[7] #0  Foam::error::printStack(Foam::Ostream&)[6] #0  Foam::error::printStack(Foam::Ostream&)[4] #0  Foam::error::printStack(Foam::Ostream&)[1] #0  Foam::error::printStack(Foam::Ostream&)[3] #0  Foam::error::printStack(Foam::Ostream&)[5] #0  Foam::error::printStack(Foam::Ostream&) at ??:?
+[4] #1  Foam::error::abort() at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[1] #1  Foam::error::abort()[2] #1  [5] #1  [3] #1  Foam::error::abort()Foam::error::abort()Foam::error::abort()[6] #1  [7] #1  Foam::error::abort()Foam::error::abort() at ??:?
+[5] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[4] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[3] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[2] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[1] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[6] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[7] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[5] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[2] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[4] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[3] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[6] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[1] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[7] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[5] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const at ??:?
+[3] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const at ??:?
+[4] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[6] #4  [2] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) constFoam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const[1] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const[7] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const at ??:?
+[5] #5  Foam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+ at ??:?
+[3] #5  Foam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const[4] #5  Foam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[2] #5  [6] #5  Foam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) constFoam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const[1] #5  [7] #5  Foam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) constFoam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+[5] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+ at ??:?
+[4] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const[3] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+ at ??:?
+[2] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const[6] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+ at ??:?
+[1] #6  [7] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) constFoam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[5] #7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&)[4] #7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&) at ??:?
+ at ??:?
+[3] #7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&)[6] #7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&)[2] #7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&)[1] #7  [7] #Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&)7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&) at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[5] #8  Foam::fvMatrix<double>::solve(Foam::dictionary const&)[3] #8  Foam::fvMatrix<double>::solve(Foam::dictionary const&)[4] #8  Foam::fvMatrix<double>::solve(Foam::dictionary const&)[2] #8  Foam::fvMatrix<double>::solve(Foam::dictionary const&)[6] #8   at ??:?
+ at ??:?
+Foam::fvMatrix<double>::solve(Foam::dictionary const&)[7] #8  [1] #8  Foam::fvMatrix<double>::solve(Foam::dictionary const&)Foam::fvMatrix<double>::solve(Foam::dictionary const&) at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[7] #9  Foam::fvMatrix<double>::solve()[2] #9  Foam::fvMatrix<double>::solve()[1] #9  Foam::fvMatrix<double>::solve()[5] #9  Foam::fvMatrix<double>::solve()[6] #9  Foam::fvMatrix<double>::solve()[3] #9  Foam::fvMatrix<double>::solve()[4] #9  Foam::fvMatrix<double>::solve() at ??:?
+[2] #10  Foam::solvers::incompressibleFluid::correctPressure() at ??:?
+[5] #10  Foam::solvers::incompressibleFluid::correctPressure() at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+ at ??:?
+[4] #10  Foam::solvers::incompressibleFluid::correctPressure()[6] #10  Foam::solvers::incompressibleFluid::correctPressure()[7] #10  Foam::solvers::incompressibleFluid::correctPressure()[3] #10  Foam::solvers::incompressibleFluid::correctPressure()[1] #10  Foam::solvers::incompressibleFluid::correctPressure() at ??:?
+[6] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[5] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[3] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[2] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[1] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[7] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[4] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[5] #12   at ??:?
+[6] #12   at ??:?
+[3] #12   at ??:?
+[2] #12   at ??:?
+[4] #12   at ??:?
+[1] #12   at ??:?
+[7] #12  ??????? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+[5] #13  ? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+[6] #13  ? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+[3] #13  ? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+[2] #13  ? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun in "
+ in "/opt/"/opt/openfoam13/plopenfoam13/platfatforms/linux64[4] #13  ?orms/linux64GccDPInt32OpGccDPInt32Opt/bin/foamRunt/bin/foamRun"
+"
+[1] #13  ?[7] #13  ? in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[5] #14  __libc_start_main in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[3] #14  __libc_start_main in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+ in "/usr/lib/x86_64-linux-g[6] #14  nu/libc.so.6"
+__libc_start_main[2] #14  __libc_start_main in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[4] #14  __libc_start_main in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+ in "/usr/lib/x86_64-linux-[7] #14  gnu/libc.so.6"
+__libc_start_main[1] #14  __libc_start_main in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[5] #15   in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[3] #15   in "/usr/lib/x86_64-linux-gnu/ in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[2] #libc.so.6"
+[6] #15  15   in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[4] #15   in "/usr/lib/x8 in "/usr/lib/x86_64-lin6_64-linux-gnu/libc.ux-gnu/libc.so.6"
+[7] #15so.6"
+[1] #15    ??????? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+ in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+ in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+ in "/opt/op in "/opt/openfoam13/platforms/linuenfoam13/platformsx64GccDPInt32Opt/bin/fo/linux64GccDPInt32OamRun"
+pt/bin/foamRun"
+ in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foa in "/opt/opemRun"
+nfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 5 in communicator MPI COMM 3 SPLIT FROM 0
+  Proc: [[20851,1],5]
+  Errorcode: 1
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+[OGL LOG]0][Vector.hpp:110] done initialising vector p_initial_guess
+[OGL LOG][Proc: 0]p_initial_guess: call_init: 256.292 [ms]
+ [0] 
+[0] 
+[0] --> FOAM FATAL ERROR: 
+[0] OGL does not support the preconditioner: Chebyshev
+Valid Choices: none, BJ, ILU, ISAI, IC, Multigrid
+[0] 
+[0]     From function std::shared_ptr<gko::LinOp> Foam::Preconditioner::init_preconditioner_impl(const word, const dictionary &, std::shared_ptr<const gko::LinOp>, std::shared_ptr<gko::Executor>) const
+[0]     in file /opt/ogl-src/include/OGL/Preconditioner.hpp at line 542.
+[0] 
+FOAM parallel run aborting
+[0] 
+[0] #0  Foam::error::printStack(Foam::Ostream&) at ??:?
+[0] #1  Foam::error::abort() at ??:?
+[0] #2  Foam::Preconditioner::init_preconditioner_impl(Foam::word, Foam::dictionary const&, std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[0] #3  Foam::Preconditioner::init_preconditioner(std::shared_ptr<gko::LinOp const>, std::shared_ptr<gko::Executor>) const at ??:?
+[0] #4  Foam::lduLduBase<Foam::lduMatrix, Foam::GKOCGFactory>::solve_multi_gpu_impl(Foam::Field<double>&, Foam::Field<double> const&, Foam::SolverPerformance<double>&) const at ??:?
+[0] #5  Foam::GKOlduBaseSolver<Foam::GKOCGFactory>::solve_impl(Foam::word, Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+[0] #6  Foam::GKOCG::solve(Foam::Field<double>&, Foam::Field<double> const&, unsigned char) const at ??:?
+[0] #7  Foam::fvMatrix<double>::solveSegregated(Foam::dictionary const&) at ??:?
+[0] #8  Foam::fvMatrix<double>::solve(Foam::dictionary const&) at ??:?
+[0] #9  Foam::fvMatrix<double>::solve() at ??:?
+[0] #10  Foam::solvers::incompressibleFluid::correctPressure() at ??:?
+[0] #11  Foam::solvers::incompressibleFluid::pressureCorrector() at ??:?
+[0] #12  ? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+[0] #13  ? in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[0] #14  __libc_start_main in "/usr/lib/x86_64-linux-gnu/libc.so.6"
+[0] #15  ? in "/opt/openfoam13/platforms/linux64GccDPInt32Opt/bin/foamRun"
+--------------------------------------------------------------------------
+Sorry!  You were supposed to get help about:
+    prun:proc-ordered-abort
+But I couldn't open the help file:
+    /usr/lib/x86_64-linux-gnu/pmix2/share/pmix/help-prun.txt: No such file or directory
+    /usr/lib/x86_64-linux-gnu/prrte3/share/prte/help-prun.txt: No such file or directory.
+Sorry!
+--------------------------------------------------------------------------
+ 

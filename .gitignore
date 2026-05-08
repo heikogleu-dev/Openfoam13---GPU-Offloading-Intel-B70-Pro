@@ -4,9 +4,10 @@
 *.o
 *.so
 
-# Exception: keep curated crash/debug logs under logs/
+# Exception: keep curated crash/debug logs under logs/ (recursive)
 !logs/
-!logs/*.log
+!logs/**
+!logs/**/*.log
 
 # OpenFOAM run artifacts
 processor*/
