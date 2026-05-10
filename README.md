@@ -271,3 +271,15 @@ General GPU-accelerated CFD discussion:
 → [CFD-Online OpenFOAM Forum](https://www.cfd-online.com/Forums/openfoam/)
 → [Reddit r/CFD](https://reddit.com/r/CFD)
 → [Reddit r/IntelArc](https://reddit.com/r/IntelArc)
+
+## License
+
+This repository is licensed under **GPL-3.0-or-later** — see [LICENSE](LICENSE).
+
+Third-party software attribution and license compatibility are documented
+in [NOTICE.md](NOTICE.md).
+
+The repository documents integration work; it does not redistribute
+substantial portions of upstream projects (OpenFOAM, Ginkgo, OGL, Intel
+oneAPI). Build artifacts (compiler logs, binary diagnostic logs) are
+mechanical output and not source redistribution.
