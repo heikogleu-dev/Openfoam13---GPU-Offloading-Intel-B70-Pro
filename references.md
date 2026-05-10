@@ -30,7 +30,7 @@
 ## OGL / Ginkgo Upstream
 
 - [hpsim/OGL](https://github.com/hpsim/OGL) — OpenFOAM Ginkgo Layer (GPU plugin)
-  - [findings/10 issue body (ready to file)](findings/10_ginkgo2_issue_body.md)
+  - [findings/10 issue body (ready to file)](findings/10_ginkgo2_api_breaks.md#upstream-issue-body-ready-to-file)
 - [ginkgo-project/ginkgo](https://github.com/ginkgo-project/ginkgo)
   - [findings/11 issue body (ready to file)](findings/11_ginkgo_issue_body.md)
 - [intel/compute-runtime](https://github.com/intel/compute-runtime)
@@ -67,3 +67,44 @@
 - [Intel Compute Runtime release notes](https://github.com/intel/compute-runtime/releases)
 - [Ginkgo release notes](https://github.com/ginkgo-project/ginkgo/releases)
 - [oneAPI Base Toolkit notes](https://www.intel.com/content/www/us/en/developer/articles/release-notes/intel-oneapi-toolkit-release-notes.html)
+
+
+---
+
+## Hardware Diagnostic Run — 2026-05-10
+
+Standalone cross-stack SpMV/CG diagnostic on Intel Arc Pro B70 (BMG-G31),
+Ubuntu 26.04 LTS, oneAPI 2025.3.3 / 2026.0, comparing oneMKL Sparse,
+PETSc `aijkokkos`, and Ginkgo dpcpp on an identical 1M-row Poisson 5-point
+reference matrix (4.996M nnz).
+
+**Method.** Generator `gen_matrix.cpp` writes a 1000×1000 5-point Poisson
+matrix in MatrixMarket format. Three test harnesses load the matrix and
+run 1000 SpMV iterations after 10 warm-up calls. Timing brackets the
+inner loop only; CG-loop number includes vector ops + sync per iteration.
+
+**Hardware:** Intel Arc Pro B70, 32 GB GDDR6, BMG-G31 (device `0xe223`).
+**Software:** oneAPI 2025.3.3 for PETSc β5h2, oneAPI 2026.0 for Ginkgo
+(`/opt/ginkgo` linked against `libsycl.so.9`).
+
+**Results.**
+
+| Stack | ms/iter | Effective BW |
+|---|---|---|
+| oneMKL Sparse CG (full loop) | 0.741 | 161 GB/s |
+| PETSc aijkokkos (pure SpMV) | 0.287 | 418 GB/s (79 % Triad) |
+| Ginkgo dpcpp (pure SpMV) | 0.089 | 1340 GB/s\* |
+
+\* Cache-resident `x` (8 MB fits in B70 L2 ≈ 12 MB). Reported BW is
+arithmetic; physical peak is 608 GB/s.
+
+**Caveat.** SpMV-only microbenchmark. The Ginkgo number reflects cache
+effects that shrink for larger systems. Diagnostic value: confirms B70
+hardware functional for sparse linear algebra; the AMG wall in the
+sister repo is a software bug, not a hardware limitation.
+
+**Logs:** `logs/diag-2026-05-10/` (gzipped).
+
+**Cross-stack interpretation:** see findings 23-26 (PETSc repo) and
+finding 23 (Ginkgo repo) for the symmetric write-up.
+

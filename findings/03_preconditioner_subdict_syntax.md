@@ -76,5 +76,5 @@ After fixing the syntax, the verbose log shows the correct value:
 [OGL LOG][Preconditioner.hpp:176] Generate preconditioner BJ<double> MaxBlockSize 32
 ```
 
-…unfortunately, only to crash with OOM (see [02_bj_maxblocksize_oom.md](02_bj_maxblocksize_oom.md))
-since the SYCL BJ-generate path can't allocate the workspace.
+…unfortunately, only to crash with OOM (see `02_bj_maxblocksize_oom.md` —
+note: this finding was not published; see [02_bj_blocksize_int_underflow.md](02_bj_blocksize_int_underflow.md) for the related published finding) since the SYCL BJ-generate path can't allocate the workspace.
