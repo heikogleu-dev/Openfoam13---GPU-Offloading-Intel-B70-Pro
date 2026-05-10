@@ -186,6 +186,24 @@ The 32 GB ECC VRAM is excellent for LLM inference workloads in the meantime.
 implementation, GPU-aware MPI for the `xe` driver. Re-evaluate when at
 least one of these materialises.
 
+### Cross-Stack Performance Indicator
+
+A May-2026 SpMV microbenchmark (1M-row Poisson, identical hardware,
+identical SYCL runtime) shows Ginkgo's `dpcpp` backend at **3.2× the
+throughput of PETSc `aijkokkos`**: 0.089 ms/iter vs 0.287 ms/iter.
+
+This is a microbenchmark, not a production result — the `x` vector
+fits in B70's L2 cache, and the comparison measures hand-tuned vs
+default CSR-SpMV kernels. **It does not yet translate into a Ginkgo
+solver win** because the stability blockers documented in this repo
+(BJ underflow, SYCL triangular-solve gap, GMRES VRAM pressure) remain.
+
+If those blockers land upstream, the resulting Ginkgo + OGL stack on
+B70 has a plausible path to outperforming the petsc4Foam alternative.
+
+[Full cross-stack finding](findings/23_cross_stack_spmv_b70.md) ·
+[Sister repo's symmetric finding](https://github.com/heikogleu-dev/Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70/blob/main/findings/25_ginkgo_3x_faster_microbench.md)
+
 *Pioneer documentation independently maintained.*
 *Full reproducibility intended for the next Battlemage CFD pioneer.*
 
