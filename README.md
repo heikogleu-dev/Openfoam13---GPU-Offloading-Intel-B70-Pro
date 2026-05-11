@@ -20,6 +20,18 @@ Honest results, real bugs found, practical fixes documented.
 
 ---
 
+## Part of the Battlemage CFD Pioneer Series
+
+This is one of three repositories documenting CFD on Intel Arc Pro B70 (BMG-G31):
+
+1. **[FluidX3D-Intel-B70](https://github.com/heikogleu-dev/FluidX3D-Intel-B70)** — LBM via OpenCL. **99.5 % peak bandwidth, 5 464 MLUPS** (production-ready as iteration sandbox for vehicle aero).
+2. **This repo — [Openfoam13---GPU-Offloading-Intel-B70-Pro](https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro)** — FVM pressure solver via Ginkgo SYCL. **Hardware ready, software stack maturing**.
+3. **[Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70](https://github.com/heikogleu-dev/Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70)** — PETSc-Kokkos-SYCL attempt. **Abandoned** — documents what doesn't work yet on this stack.
+
+Together: first publicly documented end-to-end CFD evaluation on Battlemage Xe2 (Intel Arc Pro B70).
+
+---
+
 ## Hardware Performance — B70 Pro is Capable
 
 | Metric | Measured | Spec | Efficiency |
@@ -28,7 +40,8 @@ Honest results, real bugs found, practical fixes documented.
 | FP32 Compute | 12364 GFLOPS | 22940 GFLOPS | 54% |
 | **VRAM Bandwidth (sustained)** | **530 GB/s** | 608 GB/s | **87%** ✅ |
 | **Kernel-launch latency (sync)** | **5.6 µs** | ~5 µs (CUDA) | **on par** ✅ |
-| PCIe H2D Transfer | 15.5 GB/s | ~50 GB/s | 31% (SYCL driver limit) |
+| **Kernel-launch latency (async batched)** | **1.5 µs** | — | **3.3× better than CUDA sync** ✅ |
+| PCIe H2D Transfer | 15.5 GB/s | ~64 GB/s (Gen5 x16) | 24% — SYCL `copy-offload` path; **untested workaround:** `UR_L0_V2_FORCE_DISABLE_COPY_OFFLOAD=1` may force a direct memcpy code path (not yet validated on this stack) |
 | **GPU active during CFD** | **34 % of wall clock** | — | direct xe gtidle measurement |
 | GPU clock when active | 2528 MHz avg / 2800 max | 2800 MHz | 90 % of boost |
 | Power (CFD load, when active) | 181 W | 275 W max | 66% TDP |
