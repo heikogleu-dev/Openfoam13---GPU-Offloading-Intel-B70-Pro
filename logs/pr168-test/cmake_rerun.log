@@ -1,0 +1,155 @@
+-- Auto detecting accelerator devices
+-- Skip CUDA detection OGL_BUILD_CUDA=OFF
+-- Skip HIP detection OGL_HIP_CUDA=OFF
+-- Using CPM to get Ginkgo 
+-- System Ginkgo not found — fetching from GitHub via CPM.cmake...
+-- CPM: Adding package Ginkgo@ (develop)
+CMake Warning (dev) at /usr/share/cmake-4.2/Modules/FetchContent.cmake:1963 (message):
+  Calling FetchContent_Populate(Ginkgo) is deprecated, call
+  FetchContent_MakeAvailable(Ginkgo) instead.  Policy CMP0169 can be set to
+  OLD to allow FetchContent_Populate(Ginkgo) to be called directly for now,
+  but the ability to call it with declared details will be removed completely
+  in a future version.
+Call Stack (most recent call first):
+  build/release/cmake/CPM_0.38.7.cmake:1010 (FetchContent_Populate)
+  build/release/cmake/CPM_0.38.7.cmake:804 (cpm_fetch_package)
+  cmake/CxxThirdParty.cmake:28 (cpmaddpackage)
+  CMakeLists.txt:107 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- SYCL Compiler version: 20260000
+-- SYCL_INCLUDE_DIR: /opt/intel/oneapi/compiler/2026.0/include
+-- SYCL_LIBRARY=/opt/intel/oneapi/compiler/2026.0/lib/libsycl.so
+-- MKL_VERSION: 2026.0.0
+-- MKL_ROOT: /opt/intel/oneapi/mkl/2026.0
+-- MKL_ARCH: intel64
+-- MKL_SYCL_LINK: dynamic
+-- MKL_LINK: dynamic
+-- MKL_SYCL_INTERFACE_FULL: intel_ilp64
+-- MKL_INTERFACE_FULL: intel_ilp64
+-- MKL_SYCL_THREADING: tbb_thread
+-- MKL_THREADING: intel_thread
+-- MKL_SYCL_MPI: intelmpi
+-- MKL_MPI: intelmpi
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_scalapack_ilp64.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_cdft_core.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_intel_ilp64.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_intel_thread.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_core.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_blacs_intelmpi_ilp64.so
+-- Could NOT find mkl_sycl_distributed_dft for target MKL::MKL_SYCL_DISTRIBUTED_DFT
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_blas.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_lapack.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_dft.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_sparse.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_data_fitting.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_rng.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_stats.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_vm.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_tbb_thread.so
+-- Found /opt/intel/oneapi/tbb/2023.0/lib/intel64/gcc4.8/libtbb.so.12
+-- Found /opt/intel/oneapi/compiler/2026.0/lib/libiomp5.so
+-- oneDPL: ONEDPL_PAR_BACKEND=tbb, disable OpenMP backend
+-- Adding -fsycl compiler option
+CMake Warning at /opt/intel/oneapi/compiler/2026.0/lib/cmake/IntelSYCL/IntelSYCLConfig.cmake:467 (message):
+  add_sycl_to_target() does not have sources specified..  Adding sycl to all
+  sources but that may effect compilation times
+Call Stack (most recent call first):
+  build/release/_deps/ginkgo-src/cmake/sycl.cmake:28 (add_sycl_to_target)
+  build/release/_deps/ginkgo-src/dpcpp/CMakeLists.txt:145 (gko_add_sycl_to_target)
+
+
+-- 
+---------------------------------------------------------------------------------------------------------
+--
+--    Summary of Configuration for Ginkgo (version 2.0.0 with tag develop, shortrev fc5d1c7d9)
+--    Ginkgo configuration:
+--        CMAKE_BUILD_TYPE:                                Release
+--        BUILD_SHARED_LIBS:                               ON
+--        CMAKE_INSTALL_PREFIX:                            /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt
+--        PROJECT_SOURCE_DIR:                              /opt/ogl-src/build/release/_deps/ginkgo-src
+--        PROJECT_BINARY_DIR:                              /opt/ogl-src/build/release/_deps/ginkgo-build
+--        CMAKE_CXX_COMPILER:                              IntelLLVM 2026.0.0 on platform Linux x86_64
+--                                                         /opt/intel/oneapi/compiler/2026.0/bin/icpx
+--    User configuration:
+--      Enabled modules:
+--        GINKGO_BUILD_OMP:                                OFF
+--        GINKGO_BUILD_MPI:                                ON
+--        GINKGO_BUILD_REFERENCE:                          ON
+--        GINKGO_BUILD_CUDA:                               OFF
+--        GINKGO_BUILD_HIP:                                OFF
+--        GINKGO_BUILD_SYCL:                               ON
+--      Enabled features:
+--        GINKGO_MIXED_PRECISION:                          OFF
+--        GINKGO_HAVE_GPU_AWARE_MPI:                       ON
+--        GINKGO_ENABLE_HALF:                              OFF
+--        GINKGO_ENABLE_BFLOAT16:                          OFF
+--      Tests, benchmarks and examples:
+--        GINKGO_BUILD_TESTS:                              OFF
+--        GINKGO_FAST_TESTS:                               OFF
+--        GINKGO_BUILD_EXAMPLES:                           OFF
+--        GINKGO_EXTLIB_EXAMPLE:                           
+--        GINKGO_BUILD_BENCHMARKS:                         OFF
+--        GINKGO_BENCHMARK_ENABLE_TUNING:                  OFF
+--      Documentation:
+--        GINKGO_BUILD_DOC:                                OFF
+--        GINKGO_VERBOSE_LEVEL:                            1
+--    
+---------------------------------------------------------------------------------------------------------
+--
+--      Developer Tools:
+--        GINKGO_DEVEL_TOOLS:                              OFF
+--        GINKGO_WITH_CLANG_TIDY:                          OFF
+--        GINKGO_WITH_IWYU:                                OFF
+--        GINKGO_CHECK_CIRCULAR_DEPS:                      OFF
+--        GINKGO_WITH_CCACHE:                              ON
+---------------------------------------------------------------------------------------------------------
+--
+--      Components:
+--        GINKGO_BUILD_PAPI_SDE:                           OFF
+--        GINKGO_BUILD_HWLOC:                              OFF
+--
+--  Detailed information (More compiler flags, module configuration) can be found in detailed.log
+--   
+--
+--  Now, run  cmake --build .  to compile Ginkgo!
+--
+---------------------------------------------------------------------------------------------------------
+
+Compile against FoamFoundation version of OpenFOAM
+-- 
++------------------------------------------------------------------------------+
+ 
+	    ███████      █████████  █████      
+	  ███▒▒▒▒▒███   ███▒▒▒▒▒███▒▒███       
+	 ███     ▒▒███ ███     ▒▒▒  ▒███       
+	▒███      ▒███▒███          ▒███       
+	▒███      ▒███▒███    █████ ▒███       
+	▒▒███     ███ ▒▒███  ▒▒███  ▒███      █
+	 ▒▒▒███████▒   ▒▒█████████  ███████████
+	   ▒▒▒▒▒▒▒      ▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒ 
+       -     OpenFOAM     Ginkgo     Layer
+                                       
+         Version:  Git commit: v0.5.4-570-g1000981-dirty
+
++------------------------------------------------------------------------------+
+ Build information:
+--	CMAKE_BUILD_TYPE = Release
+--	CMAKE_CXX_COMPILER = IntelLLVM@2026.0.0
++------------------------------------------------------------------------------+
+ Third-Party dependencies:
+ -- 	OGL_GINKGO_CHECKOUT_VERSION = develop
+ -- 	OGL_GINKGO_VIA_CPM = ON
++------------------------------------------------------------------------------+
+ OGL components:
+ -- 	OGL_BUILD_CUDA = OFF
+ -- 	OGL_BUILD_HIP = OFF
+ -- 	OGL_BUILD_OMP = OFF
+ -- 	OGL_BUILD_SYCL = ON
+ -- 	OGL_BUILD_UNITTEST = OFF
++------------------------------------------------------------------------------+
+ OGL definitions:
++------------------------------------------------------------------------------+
+-- Configuring done (5.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/ogl-src/build/release

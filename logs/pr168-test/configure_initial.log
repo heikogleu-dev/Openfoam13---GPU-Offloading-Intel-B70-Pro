@@ -1,0 +1,147 @@
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test OGL_C_COVERAGE_SUPPORTED
+-- Performing Test OGL_C_COVERAGE_SUPPORTED - Success
+-- Performing Test OGL_C_TSAN_SUPPORTED
+-- Performing Test OGL_C_TSAN_SUPPORTED - Success
+-- Performing Test OGL_C_ASAN_SUPPORTED
+-- Performing Test OGL_C_ASAN_SUPPORTED - Success
+-- Performing Test OGL_C_LSAN_SUPPORTED
+-- Performing Test OGL_C_LSAN_SUPPORTED - Success
+-- Performing Test OGL_C_UBSAN_SUPPORTED
+-- Performing Test OGL_C_UBSAN_SUPPORTED - Success
+-- Performing Test OGL_CXX_COVERAGE_SUPPORTED
+-- Performing Test OGL_CXX_COVERAGE_SUPPORTED - Success
+-- Performing Test OGL_CXX_TSAN_SUPPORTED
+-- Performing Test OGL_CXX_TSAN_SUPPORTED - Success
+-- Performing Test OGL_CXX_ASAN_SUPPORTED
+-- Performing Test OGL_CXX_ASAN_SUPPORTED - Success
+-- Performing Test OGL_CXX_LSAN_SUPPORTED
+-- Performing Test OGL_CXX_LSAN_SUPPORTED - Success
+-- Performing Test OGL_CXX_UBSAN_SUPPORTED
+-- Performing Test OGL_CXX_UBSAN_SUPPORTED - Success
+-- Performing Test OGL_HIP_COVERAGE_SUPPORTED
+-- Performing Test OGL_HIP_COVERAGE_SUPPORTED - Success
+-- Performing Test OGL_HIP_TSAN_SUPPORTED
+-- Performing Test OGL_HIP_TSAN_SUPPORTED - Success
+-- Performing Test OGL_HIP_ASAN_SUPPORTED
+-- Performing Test OGL_HIP_ASAN_SUPPORTED - Success
+-- Performing Test OGL_HIP_LSAN_SUPPORTED
+-- Performing Test OGL_HIP_LSAN_SUPPORTED - Success
+-- Performing Test OGL_HIP_UBSAN_SUPPORTED
+-- Performing Test OGL_HIP_UBSAN_SUPPORTED - Success
+-- Auto detecting accelerator devices
+-- Looking for a CUDA compiler
+-- Looking for a CUDA compiler - NOTFOUND
+-- Looking for a HIP compiler
+-- Looking for a HIP compiler - NOTFOUND
+-- Looking for C++ include cxxabi.h
+-- Looking for C++ include cxxabi.h - found
+-- Using CPM to get Ginkgo 
+CMake Warning at /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/cmake/Ginkgo/GinkgoConfig.cmake:228 (message):
+  The currently used CXX compiler: /usr/bin/c++ does not match the compiler
+  used to build Ginkgo: /opt/intel/oneapi/compiler/2026.0/bin/icpx.  It is
+  encouraged to use the same compiler as Ginkgo to prevent ABI mismatch.
+Call Stack (most recent call first):
+  /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/cmake/Ginkgo/GinkgoConfig.cmake:233 (_ginkgo_check_compiler)
+  cmake/CxxThirdParty.cmake:22 (find_package)
+  CMakeLists.txt:107 (include)
+
+
+-- Using system-installed Ginkgo (version: 1.11.0)
+Compile against FoamFoundation version of OpenFOAM
+CMake Warning (dev) at /usr/share/cmake-4.2/Modules/FetchContent.cmake:1383 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  test/unit/CMakeLists.txt:8 (FetchContent_Declare)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Deprecation Warning at build/debug/_deps/googletest-src/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Deprecation Warning at build/debug/_deps/googletest-src/googlemock/CMakeLists.txt:39 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Deprecation Warning at build/debug/_deps/googletest-src/googletest/CMakeLists.txt:49 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Found Python: /usr/bin/python3 (found version "3.14.4") found components: Interpreter
+-- Found Threads: TRUE
+-- Found MPI_C: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so (found version "3.1")
+-- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so (found version "3.1")
+-- Found MPI: TRUE (found version "3.1")
+CMake Error at CMakeLists.txt:246 (install):
+  install TARGETS given target "ginkgo" which does not exist.
+
+
+-- 
++------------------------------------------------------------------------------+
+ 
+	    ███████      █████████  █████      
+	  ███▒▒▒▒▒███   ███▒▒▒▒▒███▒▒███       
+	 ███     ▒▒███ ███     ▒▒▒  ▒███       
+	▒███      ▒███▒███          ▒███       
+	▒███      ▒███▒███    █████ ▒███       
+	▒▒███     ███ ▒▒███  ▒▒███  ▒███      █
+	 ▒▒▒███████▒   ▒▒█████████  ███████████
+	   ▒▒▒▒▒▒▒      ▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒ 
+       -     OpenFOAM     Ginkgo     Layer
+                                       
+         Version: 1.12.1 Git commit: v0.5.4-570-g1000981
+
++------------------------------------------------------------------------------+
+ Build information:
+--	CMAKE_BUILD_TYPE = Debug
+--	CMAKE_CXX_COMPILER = GNU@15.2.0
++------------------------------------------------------------------------------+
+ Third-Party dependencies:
+ -- 	OGL_GINKGO_CHECKOUT_VERSION = develop
+ -- 	OGL_GINKGO_VERSION = 1.11.0
+ -- 	OGL_GINKGO_VIA_CPM = ON
++------------------------------------------------------------------------------+
+ OGL components:
+ -- 	OGL_BUILD_CUDA = OFF
+ -- 	OGL_BUILD_HIP = OFF
+ -- 	OGL_BUILD_OMP = OFF
+ -- 	OGL_BUILD_SYCL = OFF
+ -- 	OGL_BUILD_UNITTEST = ON
++------------------------------------------------------------------------------+
+ OGL definitions:
++------------------------------------------------------------------------------+
+-- Configuring incomplete, errors occurred!

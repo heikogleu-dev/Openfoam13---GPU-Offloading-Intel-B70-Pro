@@ -1,0 +1,291 @@
+-- The C compiler identification is IntelLLVM 2026.0.0
+-- The CXX compiler identification is IntelLLVM 2026.0.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /opt/intel/oneapi/compiler/2026.0/bin/icx - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/intel/oneapi/compiler/2026.0/bin/icpx - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test OGL_C_COVERAGE_SUPPORTED
+-- Performing Test OGL_C_COVERAGE_SUPPORTED - Success
+-- Performing Test OGL_C_TSAN_SUPPORTED
+-- Performing Test OGL_C_TSAN_SUPPORTED - Failed
+-- Performing Test OGL_C_ASAN_SUPPORTED
+-- Performing Test OGL_C_ASAN_SUPPORTED - Success
+-- Performing Test OGL_C_LSAN_SUPPORTED
+-- Performing Test OGL_C_LSAN_SUPPORTED - Success
+-- Performing Test OGL_C_UBSAN_SUPPORTED
+-- Performing Test OGL_C_UBSAN_SUPPORTED - Failed
+-- Performing Test OGL_CXX_COVERAGE_SUPPORTED
+-- Performing Test OGL_CXX_COVERAGE_SUPPORTED - Success
+-- Performing Test OGL_CXX_TSAN_SUPPORTED
+-- Performing Test OGL_CXX_TSAN_SUPPORTED - Failed
+-- Performing Test OGL_CXX_ASAN_SUPPORTED
+-- Performing Test OGL_CXX_ASAN_SUPPORTED - Success
+-- Performing Test OGL_CXX_LSAN_SUPPORTED
+-- Performing Test OGL_CXX_LSAN_SUPPORTED - Success
+-- Performing Test OGL_CXX_UBSAN_SUPPORTED
+-- Performing Test OGL_CXX_UBSAN_SUPPORTED - Failed
+-- Performing Test OGL_HIP_COVERAGE_SUPPORTED
+-- Performing Test OGL_HIP_COVERAGE_SUPPORTED - Success
+-- Performing Test OGL_HIP_TSAN_SUPPORTED
+-- Performing Test OGL_HIP_TSAN_SUPPORTED - Failed
+-- Performing Test OGL_HIP_ASAN_SUPPORTED
+-- Performing Test OGL_HIP_ASAN_SUPPORTED - Success
+-- Performing Test OGL_HIP_LSAN_SUPPORTED
+-- Performing Test OGL_HIP_LSAN_SUPPORTED - Success
+-- Performing Test OGL_HIP_UBSAN_SUPPORTED
+-- Performing Test OGL_HIP_UBSAN_SUPPORTED - Failed
+-- Auto detecting accelerator devices
+-- Looking for a CUDA compiler
+-- Looking for a CUDA compiler - NOTFOUND
+-- Looking for a HIP compiler
+-- Looking for a HIP compiler - NOTFOUND
+-- Looking for C++ include cxxabi.h
+-- Looking for C++ include cxxabi.h - found
+-- Using CPM to get Ginkgo 
+-- System Ginkgo not found — fetching from GitHub via CPM.cmake...
+-- CPM: Adding package Ginkgo@ (develop)
+CMake Warning (dev) at /usr/share/cmake-4.2/Modules/FetchContent.cmake:1963 (message):
+  Calling FetchContent_Populate(Ginkgo) is deprecated, call
+  FetchContent_MakeAvailable(Ginkgo) instead.  Policy CMP0169 can be set to
+  OLD to allow FetchContent_Populate(Ginkgo) to be called directly for now,
+  but the ability to call it with declared details will be removed completely
+  in a future version.
+Call Stack (most recent call first):
+  build/debug/cmake/CPM_0.38.7.cmake:1010 (FetchContent_Populate)
+  build/debug/cmake/CPM_0.38.7.cmake:804 (cpm_fetch_package)
+  cmake/CxxThirdParty.cmake:28 (cpmaddpackage)
+  CMakeLists.txt:107 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- SYCL Compiler version: 20260000
+-- SYCL_INCLUDE_DIR: /opt/intel/oneapi/compiler/2026.0/include
+-- SYCL_LIBRARY=/opt/intel/oneapi/compiler/2026.0/lib/libsycl.so
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test Ginkgo_C_COVERAGE_SUPPORTED
+-- Performing Test Ginkgo_C_COVERAGE_SUPPORTED - Success
+-- Performing Test Ginkgo_C_TSAN_SUPPORTED
+-- Performing Test Ginkgo_C_TSAN_SUPPORTED - Failed
+-- Performing Test Ginkgo_C_ASAN_SUPPORTED
+-- Performing Test Ginkgo_C_ASAN_SUPPORTED - Success
+-- Performing Test Ginkgo_C_LSAN_SUPPORTED
+-- Performing Test Ginkgo_C_LSAN_SUPPORTED - Success
+-- Performing Test Ginkgo_C_UBSAN_SUPPORTED
+-- Performing Test Ginkgo_C_UBSAN_SUPPORTED - Failed
+-- Performing Test Ginkgo_CXX_COVERAGE_SUPPORTED
+-- Performing Test Ginkgo_CXX_COVERAGE_SUPPORTED - Success
+-- Performing Test Ginkgo_CXX_TSAN_SUPPORTED
+-- Performing Test Ginkgo_CXX_TSAN_SUPPORTED - Failed
+-- Performing Test Ginkgo_CXX_ASAN_SUPPORTED
+-- Performing Test Ginkgo_CXX_ASAN_SUPPORTED - Success
+-- Performing Test Ginkgo_CXX_LSAN_SUPPORTED
+-- Performing Test Ginkgo_CXX_LSAN_SUPPORTED - Success
+-- Performing Test Ginkgo_CXX_UBSAN_SUPPORTED
+-- Performing Test Ginkgo_CXX_UBSAN_SUPPORTED - Failed
+-- Performing Test Ginkgo_HIP_COVERAGE_SUPPORTED
+-- Performing Test Ginkgo_HIP_COVERAGE_SUPPORTED - Success
+-- Performing Test Ginkgo_HIP_TSAN_SUPPORTED
+-- Performing Test Ginkgo_HIP_TSAN_SUPPORTED - Failed
+-- Performing Test Ginkgo_HIP_ASAN_SUPPORTED
+-- Performing Test Ginkgo_HIP_ASAN_SUPPORTED - Success
+-- Performing Test Ginkgo_HIP_LSAN_SUPPORTED
+-- Performing Test Ginkgo_HIP_LSAN_SUPPORTED - Success
+-- Performing Test Ginkgo_HIP_UBSAN_SUPPORTED
+-- Performing Test Ginkgo_HIP_UBSAN_SUPPORTED - Failed
+-- Performing Test GKO_SIZE_T_IS_UINT64_T
+-- Performing Test GKO_SIZE_T_IS_UINT64_T - Success
+-- Found VTune: /opt/intel/oneapi/vtune/2026.0/bin64/vtune
+-- Looking for gk_getopt in /usr/lib/x86_64-linux-gnu/libmetis.so
+-- Looking for gk_getopt in /usr/lib/x86_64-linux-gnu/libmetis.so - found
+-- Found METIS: /usr/lib/x86_64-linux-gnu/libmetis.so (found version "5.1")
+-- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so (found suitable version "3.1", minimum required is "3.1")
+-- Found MPI: TRUE (found suitable version "3.1", minimum required is "3.1") found components: CXX
+-- MKL_VERSION: 2026.0.0
+-- MKL_ROOT: /opt/intel/oneapi/mkl/2026.0
+-- MKL_ARCH: intel64
+-- MKL_SYCL_LINK: None, set to ` dynamic` by default
+-- MKL_LINK: None, set to ` dynamic` by default
+-- MKL_SYCL_INTERFACE_FULL: None, set to ` intel_ilp64` by default
+-- MKL_INTERFACE_FULL: None, set to ` intel_ilp64` by default
+-- MKL_SYCL_THREADING: None, set to ` tbb_thread` by default
+-- MKL_THREADING: None, set to ` intel_thread` by default
+-- MKL_SYCL_MPI: None, set to ` intelmpi` by default
+-- MKL_MPI: None, set to ` intelmpi` by default
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_scalapack_ilp64.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_cdft_core.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_intel_ilp64.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_intel_thread.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_core.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_blacs_intelmpi_ilp64.so
+-- Could NOT find mkl_sycl_distributed_dft for target MKL::MKL_SYCL_DISTRIBUTED_DFT
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_blas.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_lapack.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_dft.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_sparse.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_data_fitting.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_rng.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_stats.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_sycl_vm.so
+-- Found /opt/intel/oneapi/mkl/2026.0/lib/libmkl_tbb_thread.so
+-- Found /opt/intel/oneapi/tbb/2023.0/lib/intel64/gcc4.8/libtbb_debug.so.12
+-- Found /opt/intel/oneapi/compiler/2026.0/lib/libiomp5.so
+-- oneDPL: ONEDPL_PAR_BACKEND=tbb, disable OpenMP backend
+-- Performing Test _fsycl_option
+-- Performing Test _fsycl_option - Success
+-- Looking for C++ include sycl/sycl.hpp
+-- Looking for C++ include sycl/sycl.hpp - found
+-- Adding -fsycl compiler option
+CMake Warning at /opt/intel/oneapi/compiler/2026.0/lib/cmake/IntelSYCL/IntelSYCLConfig.cmake:467 (message):
+  add_sycl_to_target() does not have sources specified..  Adding sycl to all
+  sources but that may effect compilation times
+Call Stack (most recent call first):
+  build/debug/_deps/ginkgo-src/cmake/sycl.cmake:28 (add_sycl_to_target)
+  build/debug/_deps/ginkgo-src/dpcpp/CMakeLists.txt:145 (gko_add_sycl_to_target)
+
+
+-- 
+---------------------------------------------------------------------------------------------------------
+--
+--    Summary of Configuration for Ginkgo (version 2.0.0 with tag develop, shortrev fc5d1c7d9)
+--    Ginkgo configuration:
+--        CMAKE_BUILD_TYPE:                                Debug
+--        BUILD_SHARED_LIBS:                               ON
+--        CMAKE_INSTALL_PREFIX:                            /home/heiko/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt
+--        PROJECT_SOURCE_DIR:                              /opt/ogl-src/build/debug/_deps/ginkgo-src
+--        PROJECT_BINARY_DIR:                              /opt/ogl-src/build/debug/_deps/ginkgo-build
+--        CMAKE_CXX_COMPILER:                              IntelLLVM 2026.0.0 on platform Linux x86_64
+--                                                         /opt/intel/oneapi/compiler/2026.0/bin/icpx
+--    User configuration:
+--      Enabled modules:
+--        GINKGO_BUILD_OMP:                                OFF
+--        GINKGO_BUILD_MPI:                                ON
+--        GINKGO_BUILD_REFERENCE:                          ON
+--        GINKGO_BUILD_CUDA:                               OFF
+--        GINKGO_BUILD_HIP:                                OFF
+--        GINKGO_BUILD_SYCL:                               ON
+--      Enabled features:
+--        GINKGO_MIXED_PRECISION:                          OFF
+--        GINKGO_HAVE_GPU_AWARE_MPI:                       ON
+--        GINKGO_ENABLE_HALF:                              OFF
+--        GINKGO_ENABLE_BFLOAT16:                          OFF
+--      Tests, benchmarks and examples:
+--        GINKGO_BUILD_TESTS:                              OFF
+--        GINKGO_FAST_TESTS:                               OFF
+--        GINKGO_BUILD_EXAMPLES:                           OFF
+--        GINKGO_EXTLIB_EXAMPLE:                           
+--        GINKGO_BUILD_BENCHMARKS:                         OFF
+--        GINKGO_BENCHMARK_ENABLE_TUNING:                  OFF
+--      Documentation:
+--        GINKGO_BUILD_DOC:                                OFF
+--        GINKGO_VERBOSE_LEVEL:                            1
+--    
+---------------------------------------------------------------------------------------------------------
+--
+--      Developer Tools:
+--        GINKGO_DEVEL_TOOLS:                              OFF
+--        GINKGO_WITH_CLANG_TIDY:                          OFF
+--        GINKGO_WITH_IWYU:                                OFF
+--        GINKGO_CHECK_CIRCULAR_DEPS:                      OFF
+--        GINKGO_WITH_CCACHE:                              ON
+---------------------------------------------------------------------------------------------------------
+--
+--      Components:
+--        GINKGO_BUILD_PAPI_SDE:                           OFF
+--        GINKGO_BUILD_HWLOC:                              OFF
+--
+--  Detailed information (More compiler flags, module configuration) can be found in detailed.log
+--   
+--
+--  Now, run  cmake --build .  to compile Ginkgo!
+--
+---------------------------------------------------------------------------------------------------------
+
+Compile against FoamFoundation version of OpenFOAM
+CMake Warning (dev) at /usr/share/cmake-4.2/Modules/FetchContent.cmake:1383 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  test/unit/CMakeLists.txt:8 (FetchContent_Declare)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Deprecation Warning at build/debug/_deps/googletest-src/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Deprecation Warning at build/debug/_deps/googletest-src/googlemock/CMakeLists.txt:39 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Deprecation Warning at build/debug/_deps/googletest-src/googletest/CMakeLists.txt:49 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Found Python: /usr/bin/python3 (found version "3.14.4") found components: Interpreter
+-- Found MPI_C: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so (found version "3.1")
+-- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so (found version "3.1")
+-- Found MPI: TRUE (found version "3.1")
+-- 
++------------------------------------------------------------------------------+
+ 
+	    ███████      █████████  █████      
+	  ███▒▒▒▒▒███   ███▒▒▒▒▒███▒▒███       
+	 ███     ▒▒███ ███     ▒▒▒  ▒███       
+	▒███      ▒███▒███          ▒███       
+	▒███      ▒███▒███    █████ ▒███       
+	▒▒███     ███ ▒▒███  ▒▒███  ▒███      █
+	 ▒▒▒███████▒   ▒▒█████████  ███████████
+	   ▒▒▒▒▒▒▒      ▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒ 
+       -     OpenFOAM     Ginkgo     Layer
+                                       
+         Version: 2.0.0 Git commit: v0.5.4-570-g1000981
+
++------------------------------------------------------------------------------+
+ Build information:
+--	CMAKE_BUILD_TYPE = Debug
+--	CMAKE_CXX_COMPILER = IntelLLVM@2026.0.0
++------------------------------------------------------------------------------+
+ Third-Party dependencies:
+ -- 	OGL_GINKGO_CHECKOUT_VERSION = develop
+ -- 	OGL_GINKGO_VIA_CPM = ON
++------------------------------------------------------------------------------+
+ OGL components:
+ -- 	OGL_BUILD_CUDA = OFF
+ -- 	OGL_BUILD_HIP = OFF
+ -- 	OGL_BUILD_OMP = OFF
+ -- 	OGL_BUILD_SYCL = ON
+ -- 	OGL_BUILD_UNITTEST = ON
++------------------------------------------------------------------------------+
+ OGL definitions:
++------------------------------------------------------------------------------+
+-- Configuring done (20.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: /opt/ogl-src/build/debug

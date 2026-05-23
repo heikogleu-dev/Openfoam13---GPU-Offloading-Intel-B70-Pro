@@ -160,6 +160,7 @@ wait time.
 | [20](findings/20_ginkgo_1.11_upgrade.md) | Upgrade procedure: KIT branch `ogl_0600_gko110` + 2 patches against icpx 2026 (`-fsycl-device-lib=all` removed, `foam-shim/` include path) | Reproducible upgrade path for next pioneers |
 | [21](findings/21_preconditioner_mapping_bmg.md) | Systematic preconditioner sweep on BMG-G31. Only `GKOCG + BJ(1)` runs across both 1.10 and 1.11; ICT/ISAI/Multigrid/Chebyshev each fail in distinct ways | First full SYCL-preconditioner mapping on this hardware |
 | [22](findings/22_vram_pressure_gmres_oom.md) | GKOGMRES on 34M cells hits hardware VRAM limit (27.87/27.9 GB), USM spills 7 GB into DDR5. `krylovDim` reduction has no effect (~26 GB fixed overhead) | 32 GB VRAM insufficient for GMRES on automotive-CFD scale; not a Ginkgo bug |
+| [23](findings/23_pr168_ginkgo_2.0_migration_test.md) | OGL PR #168 (Ginkgo 2.0 migration) blocks on 2 errors: `cyclicFvPatch::nbrPatchID` not in OF13 (renamed to `nbrPatchIndex`), and `Ilu<ir,ir>` 1.x template form not in Ginkgo 2.0 | Ginkgo 2.0 ILU migration in PR #168 incomplete; 4 environmental adjustments documented |
 
 ---
 
@@ -179,13 +180,14 @@ wait time.
 ├── profiling/             — Bottleneck + VRAM analysis
 │   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
 │   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
-├── findings/              — 19 findings (01–05, 08–10, 12–22)
+├── findings/              — 20 findings (01–05, 08–10, 12–23)
 ├── configs/               — Working fvSolution configurations
 └── logs/                  — Raw diagnostic logs for upstream debugging
     ├── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
     ├── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
     ├── ginkgo-1.11-test/  — Ginkgo 1.11 upgrade BJ(1)+BJ(2) traces
-    └── stufe4-ginkgo111/  — Preconditioner sweep + GMRES VRAM characterization
+    ├── stufe4-ginkgo111/  — Preconditioner sweep + GMRES VRAM characterization
+    └── pr168-test/        — OGL PR #168 Ginkgo 2.0 migration build logs + issue body
 ```
 
 ---
