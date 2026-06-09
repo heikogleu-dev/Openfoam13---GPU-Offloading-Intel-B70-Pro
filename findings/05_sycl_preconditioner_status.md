@@ -11,13 +11,29 @@ documented below.
 
 Minimum oneAPI requirement was bumped to 2024.1 (we run 2026.0 — OK).
 
-**Implication for BMG-G31:** OGL `ILU` (= `ParIlu`) apply should now
-work on SYCL after a Ginkgo `develop`-based rebuild — potentially the
-first working strong preconditioner on this hardware. **Not yet tested
-on our stack:** OGL is still on Ginkgo 1.11 (`ogl_0600_gko110` KIT
-branch). The `develop`-based PR #168 build is incomplete (see
-[Finding 23](23_pr168_ginkgo_2.0_migration_test.md): two blocking
-errors on `nbrPatchIndex` rename and Ginkgo 2.0 ILU template-form).
+## Update — 2026-06-09: ILU actually reaches generate-phase on BMG-G31
+
+After patching PR #168 with the two minimal fixes documented in
+[Finding 24](24_pr168_patched_ilu_first_test.md) (`nbrPatchIndex` and
+`Ilu<scalar, false, label>` template form), we built OGL against Ginkgo
+2.0 `develop`. The `ILU` code path now reaches
+`Preconditioner.hpp:219: Generate preconditioner ILU` — confirming that
+the `lower_trs` `NotImplemented` is gone.
+
+ILU then crashes with `DEVICE_LOST` during a `Csr::convert_to(Coo)`
+inside ILU setup. VRAM behaviour: long stable plateau at ~26.5 GB
+during setup, then a sharp spike past the 32 GB ceiling at the
+format-conversion step. Theoretical bedarf is only ~15 GB (p + L + U +
+Krylov + workspace) so the OOM is **partly hardware tightness, partly
+a Ginkgo conversion-path that allocates a full Coo copy alongside the
+source Csr**. Same pattern as
+[Finding 22 (GMRES OOM)](22_vram_pressure_gmres_oom.md) — see
+[Finding 24](24_pr168_patched_ilu_first_test.md) for the full
+theoretical-vs-measured breakdown.
+
+ILU on smaller meshes (≤8M cells) is the obvious next test to isolate
+whether the algorithm itself works correctly given enough VRAM
+headroom.
 
 Issue [#2015](https://github.com/ginkgo-project/ginkgo/issues/2015)
 remains **open** — `BJ find_blocks` underflow (Finding 02) and ISAI

@@ -161,6 +161,7 @@ wait time.
 | [21](findings/21_preconditioner_mapping_bmg.md) | Systematic preconditioner sweep on BMG-G31. Only `GKOCG + BJ(1)` runs across both 1.10 and 1.11; ICT/ISAI/Multigrid/Chebyshev each fail in distinct ways | First full SYCL-preconditioner mapping on this hardware |
 | [22](findings/22_vram_pressure_gmres_oom.md) | GKOGMRES on 34M cells hits hardware VRAM limit (27.87/27.9 GB), USM spills 7 GB into DDR5. `krylovDim` reduction has no effect (~26 GB fixed overhead) | 32 GB VRAM insufficient for GMRES on automotive-CFD scale; not a Ginkgo bug |
 | [23](findings/23_pr168_ginkgo_2.0_migration_test.md) | OGL PR #168 (Ginkgo 2.0 migration) blocks on 2 errors: `cyclicFvPatch::nbrPatchID` not in OF13 (renamed to `nbrPatchIndex`), and `Ilu<ir,ir>` 1.x template form not in Ginkgo 2.0 | Ginkgo 2.0 ILU migration in PR #168 incomplete; 4 environmental adjustments documented |
+| [24](findings/24_pr168_patched_ilu_first_test.md) | PR #168 + 2 minimal patches builds OGL on Ginkgo 2.0 ✅ — BJ(1) runs, ILU reaches generate-phase (PR #2023 `lower_trs` unblocks code path), but VRAM plateau ~26.5 GB + spike >32 GB at `Csr::convert_to(Coo)` → OOM | First working OGL+Ginkgo-2.0 on BMG-G31; ILU now algorithmically possible but ~3× theoretical-bedarf VRAM blocks on 34M cells |
 
 ---
 
@@ -180,14 +181,15 @@ wait time.
 ├── profiling/             — Bottleneck + VRAM analysis
 │   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
 │   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
-├── findings/              — 20 findings (01–05, 08–10, 12–23)
+├── findings/              — 21 findings (01–05, 08–10, 12–24)
 ├── configs/               — Working fvSolution configurations
 └── logs/                  — Raw diagnostic logs for upstream debugging
     ├── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
     ├── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
     ├── ginkgo-1.11-test/  — Ginkgo 1.11 upgrade BJ(1)+BJ(2) traces
     ├── stufe4-ginkgo111/  — Preconditioner sweep + GMRES VRAM characterization
-    └── pr168-test/        — OGL PR #168 Ginkgo 2.0 migration build logs + issue body
+    ├── pr168-test/        — OGL PR #168 first build attempt (failed at 2 errors)
+    └── pr168-patched/     — OGL PR #168 + 2 minimal patches: build success + BJ(1)/ILU smoke tests
 ```
 
 ---
