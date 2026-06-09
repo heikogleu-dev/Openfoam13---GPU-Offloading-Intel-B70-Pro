@@ -1,5 +1,30 @@
 # Finding 05: SYCL Preconditioner Status (Corrected May 2026)
 
+## Update — 2026-06-02: `lower_trs`/`upper_trs` Gap Closed Upstream
+
+[ginkgo-project/ginkgo#2023](https://github.com/ginkgo-project/ginkgo/pull/2023)
+("Add triangular solver support for dpcpp" by @nbeams) was **merged into
+Ginkgo `develop` on 2026-06-02 14:48 UTC** via oneMKL trsm. This closes
+the apply-side gap (`dpcpp/solver/lower_trs_kernels.dp.cpp:43: generate
+is not implemented`) that blocked every IC/ILU-family preconditioner
+documented below.
+
+Minimum oneAPI requirement was bumped to 2024.1 (we run 2026.0 — OK).
+
+**Implication for BMG-G31:** OGL `ILU` (= `ParIlu`) apply should now
+work on SYCL after a Ginkgo `develop`-based rebuild — potentially the
+first working strong preconditioner on this hardware. **Not yet tested
+on our stack:** OGL is still on Ginkgo 1.11 (`ogl_0600_gko110` KIT
+branch). The `develop`-based PR #168 build is incomplete (see
+[Finding 23](23_pr168_ginkgo_2.0_migration_test.md): two blocking
+errors on `nbrPatchIndex` rename and Ginkgo 2.0 ILU template-form).
+
+Issue [#2015](https://github.com/ginkgo-project/ginkgo/issues/2015)
+remains **open** — `BJ find_blocks` underflow (Finding 02) and ISAI
+int32 overflow on 34M cells are separate items.
+
+---
+
 ## Important Correction (after KIT/Ginkgo team feedback, issue #2013)
 
 Earlier versions of this document conflated two different algorithm
@@ -90,10 +115,11 @@ Per the KIT/Ginkgo team, there is active SYCL development including
 `@yhmtsai`'s direct-factorization branch. The most realistic path to a
 working strong preconditioner on Battlemage is:
 
-1. Direct factorization (classic IC/ILU) lands in main Ginkgo + SYCL kernels
-2. OGL adds `ParIc`/`ParIlu` keyword mapping (not currently present)
-3. `lower_trs`/`upper_trs` SYCL kernels implemented for the apply side
-4. ParIct `add_candidates` kernel bug fixed
+1. Direct factorization (classic IC/ILU) lands in main Ginkgo + SYCL kernels — ⏳ in progress (@yhmtsai)
+2. OGL adds `ParIc`/`ParIlu` keyword mapping (not currently present) — ⏳ pending
+3. `lower_trs`/`upper_trs` SYCL kernels implemented for the apply side — ✅ **DONE 2026-06-02 ([PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023))**
+4. ParIct `add_candidates` kernel bug fixed — ⏳ pending
 
-All four would need to materialise to enable practical strong-preconditioner
-GPU CFD on this stack. We are currently at zero of four.
+Item 3 unblocks ILU/IC/ParIlu *apply*; items 1, 2, 4 still required for a
+fully usable strong-preconditioner pipeline on this stack. **Status:
+1 of 4 done.**

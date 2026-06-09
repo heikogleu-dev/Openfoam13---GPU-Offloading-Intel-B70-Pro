@@ -15,12 +15,13 @@
   → Documents `ParIC` / `ParILU` / `ParICT` / `ISAI` work on DPC++.
   **Earlier versions of this repo claimed a discrepancy with the paper —
   that was wrong.** Per Ginkgo team feedback (issue #2013), `ParIc/ParIlu`
-  factorization *does* work on SYCL. The gap we hit on Battlemage is on
-  the *apply* side: `lower_trs` / `upper_trs` kernels are missing in
-  `dpcpp/solver/`, and `ParIct::add_candidates` SIGABRTs. The classic
-  `Ic`/`Ilu` (sparselib-based) is genuinely not in SYCL. See
+  factorization *does* work on SYCL. The gap we hit on Battlemage was on
+  the *apply* side: `lower_trs` / `upper_trs` kernels were missing in
+  `dpcpp/solver/` — **closed by [PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023)
+  merged 2026-06-02** (oneMKL trsm path, min oneAPI 2024.1). `ParIct::add_candidates`
+  SIGABRT and classic `Ic`/`Ilu` (sparselib-based) absence remain. See
   [findings/05](findings/05_sycl_preconditioner_status.md) for the
-  corrected mapping.
+  corrected mapping + status.
 
 - **Anzt et al. 2022** — *Ginkgo: A Modern Linear Operator Algebra
   Framework for High Performance Computing*, ACM TOMS
@@ -33,6 +34,8 @@
   - [findings/10 issue body (ready to file)](findings/10_ginkgo2_api_breaks.md#upstream-issue-body-ready-to-file)
 - [ginkgo-project/ginkgo](https://github.com/ginkgo-project/ginkgo)
   - [findings/11 issue body (ready to file)](findings/11_ginkgo_issue_body.md)
+  - [Issue #2015](https://github.com/ginkgo-project/ginkgo/issues/2015) — open, our reports on `lower_trs` / `ParIct` / ISAI int32
+  - [PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023) — merged 2026-06-02, closes `lower_trs`/`upper_trs` SYCL gap via oneMKL trsm
 - [intel/compute-runtime](https://github.com/intel/compute-runtime)
   - Bug filing planned for findings/13 (resource_info abort with multi-rank OGL)
 

@@ -1,5 +1,24 @@
 # Finding 23: PR #168 (OGL → Ginkgo 2.0 Migration) Build Test on BMG-G31
 
+## Update — 2026-06-02: motivation strengthened by Ginkgo PR #2023
+
+[ginkgo-project/ginkgo#2023](https://github.com/ginkgo-project/ginkgo/pull/2023)
+("Add triangular solver support for dpcpp" by @nbeams) was merged into
+Ginkgo `develop`. This closes the `lower_trs`/`upper_trs` SYCL gap
+documented in [Finding 05](05_sycl_preconditioner_status.md) and means:
+
+- OGL `ILU` (= `ParIlu`) apply should now work on SYCL once OGL builds
+  against Ginkgo 2.0
+- Practical motivation for completing PR #168's Ginkgo 2.0 migration is
+  now concrete — there is a real, testable preconditioner waiting on the
+  other side
+
+PR #168 has not been updated since 2026-05-22, so the two errors below
+still block. Re-test will follow once the ILU template-form migration
+lands.
+
+---
+
 ## Context
 
 In response to greole's pointer in [hpsim/OGL#170](https://github.com/hpsim/OGL/issues/170)
