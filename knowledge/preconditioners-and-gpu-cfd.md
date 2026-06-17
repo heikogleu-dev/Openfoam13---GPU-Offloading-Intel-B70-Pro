@@ -128,6 +128,36 @@ Best working GPU config today: **Multigrid, V-cycle, Jacobi smoother
    slower than GAMG**. This is a structural headwind for *any* GPU-AMG, not a
    B70/Ginkgo flaw.
 
+## GPU is under-utilized at 7.1M — it's CPU-assembly/transfer-bound, not compute-bound
+
+Measured B70 engine utilization during the tuned MG solve (np=8, 7.1M, via
+fdinfo `drm-cycles-ccs`, no root — intel_gpu_top needs CAP_PERFMON):
+
+| engine | busy | meaning |
+|---|---|---|
+| **CCS (compute)** | **~46%** | the SYCL/Ginkgo kernels — only half-busy |
+| **BCS (copy)** | **~30%** | host↔device transfers (the `forceHostBuffer` cost) |
+| RCS (render) | 0% | no graphics |
+
+**The GPU compute engine is only ~46% busy** — this directly confirms the
+solve is **CPU-assembly + transfer bound at this mesh size, not GPU-compute
+bound.** That is *why* more MPI ranks make it faster (they parallelize the
+host-side LDU→CSR assembly / value-update / MPI / residual that the GPU waits
+on), and why the GPU is under-fed (matches the >10M-cells/GPU threshold).
+
+Implications:
+- **More ranks faster is expected here** (single GPU + CPU-heavy assembly) — it
+  is *not* a sign of "CPU solving"; the pressure solve does run on the GPU, the
+  GPU just spends half its time waiting on host work.
+- **Mixed-precision's payoff is reframed:** halving GPU compute barely helps
+  (compute isn't the bottleneck); the host→device matrix transfer stays double
+  (OpenFOAM LDU is double). So mixed precision's concrete win is **VRAM** (GPU-
+  internal hierarchy) → enabling bigger meshes — not raw speed at 7.1M.
+- **Highest-value speed levers** (in order): (1) feed the GPU more cells so
+  compute dominates and overhead amortizes; (2) GPU-aware MPI to kill the ~30%
+  copy-engine cost (`forceHostBuffer` → direct device buffers, +25–50% per the
+  literature); (3) reduce CPU-assembly cost / rank balance.
+
 ## Where the GPU actually wins: feed it more cells
 
 Published thresholds: GPU pressure-AMG needs **~1–5M cells/GPU minimum, ideally
