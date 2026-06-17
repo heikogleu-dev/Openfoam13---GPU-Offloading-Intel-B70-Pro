@@ -239,6 +239,62 @@ Mesh build: `blockMesh` (36k base) → parallel `snappyHexMesh` (8 cores,
 ~20 min) → 7.1M. Artifacts: `Testcase-half/log.GAMG-cpu`,
 `Testcase-half/log.ILU-gpu` → `logs/post-recovery-2026-06-17/`.
 
+## Addendum 3 (2026-06-17) — why 160–201 iterations? Rank sweep + BJ(>1), on the 7.1M mesh
+
+The ~160–201 ILU iterations looked suspicious, so we stress-tested two
+hypotheses on the 7.1M mesh.
+
+**Hypothesis A (refuted): additive-Schwarz fragmentation.** OGL wraps the
+distributed preconditioner in `distributed::preconditioner::Schwarz`, so
+ILU is applied block-locally per rank. If that were the cause, more ranks
+→ more blocks → more iterations. We swept np = 2/4/8/12 (each
+re-decomposed, `ranksPerGPU` matched):
+
+| np | pressure iters (steps 1–3, 3 solves each) | s/step (steady) |
+|---|---|---|
+| 2 | 201,161,160 / 143,201,201 / 201,201,201 | ~32 s |
+| 4 | 201,161,161 / 143,201,201 / 201,201,201 | ~26 s |
+| 8 | 201,161,161 / 142,201,201 / 201,201,201 | ~23 s |
+| 12 | 201,161,161 / 142,201,201 / 201,201,201 | ~23 s |
+
+**Iteration count is essentially rank-independent** (np=2 ≈ np=12). So it
+is *not* a Schwarz/decomposition artifact and not a parallel-config error.
+(np=1 can't be tested: OGL requires `-parallel`, OpenFOAM refuses
+`-parallel` with a single rank — `UPstream::init` aborts.) Wall-clock does
+scale with ranks up to np=8, then saturates at np=12 — expected, since all
+ranks share one GPU.
+
+**What it actually is: textbook ILU(0) convergence.** The pressure CSR
+matrix has no fill-in preconditioner available beyond ILU(0) (zero fill)
+in the OGL/Ginkgo SYCL path. ILU(0)-preconditioned CG on a 3-D elliptic
+system scales like **~N^(1/3)** iterations (mesh-diameter-bound), whereas
+algebraic multigrid (GAMG) is ~O(1), mesh-independent. For 7.1M cells
+N^(1/3) ≈ 192 — almost exactly the 160–201 observed. So the iteration
+count is *correct expected behaviour for ILU(0)*, not a misconfiguration.
+
+Consequence that matters: because ILU(0)-CG is ~N^(1/3) and multigrid is
+~O(1), **the GPU-ILU disadvantage grows with mesh size** — at 34M, ILU
+would need ~N^(1/3) ≈ 324 iterations vs GAMG's ~5. Bigger meshes make
+GPU-ILU relatively *worse*, not better. A larger-VRAM card would let ILU
+*run* at 34M but it would lose to GAMG by an even wider margin.
+
+**BJ(maxBlockSize=8) and BJ(16) on 7.1M: still broken.** Both abort at the
+block-Jacobi generation step (`Generate preconditioner BJ<double>
+MaxBlockSize 8` → process abort) — the same `find_blocks` distributed-path
+failure seen at 34M. So the BJ(>1) bug is **mesh-size-independent**; larger
+blocks are not an escape hatch. GPU stayed healthy (clean abort, `diag-l0`
+PASS).
+
+**Bottom line:** the high iteration count is intrinsic ILU(0) behaviour,
+not a config or parallelization bug. The only fix is a fundamentally
+stronger preconditioner — GPU algebraic multigrid (mesh-independent
+iterations) — which is exactly the missing piece. ILU(0) and BJ are the
+wrong tool for an elliptic pressure equation no matter how they're tuned
+or decomposed.
+
+Artifacts: `Testcase-half/log.ILU-np{2,4,8,12}`, `log.BJ8`, `log.BJ16`,
+`gpu-diag/ilu-rank-sweep.sh`.
+
 ## Artifacts
 
 - `Testcase-GPU/log.post-recovery/test-BJ1.log` — clean 3-step BJ(1) run
