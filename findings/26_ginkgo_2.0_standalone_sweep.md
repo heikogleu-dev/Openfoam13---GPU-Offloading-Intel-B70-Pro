@@ -10,9 +10,10 @@ in Ginkgo 2.0**:
 
 | Bug | 1.10 / 1.11 status | 2.0 status |
 |---|---|---|
-| `dpcpp::jacobi::find_blocks` `size_t` underflow ([Finding 02](02_bj_blocksize_int_underflow.md)) | crash, BJ(>1) unusable | ✅ **FIXED** — BJ(2) runs up to 9M rows |
-| `dpcpp::par_ict_factorization::add_candidates` SIGABRT ([Finding 05](05_sycl_preconditioner_status.md)) | SIGABRT, ICT unusable | ✅ **FIXED** — ICT runs up to 4M rows |
-| `dpcpp/solver/lower_trs_kernels.dp.cpp:43: generate is not implemented` ([Finding 05](05_sycl_preconditioner_status.md)) | NotImplemented, ILU/IC unusable | ✅ **FIXED** by [Ginkgo PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023) — ILU runs up to 9M rows |
+| `dpcpp::jacobi::find_blocks` `size_t` underflow ([Finding 02](02_bj_blocksize_int_underflow.md)) | crash, BJ(>1) unusable | ✅ **FIXED** — BJ(2), BJ(4), BJ(8), BJ(16) all run up to 36M rows |
+| `dpcpp::par_ict_factorization::add_candidates` SIGABRT ([Finding 05](05_sycl_preconditioner_status.md)) | SIGABRT, ICT unusable | ✅ **FIXED** — ICT runs up to 4M rows (int32 overflow caps higher) |
+| `dpcpp/solver/lower_trs_kernels.dp.cpp:43: generate is not implemented` ([Finding 05](05_sycl_preconditioner_status.md)) | NotImplemented, ILU/IC unusable | ✅ **FIXED** by [Ginkgo PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023) — ILU runs up to 36M rows |
+| Multigrid PGM coarsening OOM + divergence ([Finding 08](08_multigrid_device_lost.md)) | OOM, MG unusable | ✅ **FIXED** — Multigrid runs up to ~25M rows (above 32 GB ceiling at 36M) |
 
 The only remaining algorithm-level limit observed in this sweep is the
 **SYCL `int32` index overflow** in ICT for problems >4M rows
@@ -141,15 +142,23 @@ through its executor**, which is a lower bound — it doesn't include
 SYCL runtime overhead, kernel-launch scratch, or driver-side device
 state. Real `vram_mm` usage is slightly higher.
 
-### Per-row allocation rate (from N=2000 baseline)
+### Per-row allocation rate (from N=2000 baseline, with proper alloc+free tracking)
+
+**Update 2026-06-17:** Extended to BJ(4), BJ(8), BJ(16), Multigrid +
+fixed the tracker (was monotonic-increasing; now properly decrements
+on free via an `addr → bytes` map).
 
 | Preconditioner | Bytes / row | Implied max rows in 27 GB usable | 34M-cell standalone footprint |
 |---|---|---|---|
-| BJ(maxBlockSize=1) | 56 | **~518M rows** | 1.9 GB |
-| BJ(maxBlockSize=2) | 125 | ~232M rows | 4.3 GB |
-| ISAI sparsityPower=1 | 176 | ~165M rows | 6.0 GB |
-| ILU (ParIlu + lower_trs) | 324 | **~89M rows** | 11 GB |
-| ICT (ParIct + Ic apply) | 2855 | ~10M rows | 97 GB (`int32` overflow stops earlier) |
+| BJ(maxBlockSize=1) | 48 | ~600M rows | 1.6 GB |
+| BJ(maxBlockSize=2) | 84 | ~343M rows | 2.9 GB |
+| **BJ(maxBlockSize=4)** | **100** | **~290M rows** | **3.4 GB** |
+| **BJ(maxBlockSize=8)** | **132** | **~218M rows** | **4.5 GB** |
+| **BJ(maxBlockSize=16)** | **196** | **~147M rows** | **6.7 GB** |
+| ILU (ParIlu + lower_trs) | 268 | ~108M rows | 9.2 GB |
+| ICT (ParIct + Ic apply) | 832 | ~35M rows | 28 GB (`int32` overflow ahead at ~9M) |
+| ISAI sparsityPower=1 | 136 | ~212M rows | 4.7 GB |
+| **Multigrid (PGM + BJ smoother)** | **1027** | **~28M rows** | **35 GB** (above 32 GB ceiling for 34M cells) |
 
 ### Measured at each N
 

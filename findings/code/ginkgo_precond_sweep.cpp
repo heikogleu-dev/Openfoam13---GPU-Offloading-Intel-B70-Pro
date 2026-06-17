@@ -15,14 +15,19 @@
 #include <memory>
 #include <stdexcept>
 #include <atomic>
+#include <mutex>
+#include <unordered_map>
 #include <ginkgo/ginkgo.hpp>
 
-// Custom Logger to track device allocations
+// Custom Logger to track device allocations with proper free-tracking via addr->bytes map
 class AllocTracker : public gko::log::Logger {
 public:
-    std::atomic<std::size_t> current_bytes{0};
-    std::atomic<std::size_t> peak_bytes{0};
-    std::atomic<std::size_t> total_allocs{0};
+    mutable std::mutex mtx;
+    mutable std::unordered_map<gko::uintptr, std::size_t> live;
+    mutable std::size_t current_bytes = 0;
+    mutable std::size_t peak_bytes = 0;
+    mutable std::size_t total_allocs = 0;
+    mutable std::size_t total_frees = 0;
 
     AllocTracker() : gko::log::Logger(
         gko::log::Logger::allocation_completed_mask |
@@ -30,24 +35,32 @@ public:
 
     void on_allocation_completed(const gko::Executor*,
                                   const gko::size_type& num_bytes,
-                                  const gko::uintptr&) const override {
-        auto cur = const_cast<AllocTracker*>(this)->current_bytes.fetch_add(num_bytes) + num_bytes;
-        std::size_t prev_peak = const_cast<AllocTracker*>(this)->peak_bytes.load();
-        while (cur > prev_peak &&
-               !const_cast<AllocTracker*>(this)->peak_bytes.compare_exchange_weak(prev_peak, cur)) {}
-        const_cast<AllocTracker*>(this)->total_allocs.fetch_add(1);
+                                  const gko::uintptr& location) const override {
+        std::lock_guard<std::mutex> g(mtx);
+        live[location] = num_bytes;
+        current_bytes += num_bytes;
+        if (current_bytes > peak_bytes) peak_bytes = current_bytes;
+        total_allocs++;
     }
 
     void on_free_completed(const gko::Executor*,
-                            const gko::uintptr&) const override {
-        // Ginkgo's logger doesn't pass byte count to free; we can't decrement accurately.
-        // Track is conservative-upper-bound: we record peak, but current may overshoot.
+                            const gko::uintptr& location) const override {
+        std::lock_guard<std::mutex> g(mtx);
+        auto it = live.find(location);
+        if (it != live.end()) {
+            current_bytes -= it->second;
+            live.erase(it);
+        }
+        total_frees++;
     }
 
     void reset() {
+        std::lock_guard<std::mutex> g(mtx);
+        live.clear();
         current_bytes = 0;
         peak_bytes = 0;
         total_allocs = 0;
+        total_frees = 0;
     }
 };
 
@@ -146,8 +159,8 @@ TestResult test_precond(
     }
     auto t1 = std::chrono::steady_clock::now();
     R.t_total_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
-    R.peak_bytes = tracker->peak_bytes.load();
-    R.total_allocs = tracker->total_allocs.load();
+    R.peak_bytes = tracker->peak_bytes;
+    R.total_allocs = tracker->total_allocs;
     return R;
 }
 
@@ -202,6 +215,18 @@ int main(int argc, char** argv)
         results.push_back(test_precond("BJ(maxBlockSize=2)", exec, A, b,
             [](auto e) { return bj::build().with_max_block_size(2u).on(e); }, tracker));
 
+    if (want("BJ4"))
+        results.push_back(test_precond("BJ(maxBlockSize=4)", exec, A, b,
+            [](auto e) { return bj::build().with_max_block_size(4u).on(e); }, tracker));
+
+    if (want("BJ8"))
+        results.push_back(test_precond("BJ(maxBlockSize=8)", exec, A, b,
+            [](auto e) { return bj::build().with_max_block_size(8u).on(e); }, tracker));
+
+    if (want("BJ16"))
+        results.push_back(test_precond("BJ(maxBlockSize=16)", exec, A, b,
+            [](auto e) { return bj::build().with_max_block_size(16u).on(e); }, tracker));
+
     if (want("ILU"))
         results.push_back(test_precond("ILU (ParIlu factor + Ilu apply)", exec, A, b,
             [](auto e) {
@@ -221,6 +246,26 @@ int main(int argc, char** argv)
     if (want("ISAI"))
         results.push_back(test_precond("ISAI sparsityPower=1", exec, A, b,
             [](auto e) { return isai::build().with_sparsity_power(1).on(e); }, tracker));
+
+    if (want("MG")) {
+        // Multigrid via PGM coarsening + Jacobi smoother
+        results.push_back(test_precond("Multigrid (PGM + BJ(1) smoother)", exec, A, b,
+            [](auto e) {
+                using mg = gko::solver::Multigrid;
+                using pgm = gko::multigrid::Pgm<ValueType, IndexType>;
+                auto smoother = bj::build().with_max_block_size(1u).on(e);
+                auto coarsest = bj::build().with_max_block_size(1u).on(e);
+                auto pgm_factory = pgm::build().with_deterministic(true).on(e);
+                return mg::build()
+                    .with_mg_level(gko::share(std::move(pgm_factory)))
+                    .with_pre_smoother(gko::share(std::move(smoother)))
+                    .with_coarsest_solver(gko::share(std::move(coarsest)))
+                    .with_max_levels(5u)
+                    .with_min_coarse_rows(32u)
+                    .with_criteria(gko::stop::Iteration::build().with_max_iters(1u))
+                    .on(e);
+            }, tracker));
+    }
 
     // Report
     std::cout << "\n=== RESULTS ===\n";
