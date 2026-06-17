@@ -1,6 +1,60 @@
 # Honest Conclusions
 
-## Does GPU Acceleration Help for This Case?
+> ## ⏱ Update — June 2026 (supersedes the May verdict below)
+>
+> Two months of follow-up work changed the picture substantially. The
+> May conclusions (kept below as the historical record) were correct for
+> their stack but several of their blockers are now resolved. Current
+> honest state:
+>
+> ### The SYCL preconditioner bugs are FIXED in Ginkgo 2.0
+> The May verdict's central claim — "no viable GPU preconditioner exists"
+> — no longer holds. A standalone Ginkgo 2.0 SYCL sweep
+> ([findings/26](findings/26_ginkgo_2.0_standalone_sweep.md)) confirms
+> **four** previously-blocking bugs are fixed: `find_blocks` underflow
+> (BJ>1), `add_candidates` SIGABRT (ICT), `lower_trs` NotImplemented
+> (ILU, via [Ginkgo PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023)),
+> and Multigrid PGM. BJ(1/2/4/8/16), ILU, ISAI and Multigrid all run
+> single-process up to 36M rows. OGL was migrated to Ginkgo 2.0 with two
+> small patches ([findings/24](findings/24_pr168_patched_ilu_first_test.md)).
+>
+> ### The new blocker is an Intel Compute Runtime regression, not Ginkgo
+> CR 26.14–26.18 abort during **multi-process** Level-Zero `zeInit`
+> (`gmm_helper/resource_info.cpp:15`) whenever ≥2 ranks share the GPU —
+> the normal mode for MPI CFD. Pure-Level-Zero minimal reproducer +
+> full analysis in [findings/29](findings/29_cr_26.18_root_cause_pure_l0_multiprocess_abort.md);
+> upstream as [intel/compute-runtime#922](https://github.com/intel/compute-runtime/issues/922)
+> (open, no fix, persists through CR 26.18 + kernel 7.0.0-22).
+>
+> ### Workaround that restores multi-rank OGL: CR 26.05 LD-switch
+> User-side `LD_LIBRARY_PATH` to an extracted CR 26.05 `libze_intel_gpu`,
+> no sudo, no system change ([findings/27](findings/27_cr2605_ld_switch_workaround.md),
+> `scripts/cr2605-shell.sh`). On a freshly-booted GPU this ran BJ(1)
+> multi-rank at 34M cells again (~94 s/step).
+>
+> ### The performance question is still OPEN — honestly
+> BJ(1) at ~94 s/step (200-iter cap) is **slower than CPU GAMG (35.7 s)**,
+> as in May. Whether a *strong* preconditioner (BJ(8)/ILU/Multigrid) wins
+> depends on its **iteration count**, which we have NOT yet measured in
+> multi-rank — every attempt so far crashed before the first solve (CR
+> 26.18) or hit the post-cascade degraded-GPU state. Standalone per-iter
+> timing (GPU ~15× faster per CG iteration than CPU GAMG, but BJ(1) needs
+> ~40× more iterations) suggests only Multigrid/ILU could plausibly reach
+> break-even-to-modest-win. **This needs a clean-boot multi-rank run to
+> answer with real numbers — not yet done.** See
+> `scripts/post-recovery-test-plan.md`.
+>
+> ### Net
+> May's "hardware great, software not ready" still rhymes — but the
+> software gap moved **down the stack**, from Ginkgo (now fixed) to the
+> Intel Compute Runtime driver (multi-process zeInit). With the CR 26.05
+> workaround the door to real strong-preconditioner GPU CFD on
+> Battlemage is, for the first time, actually open — pending the
+> performance measurement.
+
+---
+
+## Does GPU Acceleration Help for This Case? (May 2026 — historical)
 
 **Short answer: No, not with the current software stack (May 2026).**
 
@@ -45,7 +99,7 @@ maxIter=80) that would also speed up CPU GAMG to an estimated ~24 s/step.
 
 In this repo:
 1. [lspci PCIe speed reporting bug](findings/01_pcie_reporting_bug.md) (xe driver, SR-IOV PF mode)
-2. [Ginkgo 1.10 SYCL Block-Jacobi OOM with maxBlockSize > 1](findings/02_bj_maxblocksize_oom.md)
+2. [Ginkgo SYCL Block-Jacobi `find_blocks` underflow with maxBlockSize > 1](findings/02_bj_blocksize_int_underflow.md) (fixed in Ginkgo 2.0, see June update)
 3. [OGL preconditioner sub-dict syntax requirement](findings/03_preconditioner_subdict_syntax.md) (undocumented)
 4. [ONEAPI_DEVICE_SELECTOR syntax pitfall](findings/04_sycl_device_selector.md)
 5. [SYCL preconditioner support matrix](findings/05_sycl_preconditioner_status.md) (only BJ at maxBS=1 stable)
@@ -98,9 +152,16 @@ It never converges; the solver always hits maxIter=200 cap.
 
 **Path forward: OGL rebuild with Ginkgo 2.0**
 
-Ginkgo 2.0 (already installed at /opt/ginkgo) includes:
+Ginkgo 2.0 includes:
 - Improved SYCL BJ generate (potential fix for maxBlockSize>1 OOM)
 - Better distributed multigrid
 - More complete SYCL preconditioner support
 
 This rebuild is the only remaining avenue for meaningful GPU acceleration.
+
+> **Outcome (June 2026):** This path was taken and the Ginkgo-side bugs
+> are indeed fixed — see the June update at the top of this file. The
+> remaining blocker moved to the Intel Compute Runtime (multi-process
+> `zeInit` abort), with a working CR 26.05 LD-switch workaround. The
+> "does it actually beat CPU GAMG with a strong preconditioner"
+> question is now testable for the first time but not yet answered.
