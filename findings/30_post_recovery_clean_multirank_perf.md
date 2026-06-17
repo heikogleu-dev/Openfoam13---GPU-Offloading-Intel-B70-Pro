@@ -140,6 +140,52 @@ mesh size.
   today, CPU GAMG. The GPU door opens with either a larger-VRAM card
   (ILU would then fit) or the `find_blocks` distributed fix (BJ>1).
 
+## Addendum (2026-06-17, evening) — smaller mesh (30.5M) ILU attempt
+
+To test whether ILU fits on a *smaller* mesh, we ran it on `Oem30`
+(30,481,275 cells, ~11% smaller than the 34M case), decomposed to 8
+ranks (~3.82M/rank), restarting from a near-converged CPU solution
+(t=2000). Note: after the GRUB change that removed the iGPU-PRIME
+passthrough, the **desktop now runs on the B70** (monitor attached to it),
+consuming ~1.15 GB — so less VRAM headroom than the earlier 34M run had.
+
+**Result — the first ILU pressure solve actually completed:**
+
+```
+ILUsyclGKOCG:  Solving for p, Initial residual = 0.03746, Final residual
+               = 3.607e-05, No Iterations 181
+```
+
+- **ILU converged** — 0.0375 → 3.6e-05 (relTol 1e-3) in **181 CG
+  iterations**. Contrast BJ(1), which caps at 201 iterations without
+  converging. This is the **first strong-preconditioner data point on the
+  B70**: ILU is genuinely stronger than block-Jacobi here.
+- It then hit `UR_RESULT_ERROR_DEVICE_LOST` on a **subsequent** solve.
+  Peak foamRun VRAM **31,565 MiB** (fdinfo, 8 ranks) + ~1.15 GB desktop
+  ≈ **32.7 GB total** → over the ceiling.
+- **The peak barely scaled down** from the 34M run (32,212 → 31,565 MiB
+  foamRun): the `Csr::convert_to(Coo)` materialization in `ParIlu` is
+  largely mesh-size-insensitive at the spike, so an 11% smaller mesh did
+  **not** buy enough headroom — and the desktop-on-B70 ate what little it
+  did. GPU self-recovered (`diag-l0` PASS), no reboot.
+- Multigrid not attempted — predicted ~35 GB > 32 GB; a 3rd OOM gamble
+  was not worth it.
+
+**Two takeaways:**
+1. **VRAM:** ILU needs noticeably **<30.5M cells** on a 32 GB B70 (or a
+   larger card, or the desktop off the B70). 30.5M is still over the edge.
+2. **Convergence quality:** even where it ran, ILU needed **181 CG
+   iterations** to drop 3 orders from an already-low restart residual —
+   far more than GAMG's handful of V-cycles. So even with enough VRAM,
+   ILU-preconditioned CG as configured (default `ParIlu`, no fill) would
+   be unlikely to beat CPU GAMG on this pressure system without a stronger
+   factorization (ILU(k)/more sweeps). The strong-preconditioner *win* is
+   still not demonstrated — but for the first time the strong
+   preconditioner at least *ran and converged* on the B70.
+
+Artifact: `Oem30/log.oem30-ILU` →
+`logs/post-recovery-2026-06-17/oem30-ILU.log.gz`.
+
 ## Artifacts
 
 - `Testcase-GPU/log.post-recovery/test-BJ1.log` — clean 3-step BJ(1) run
