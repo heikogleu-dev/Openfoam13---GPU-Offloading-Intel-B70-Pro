@@ -35,3 +35,8 @@ add_executable(diag-mpi-ginkgo diag-mpi-ginkgo.cpp)
 target_link_libraries(diag-mpi-ginkgo PRIVATE Ginkgo::ginkgo MPI::MPI_CXX)
 target_compile_options(diag-mpi-ginkgo PRIVATE -fsycl)
 target_link_options(diag-mpi-ginkgo PRIVATE -fsycl)
+
+add_executable(diag-mpi-ginkgo-solve diag-mpi-ginkgo-solve.cpp)
+target_link_libraries(diag-mpi-ginkgo-solve PRIVATE Ginkgo::ginkgo MPI::MPI_CXX)
+target_compile_options(diag-mpi-ginkgo-solve PRIVATE -fsycl)
+target_link_options(diag-mpi-ginkgo-solve PRIVATE -fsycl)

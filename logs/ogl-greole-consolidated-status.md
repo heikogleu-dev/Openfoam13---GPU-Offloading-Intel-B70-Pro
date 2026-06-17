@@ -106,10 +106,33 @@ Relevant for OGL because:
 | Item | Status |
 |---|---|
 | PR #168 + 2 patches builds on OF13/Ginkgo2.0/icpx2026 | ✅ |
-| BJ(1) multi-rank 34M cells runs (fresh GPU + CR 26.05) | ✅ ~94 s/step |
-| ILU reaches generate phase (PR #2023 `lower_trs` works) | ✅ |
-| Strong-preconditioner (BJ8/ILU/MG) iteration counts + perf vs CPU GAMG | ⏳ pending a clean-boot multi-rank run |
+| BJ(1) multi-rank 34M cells runs (fresh GPU + CR 26.05) | ✅ **~51.5 s/step** (corrected, see update) |
+| ILU reaches generate phase (PR #2023 `lower_trs` works) | ✅ generate reached |
+| Strong-preconditioner (BJ8/ILU/MG) iteration counts + perf vs CPU GAMG | ✅ **measured — see update below** |
 | `find_blocks` distributed-path underflow | ❌ open, localized to Schwarz path |
+
+## Update (2026-06-17) — clean-boot multi-rank numbers
+
+A fresh reboot + the CR 26.05 LD-switch produced deterministic 34M-cell
+numbers (full writeup:
+[findings/30](https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro/blob/main/findings/30_post_recovery_clean_multirank_perf.md)):
+
+- **BJ(1): ~51.5 s/step** steady-state (the earlier "~94 s" was the
+  setup-inclusive first step). Every pressure solve hits the 201-iter cap
+  — never converges → ~1.44× slower than CPU GAMG (35.7 s/step).
+- **ILU: VRAM OOM → `UR_RESULT_ERROR_DEVICE_LOST`** on the first solve,
+  inside `ParIlu::generate_l_u` at `Csr::convert_to(Coo)`. Peak VRAM 31.5
+  GB (fdinfo, summed over 8 ranks) — pinned to the 32 GB ceiling. ILU does
+  not fit at 34M on a 32 GB card with the current OGL distributed
+  overhead. The Csr→Coo materialization in the factorization is the spike;
+  a leaner generate path (or a bigger card) would unblock it.
+- **BJ(2–16): the `find_blocks` underflow reproduces** on Ginkgo 2.0 +
+  CR 26.05 (clean `gko::AllocationError`, 16-EB request — GPU unharmed).
+
+So the §5 "pending" row is answered: no strong preconditioner currently
+works at 34M/32 GB — BJ1 too weak, ILU OOMs, BJ>1 underflows. The highest
+-value OGL fix is still the distributed `find_blocks` path; second is a
+VRAM-leaner ILU `generate`.
 
 The Ginkgo `lower_trs` gap is closed
 ([PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023), merged

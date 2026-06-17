@@ -32,25 +32,37 @@
 > `scripts/cr2605-shell.sh`). On a freshly-booted GPU this ran BJ(1)
 > multi-rank at 34M cells again (~94 s/step).
 >
-> ### The performance question is still OPEN — honestly
-> BJ(1) at ~94 s/step (200-iter cap) is **slower than CPU GAMG (35.7 s)**,
-> as in May. Whether a *strong* preconditioner (BJ(8)/ILU/Multigrid) wins
-> depends on its **iteration count**, which we have NOT yet measured in
-> multi-rank — every attempt so far crashed before the first solve (CR
-> 26.18) or hit the post-cascade degraded-GPU state. Standalone per-iter
-> timing (GPU ~15× faster per CG iteration than CPU GAMG, but BJ(1) needs
-> ~40× more iterations) suggests only Multigrid/ILU could plausibly reach
-> break-even-to-modest-win. **This needs a clean-boot multi-rank run to
-> answer with real numbers — not yet done.** See
-> `scripts/post-recovery-test-plan.md`.
+> ### The performance question is now ANSWERED (clean-boot run, Finding 30)
+> A freshly-booted GPU + the CR 26.05 LD-switch finally produced
+> deterministic multi-rank numbers on the 34M case
+> ([findings/30](findings/30_post_recovery_clean_multirank_perf.md)):
+> - **BJ(1): ~51.5 s/step** steady-state (the earlier "~94 s/step" was the
+>   setup-inclusive *first* step). Every pressure solve hits the
+>   201-iteration cap — BJ(1) never converges. → **~1.44× slower than CPU
+>   GAMG (35.7 s/step).**
+> - **ILU: VRAM OOM → DEVICE_LOST** at peak 31.5 GB, in the `ParIlu`
+>   factorization's `Csr::convert_to(Coo)` — does **not fit** at 34M cells
+>   on the 32 GB B70 with the OGL distributed overhead. (GPU recovered on
+>   its own, no reboot.)
+> - **BJ(2–16): still the `find_blocks` size_t underflow** in the OGL
+>   distributed path (clean `AllocationError`, GPU unharmed).
+>
+> So no *strong* GPU preconditioner currently works on this mesh at this
+> VRAM: the one that runs (BJ1) is too weak, the ones strong enough to win
+> either don't fit (ILU/MG) or hit the distributed `find_blocks` bug
+> (BJ>1). The B70 ran 8-way multi-rank GPU solves cleanly — this is a
+> **software-stack** limit, not hardware.
 >
 > ### Net
-> May's "hardware great, software not ready" still rhymes — but the
-> software gap moved **down the stack**, from Ginkgo (now fixed) to the
-> Intel Compute Runtime driver (multi-process zeInit). With the CR 26.05
-> workaround the door to real strong-preconditioner GPU CFD on
-> Battlemage is, for the first time, actually open — pending the
-> performance measurement.
+> May's "hardware great, software not ready" still holds — but the gap is
+> now precisely located. Ginkgo's preconditioner bugs are fixed; the CR
+> 26.05 LD-switch restores multi-rank; the B70 itself is fully capable.
+> The two remaining walls are both above the hardware: (1) OGL's
+> distributed `find_blocks` underflow (blocks block-Jacobi BS>1), and
+> (2) the ILU factorization's Csr→Coo materialization blowing the 32 GB
+> budget at 34M cells. Fix either — or move to a larger-VRAM card — and
+> the strong-preconditioner GPU-CFD door opens. Until then: CPU GAMG for
+> production.
 
 ---
 
