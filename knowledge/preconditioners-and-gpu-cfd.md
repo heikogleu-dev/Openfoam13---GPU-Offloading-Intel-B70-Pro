@@ -82,6 +82,61 @@ with mesh size**:
 A bigger-VRAM card would let ILU *run* at 34M but it would lose to GAMG by
 an even wider margin. **VRAM is not the limiter — preconditioner quality is.**
 
+## Multigrid tuning map (7.1M, np=8) — the path toward parity
+
+Tuning Ginkgo's Multigrid moved it from ~14 s/step to **~9 s/step**, i.e.
+within ~1.17× of CPU GAMG (7.7 s) — on a mesh where the GPU is *under-fed*
+(literature wants >10M cells/GPU; see below). Steady s/step = step2→3 delta.
+
+| MG config | iters/solve | s/step | peak VRAM | note |
+|---|---|---|---|---|
+| 01 default (V / Jacobi / 1 sweep / Jacobi-coarse) | 55–68 | 14.0 | 11.4 GB | baseline |
+| 02 **W-cycle** | 14–17 | 12.1 | 10.4 GB | big iter drop, cheap |
+| 03 F-cycle | 27–36 | 13.0 | 11.5 GB | |
+| 04 smoother sweeps ×3 | 33–40 | 17.2 | 10.8 GB | more smoothing costs more than it saves |
+| 05 SSOR smoother ×2 | 20–25 | 29.0 | 26.5 GB | SSOR is sequential → slow + heavy |
+| **06 CG coarse-solver** (maxIterCoarse 20) | **12–14** | **9.0** | 11.5 GB | **★ best wall-clock** |
+| 07 combo (W + SSOR + CG-coarse) | **5–7** | 127 | 26.6 GB | fewest iters but SSOR kills wall-clock |
+| 08 deep-coarse (minCoarseRows 8000 + CG) | 9–12 | 9.2 | 10.8 GB | ≈ tie with 06 |
+
+Lessons (all match the literature, see [gpu-amg-reference-configs.md](gpu-amg-reference-configs.md)):
+- **Fixing the coarse solver (Jacobi → a few-iter CG) is the single biggest
+  wall-clock lever** (14→9 s). Default Jacobi coarse solve is weak.
+- **W-cycle** sharply cuts iterations (55→15) at lower cost than extra smoothing.
+- **SSOR/Gauss-Seidel are sequential on a GPU → avoid** — config 07 reaches
+  GAMG-like 5–7 iters but at 127 s/step and 26.6 GB. Textbook GPU-AMG advice:
+  use Jacobi / l1-Jacobi / Chebyshev smoothers, never Gauss-Seidel.
+- **Why we floor at ~13 iters, not GAMG's 3–5:** Ginkgo only has **PGM**
+  (unsmoothed size-2 aggregation) — no classical Ruge-Stüben and no smoothed
+  aggregation. Aggregation AMG is documented as *not* grid-independent on its
+  own. AmgX/Hypre reach few iters via **classical AMG**, which Ginkgo lacks.
+
+Best working GPU config today: **Multigrid, V-cycle, Jacobi smoother
+(1 sweep), CG coarse-solver (maxIterCoarse ~20)** → ~13 iters, ~9 s/step.
+
+## The two caveats that reframe "beating GAMG"
+
+1. **The fair CPU baseline in the literature is PCG, not GAMG.** Every
+   published OGL/Ginkgo pressure speedup (Olenik et al., up to 15×) is vs CPU
+   *diagonal-PCG*, **not** GAMG. Nobody has published OGL beating GAMG — we are
+   holding the GPU to a higher bar than the field does. GAMG is an optimal
+   multigrid *solver* with Gauss-Seidel/DIC smoothers (cheap on CPU, 3–5 iters).
+2. **The pressure-specific killer: AMG setup can't be cached like GAMG.**
+   Pressure-matrix coefficients change every SIMPLE iteration, so the AMG
+   hierarchy must be re-built each timestep, whereas OpenFOAM GAMG reuses its
+   hierarchy. In one published benchmark this alone made NVIDIA **AmgX 2.5×
+   slower than GAMG**. This is a structural headwind for *any* GPU-AMG, not a
+   B70/Ginkgo flaw.
+
+## Where the GPU actually wins: feed it more cells
+
+Published thresholds: GPU pressure-AMG needs **~1–5M cells/GPU minimum, ideally
+>10M cells/GPU** to beat CPU; below ~1M/GPU the CPU wins on overhead. Our 7.1M
+single-GPU run is right at the *lower* edge — the GPU is under-fed, yet tuned
+Multigrid is already ~1.17× GAMG. **The natural next test is a larger mesh
+(~15–18M, the most that fits MG in 32 GB at ~1.6 GB/M cells) to feed the GPU
+properly** — that is where parity/win is most likely.
+
 ## What the field already does (so we don't reinvent it)
 
 GPU pressure-solve acceleration is a solved problem **on NVIDIA** via

@@ -331,6 +331,47 @@ production mesh sizes (~1027 bytes/row). See
 Artifacts: `Testcase-half/log.{A-ILU-np*,B-ISAI-np8,B-ICT-np8,B-BJ8-np8,B-Multigrid-np8}`,
 `gpu-diag/precond-vram-sweep.sh`.
 
+## Addendum 5 (2026-06-17) — Multigrid tuning map + external cross-check
+
+Tuned Ginkgo Multigrid (7.1M, np=8) and cross-checked against the
+literature. Tuning moved it from ~14 → **~9 s/step (~1.17× CPU GAMG)**:
+
+| MG config | iters | s/step | VRAM |
+|---|---|---|---|
+| default (V/Jacobi/1/Jacobi-coarse) | 55–68 | 14.0 | 11.4 GB |
+| W-cycle | 14–17 | 12.1 | 10.4 GB |
+| **CG coarse-solver (best)** | **12–14** | **9.0** | 11.5 GB |
+| deep-coarse + CG | 9–12 | 9.2 | 10.8 GB |
+| SSOR smoother | 20–25 | 29.0 | 26.5 GB |
+| combo (W+SSOR+CG) | 5–7 | **127** | 26.6 GB |
+
+External research (3 sources, see knowledge/external-references.md) explains
+it precisely:
+- **Fixing the coarse solver (Jacobi→CG) is the biggest lever** — matches the
+  generic AMG advice; default 1× Jacobi coarse solve is weak.
+- **SSOR/Gauss-Seidel are sequential on GPU → avoid** — config "combo" hits
+  GAMG-like 5–7 iters but at 127 s/step + 26.6 GB. Textbook GPU-AMG uses
+  Jacobi/l1-Jacobi/Chebyshev only.
+- **We floor at ~13 iters, not GAMG's 3–5, because Ginkgo only has PGM**
+  (unsmoothed size-2 aggregation) — no classical Ruge-Stüben / smoothed
+  aggregation. AmgX/Hypre reach few iters via classical AMG (which Ginkgo lacks).
+- **Fair baseline is PCG, not GAMG:** all published OGL pressure speedups
+  (Olenik et al., up to 15×) are vs CPU diagonal-PCG; nobody published OGL
+  beating GAMG. We're holding the GPU to a higher bar than the field.
+- **AMG-resetup gotcha:** pressure coefficients change each SIMPLE iter, so the
+  AMG hierarchy can't be cached like GAMG — made AmgX 2.5× slower than GAMG in
+  one published benchmark. Structural headwind for any GPU-AMG.
+- **Cells/GPU threshold:** need ~1–5M min, >10M ideal to beat CPU. Our 7.1M
+  single-GPU run is under-fed — yet already ~1.17× GAMG.
+
+**Next test:** a ~15–18M mesh (most that fits MG in 32 GB at ~1.6 GB/M cells)
+to feed the GPU above the win threshold — the most likely route to parity/win.
+Reference configs (AmgX/Hypre/Ginkgo) captured in
+[knowledge/gpu-amg-reference-configs.md](../knowledge/gpu-amg-reference-configs.md).
+Best B70 config set as the `Testcase-half` default.
+
+Artifacts: `Testcase-half/log.MG-{01..08}-*`, `gpu-diag/mg-sweep.sh`.
+
 ## Artifacts
 
 - `Testcase-GPU/log.post-recovery/test-BJ1.log` — clean 3-step BJ(1) run

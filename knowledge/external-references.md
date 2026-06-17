@@ -52,6 +52,41 @@ doing fresh external research.**
 - OGL status / patches → `../logs/ogl-greole-consolidated-status.md`,
   OGL issue #170.
 
+## Tuning & deeper sources (2026-06-17 research round)
+
+- **Tsai, Beams, Anzt, "Three-Precision Algebraic Multigrid on GPUs",
+  FGCS 2023** — [doi/full text](https://www.sciencedirect.com/science/article/pii/S0167739X23002741),
+  [OSTI PDF](https://www.osti.gov/servlets/purl/2581015). Ginkgo's own AMG on
+  H100/MI250X/**Intel PVC**: PGM size-2 aggregation + weighted-Jacobi smoother;
+  AMG-CG iteration counts 10–359 (problem-dependent); W-cycle +12–60%; DP-SP
+  mixed precision; **skip FP16 for short-row pressure Laplacian on Intel**
+  (subgroup {16,32} → FP16 SpMV can be slower). Best GPU smoother = scalar Jacobi.
+- **Notay, "Aggregation-Based AMG", ETNA 37 (2010)** —
+  [PDF](https://etna.ricam.oeaw.ac.at/vol.37.2010/pp123-146.dir/pp123-146.pdf):
+  unsmoothed aggregation is **not grid-independent** without smoothed
+  aggregation or K-cycle Krylov acceleration → explains our ~13-iter floor
+  with Ginkgo PGM.
+- **Olenik et al., Matrix Repartitioning, arXiv:2510.08536** —
+  [PDF](https://arxiv.org/pdf/2510.08536): ranks-per-GPU tuning; naive MPI
+  oversubscription = ~140× slowdown; repartitioning up to ~10× on A100.
+- **petsc4Foam + Hypre BoomerAMG, PRACE WP294** —
+  [PDF](https://prace-ri.eu/wp-content/uploads/WP294-PETSc4FOAM-A-Library-to-plug-in-PETSc-into-the-OpenFOAM-Framework.pdf):
+  the canonical BoomerAMG pressure config (strong_threshold 0.7 for 3D, HMIS,
+  ext+i); 64M cavity 128 nodes: AMG-CG 79 s vs GAMG-PCG 553 s (scalability win).
+- **NVIDIA AmgX configs** — [stock JSON configs](https://github.com/NVIDIA/AMGX/tree/main/src/configs),
+  [Poisson production config (barbagroup)](https://raw.githubusercontent.com/barbagroup/cloud-repro/master/examples/poisson/azure/amgx/config/poisson_solver.info):
+  PCG + CLASSICAL AMG, V-cycle, PMIS, D2, block-Jacobi, dense-LU coarse.
+- **The AMG-resetup gotcha (AmgX 2.5× slower than GAMG)** — SPUMA benchmark
+  [arXiv:2512.22215](https://arxiv.org/html/2512.22215v1): pressure coefficients
+  change each SIMPLE iter → AMG hierarchy can't be cached like GAMG.
+- **Oliani/Polimi, GPU coupled OpenFOAM, arXiv:2403.07882** —
+  [PDF](https://arxiv.org/pdf/2403.07882): cells/GPU win threshold (~1–5M min,
+  >10M ideal); LDU→CSR cached; LA drops from ~80% to ~20% of step on GPU.
+
+> **Conflation warning:** the "2.3× GAMG GPU speedup" sometimes seen online is
+> **RapidCFD** (CUDA OpenFOAM fork) on Titan X, **not** OGL/Ginkgo. Both real
+> OGL papers benchmark vs CPU **PCG**, not GAMG.
+
 ## Where our work is genuinely new
 
 The fundamentals above are established. Our novel contribution is the
