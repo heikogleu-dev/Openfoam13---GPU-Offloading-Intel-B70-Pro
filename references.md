@@ -37,7 +37,13 @@
   - [Issue #2015](https://github.com/ginkgo-project/ginkgo/issues/2015) — open, our reports on `lower_trs` / `ParIct` / ISAI int32
   - [PR #2023](https://github.com/ginkgo-project/ginkgo/pull/2023) — merged 2026-06-02, closes `lower_trs`/`upper_trs` SYCL gap via oneMKL trsm
 - [intel/compute-runtime](https://github.com/intel/compute-runtime)
-  - Bug filing planned for findings/13 (resource_info abort with multi-rank OGL)
+  - [Issue #922 (GSD-12696)](https://github.com/intel/compute-runtime/issues/922)
+    — our report: multi-rank Level Zero `resource_info.cpp:15` abort,
+    CR 26.05 → 26.14 regression on BMG-G31 / Ubuntu 26.04. Still open,
+    no Intel response, no fix. Persists through CR 26.18 and kernel
+    7.0.0-22 — see [findings/29](findings/29_cr_26.18_root_cause_pure_l0_multiprocess_abort.md)
+    for the pure-Level-Zero minimal reproducer + follow-up
+    (`logs/cr26.18-root-cause/issue_922_followup_pure_l0_repro.md`).
 
 ## Related Battlemage Pioneer Work
 
