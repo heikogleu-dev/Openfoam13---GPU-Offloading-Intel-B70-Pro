@@ -1,0 +1,47 @@
+bash: Kann die Prozessgruppe des Terminals nicht setzen (-1).: Unpassender IOCTL (I/O-Control) für das Gerät
+bash: Keine Jobsteuerung in dieser Shell
+This is Ginkgo 2.0.0 (develop)
+    running with core module 2.0.0 (develop)
+    the reference module is  2.0.0 (develop)
+    the OpenMP    module is  not compiled
+    the CUDA      module is  not compiled
+    the HIP       module is  not compiled
+    the DPCPP     module is  2.0.0 (develop)
+=== Ginkgo SYCL Preconditioner Sweep on BMG-G31 ===
+Mesh: 3000x3000 = 9000000 rows (~45000000 nnz)
+Executor: dpcpp
+
+Building Poisson matrix... 44988000 nnz
+
+=== RESULTS ===
+  BJ(maxBlockSize=1):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         388.133
+
+  BJ(maxBlockSize=2):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         3889.33
+
+  ILU (ParIlu factor + Ilu apply):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         12214.4
+
+  ICT (ParIct factor + Ic apply):
+    factory built:    yes
+    solver generated: no
+    solve completed:  no
+    error:            Exception: Provided range and/or offset does not fit in int. Pass `-fno-sycl-id-queries-fit-in-int' to remove this limit.
+    total ms:         2353.41
+
+  ISAI sparsityPower=1:
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         1540.93
+

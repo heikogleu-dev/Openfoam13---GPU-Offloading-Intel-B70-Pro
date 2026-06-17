@@ -1,0 +1,46 @@
+bash: Kann die Prozessgruppe des Terminals nicht setzen (-1).: Unpassender IOCTL (I/O-Control) für das Gerät
+bash: Keine Jobsteuerung in dieser Shell
+This is Ginkgo 2.0.0 (develop)
+    running with core module 2.0.0 (develop)
+    the reference module is  2.0.0 (develop)
+    the OpenMP    module is  not compiled
+    the CUDA      module is  not compiled
+    the HIP       module is  not compiled
+    the DPCPP     module is  2.0.0 (develop)
+=== Ginkgo SYCL Preconditioner Sweep on BMG-G31 ===
+Mesh: 100x100 = 10000 rows (~50000 nnz)
+Executor: dpcpp
+
+Building Poisson matrix... 49600 nnz
+
+=== RESULTS ===
+  BJ(maxBlockSize=1):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         19.5579
+
+  BJ(maxBlockSize=2):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         18.5981
+
+  ILU (ParIlu factor + Ilu apply):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         95.4086
+
+  ICT (ParIct factor + Ic apply):
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         862.398
+
+  ISAI sparsityPower=1:
+    factory built:    yes
+    solver generated: yes
+    solve completed:  yes
+    total ms:         8.1817
+
