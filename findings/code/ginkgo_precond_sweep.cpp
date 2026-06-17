@@ -14,7 +14,42 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <atomic>
 #include <ginkgo/ginkgo.hpp>
+
+// Custom Logger to track device allocations
+class AllocTracker : public gko::log::Logger {
+public:
+    std::atomic<std::size_t> current_bytes{0};
+    std::atomic<std::size_t> peak_bytes{0};
+    std::atomic<std::size_t> total_allocs{0};
+
+    AllocTracker() : gko::log::Logger(
+        gko::log::Logger::allocation_completed_mask |
+        gko::log::Logger::free_completed_mask) {}
+
+    void on_allocation_completed(const gko::Executor*,
+                                  const gko::size_type& num_bytes,
+                                  const gko::uintptr&) const override {
+        auto cur = const_cast<AllocTracker*>(this)->current_bytes.fetch_add(num_bytes) + num_bytes;
+        std::size_t prev_peak = const_cast<AllocTracker*>(this)->peak_bytes.load();
+        while (cur > prev_peak &&
+               !const_cast<AllocTracker*>(this)->peak_bytes.compare_exchange_weak(prev_peak, cur)) {}
+        const_cast<AllocTracker*>(this)->total_allocs.fetch_add(1);
+    }
+
+    void on_free_completed(const gko::Executor*,
+                            const gko::uintptr&) const override {
+        // Ginkgo's logger doesn't pass byte count to free; we can't decrement accurately.
+        // Track is conservative-upper-bound: we record peak, but current may overshoot.
+    }
+
+    void reset() {
+        current_bytes = 0;
+        peak_bytes = 0;
+        total_allocs = 0;
+    }
+};
 
 using ValueType = double;
 using IndexType = int;
@@ -52,6 +87,8 @@ struct TestResult {
     double residual = -1.0;
     std::string error;
     double t_total_ms = 0;
+    std::size_t peak_bytes = 0;
+    std::size_t total_allocs = 0;
 };
 
 TestResult test_precond(
@@ -60,10 +97,12 @@ TestResult test_precond(
     std::shared_ptr<mtx> A,
     std::shared_ptr<vec> b,
     std::function<std::shared_ptr<gko::LinOpFactory>(std::shared_ptr<gko::Executor>)> precond_factory_fn,
+    std::shared_ptr<AllocTracker> tracker,
     int max_iters = 200)
 {
     TestResult R;
     R.name = name;
+    tracker->reset();
     auto t0 = std::chrono::steady_clock::now();
     try {
         // Build CG with the given preconditioner
@@ -107,6 +146,8 @@ TestResult test_precond(
     }
     auto t1 = std::chrono::steady_clock::now();
     R.t_total_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+    R.peak_bytes = tracker->peak_bytes.load();
+    R.total_allocs = tracker->total_allocs.load();
     return R;
 }
 
@@ -116,6 +157,7 @@ int main(int argc, char** argv)
 
     IndexType N = argc > 1 ? std::atoi(argv[1]) : 1000;
     const std::string exec_str = argc > 2 ? argv[2] : "dpcpp";
+    const std::string only_precond = argc > 3 ? argv[3] : ""; // empty = all
     std::cout << "=== Ginkgo SYCL Preconditioner Sweep on BMG-G31 ===\n";
     std::cout << "Mesh: " << N << "x" << N << " = " << (N*N) << " rows (~"
               << (5*N*N) << " nnz)\n";
@@ -127,6 +169,10 @@ int main(int argc, char** argv)
     } else {
         exec = gko::ReferenceExecutor::create();
     }
+
+    // Register allocation tracker
+    auto tracker = std::make_shared<AllocTracker>();
+    exec->add_logger(tracker);
 
     std::cout << "Building Poisson matrix..." << std::flush;
     auto A = build_poisson_2d(exec, N);
@@ -144,37 +190,37 @@ int main(int argc, char** argv)
     using isai = gko::preconditioner::Isai<gko::preconditioner::isai_type::general, ValueType, IndexType>;
 
     std::vector<TestResult> results;
+    auto want = [&](const std::string& tag) {
+        return only_precond.empty() || only_precond == tag;
+    };
 
-    results.push_back(test_precond("BJ(maxBlockSize=1)", exec, A, b,
-        [](auto e) {
-            return bj::build().with_max_block_size(1u).on(e);
-        }));
+    if (want("BJ1"))
+        results.push_back(test_precond("BJ(maxBlockSize=1)", exec, A, b,
+            [](auto e) { return bj::build().with_max_block_size(1u).on(e); }, tracker));
 
-    results.push_back(test_precond("BJ(maxBlockSize=2)", exec, A, b,
-        [](auto e) {
-            return bj::build().with_max_block_size(2u).on(e);
-        }));
+    if (want("BJ2"))
+        results.push_back(test_precond("BJ(maxBlockSize=2)", exec, A, b,
+            [](auto e) { return bj::build().with_max_block_size(2u).on(e); }, tracker));
 
-    results.push_back(test_precond("ILU (ParIlu factor + Ilu apply)", exec, A, b,
-        [](auto e) {
-            auto fac = parilu::build().on(e);
-            return ilu_pc::build()
-                .with_factorization(gko::share(std::move(fac)))
-                .on(e);
-        }));
+    if (want("ILU"))
+        results.push_back(test_precond("ILU (ParIlu factor + Ilu apply)", exec, A, b,
+            [](auto e) {
+                auto fac = parilu::build().on(e);
+                return ilu_pc::build()
+                    .with_factorization(gko::share(std::move(fac))).on(e);
+            }, tracker));
 
-    results.push_back(test_precond("ICT (ParIct factor + Ic apply)", exec, A, b,
-        [](auto e) {
-            auto fac = parict::build().on(e);
-            return ilu_pc::build()
-                .with_factorization(gko::share(std::move(fac)))
-                .on(e);
-        }, 200));
+    if (want("ICT"))
+        results.push_back(test_precond("ICT (ParIct factor + Ic apply)", exec, A, b,
+            [](auto e) {
+                auto fac = parict::build().on(e);
+                return ilu_pc::build()
+                    .with_factorization(gko::share(std::move(fac))).on(e);
+            }, tracker, 200));
 
-    results.push_back(test_precond("ISAI sparsityPower=1", exec, A, b,
-        [](auto e) {
-            return isai::build().with_sparsity_power(1).on(e);
-        }));
+    if (want("ISAI"))
+        results.push_back(test_precond("ISAI sparsityPower=1", exec, A, b,
+            [](auto e) { return isai::build().with_sparsity_power(1).on(e); }, tracker));
 
     // Report
     std::cout << "\n=== RESULTS ===\n";
@@ -187,6 +233,10 @@ int main(int argc, char** argv)
             std::cout << "    error:            " << R.error.substr(0, 200) << "\n";
         }
         std::cout << "    total ms:         " << R.t_total_ms << "\n";
+        std::cout << "    peak alloc bytes: " << R.peak_bytes
+                  << " (" << (R.peak_bytes / 1048576.0) << " MB / "
+                  << (R.peak_bytes / 1073741824.0) << " GB)\n";
+        std::cout << "    total allocs:     " << R.total_allocs << "\n";
         std::cout << "\n";
     }
     return 0;

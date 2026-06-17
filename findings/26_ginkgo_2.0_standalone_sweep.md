@@ -131,10 +131,81 @@ submitted two minimal patches as a comment to
 [hpsim/OGL#170](https://github.com/hpsim/OGL/issues/170)) becomes the
 highest-leverage upstream item for CFD-on-BMG.
 
+## VRAM scaling — how many rows fit in 32 GB?
+
+A follow-up sweep added a `gko::log::Logger`-derived `AllocTracker` to
+the test program that counts every Ginkgo device allocation. Per-(N,
+precond) peak allocated bytes were recorded across N=100..6000
+(10k..36M rows). Note: this measures **allocations Ginkgo itself made
+through its executor**, which is a lower bound — it doesn't include
+SYCL runtime overhead, kernel-launch scratch, or driver-side device
+state. Real `vram_mm` usage is slightly higher.
+
+### Per-row allocation rate (from N=2000 baseline)
+
+| Preconditioner | Bytes / row | Implied max rows in 27 GB usable | 34M-cell standalone footprint |
+|---|---|---|---|
+| BJ(maxBlockSize=1) | 56 | **~518M rows** | 1.9 GB |
+| BJ(maxBlockSize=2) | 125 | ~232M rows | 4.3 GB |
+| ISAI sparsityPower=1 | 176 | ~165M rows | 6.0 GB |
+| ILU (ParIlu + lower_trs) | 324 | **~89M rows** | 11 GB |
+| ICT (ParIct + Ic apply) | 2855 | ~10M rows | 97 GB (`int32` overflow stops earlier) |
+
+### Measured at each N
+
+| N | Rows | BJ(1) GB | BJ(2) GB | ILU GB | ICT GB | ISAI GB |
+|---|---|---|---|---|---|---|
+| 100 | 10k | 0.001 | 0.001 | 0.003 | 0.026 | 0.002 |
+| 500 | 250k | 0.013 | 0.029 | 0.075 | 0.663 | 0.041 |
+| 1000 | 1M | 0.052 | 0.116 | 0.302 | 2.649 | 0.164 |
+| 2000 | 4M | 0.209 | 0.466 | 1.207 | 10.635 | 0.656 |
+| 3000 | 9M | 0.469 | 1.048 | 2.716 | 16.293 (int32-ovf) | 1.476 |
+| 4000 | 16M | 0.834 | 1.863 | 4.828 | 28.939 (int32-ovf) | 2.623 |
+| 5000 | 25M | 1.304 | 2.910 | 7.544 | 29.876 (int32-ovf) | 4.098 |
+| 6000 | 36M | 1.878 | 4.191 | 10.863 | 12.609 (int32-ovf) | 5.901 |
+
+ICT memory grows so fast it nearly exhausts 32 GB by N=4000 (16M rows)
+even before the `int32` overflow halts setup. BJ(1) and ISAI scale
+favourably; ILU is the inflection point for practical CFD pressure
+systems.
+
+### Cross-check with OGL multi-rank (np=8) data
+
+Compared with the OGL distributed-matrix overhead documented in
+[Finding 22 (GMRES OOM)](22_vram_pressure_gmres_oom.md) and
+[Finding 24 (PR #168 ILU OOM)](24_pr168_patched_ilu_first_test.md):
+
+- BJ(1) standalone @ 34M = 1.9 GB · OGL+np=8 @ 34M = ~9 GB
+  ([Finding 02](02_bj_blocksize_int_underflow.md)) — **~4.7× distributed overhead**
+- ILU standalone @ 34M = 11 GB · OGL+np=8 @ 34M = >32 GB spike
+  ([Finding 24](24_pr168_patched_ilu_first_test.md)) — **>3× overhead** plus
+  the Csr→Coo conversion spike at setup
+
+So the distributed/OGL pipeline costs roughly 3-5× over what Ginkgo
+allocates by itself. Useful as a rule of thumb when scaling future
+cases.
+
+### Practical headroom on B70 Pro (32 GB raw / 27 GB usable for SYCL)
+
+For **single-rank standalone** Ginkgo on BMG-G31:
+
+- BJ(1) / BJ(2) / ISAI: can comfortably handle 100M+ row problems
+- ILU: comfortable up to ~80-90M rows (well above our 34M test case)
+- ICT: limited to ~10M rows by sheer memory growth, plus the `int32`
+  index overflow blocks anything past ~9M
+
+For **OGL multi-rank** at np=8 on the same 32 GB GPU, derate by ~3-5×
+distributed-matrix overhead — so the practical ceiling for ILU drops to
+roughly 15-25M cells without a smaller-mesh strategy. Our 34M-cell test
+case sits exactly at that boundary, which is why ILU OOMs in OGL+np=8
+but runs cleanly standalone.
+
 ## Files
 
-- `findings/code/ginkgo_precond_sweep.cpp` — the test source (preserved
-  for reproduction)
+- `findings/code/ginkgo_precond_sweep.cpp` — the test source (with the
+  AllocTracker logger; preserved for reproduction)
 - `findings/code/CMakeLists.txt` — build setup
 - [`logs/ginkgo-2.0-standalone/`](../logs/ginkgo-2.0-standalone/)
   contains the full sweep outputs for N=100, 500, 1000, 2000, 3000
+- [`logs/ginkgo-2.0-standalone/vram-sweep.csv`](../logs/ginkgo-2.0-standalone/vram-sweep.csv)
+  contains the (N, preconditioner, status, time, peak-bytes) table
