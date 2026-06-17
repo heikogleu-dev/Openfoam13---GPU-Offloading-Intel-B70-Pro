@@ -81,6 +81,47 @@ branch ~line 469; back it up first):
 - **GPU-aware MPI** (drop `forceHostBuffer`) — would attack the ~30% copy
   engine; needs an MPI built with Level-Zero support (check availability).
 
+## Research-derived test/change leads (prioritized, from 2026-06-17 research)
+
+**A — cheap config tests (no rebuild, do on 7.1M or 18M):**
+1. **W-cycle + CG-coarse + Jacobi smoother** — *untested combo*. Our sweep did
+   W-cycle alone (15 iter, 12 s, 10.4 GB) and CG-coarse alone (13 iter, 9 s,
+   11.5 GB) but never together without SSOR. Likely best of both: low iters +
+   cheap coarse + leaner VRAM. fvSolution: `Multigrid; cycle w; coarseSolver CG;
+   maxIterCoarse 20;`.
+2. **W-cycle as the 18M default** if VRAM is tight (10.4 vs 11.5 GB).
+3. **1-rank-per-GPU consolidation vs np=8** — community best practice diverges
+   from our np=8. Test via OGL `ranksPerGPU` / `splitComm` (or fewer ranks).
+   Our sweep says np=8 best, but that was without consolidation/splitComm.
+
+**B — the big one (rebuild): FP32 / mixed-FP32 solve — attacks the bandwidth bottleneck**
+- We are **bandwidth-bound** (SpMV; 46% compute / 30% copy) and only need
+  **relTol 0.01** (loose). FP32 **halves the matrix+vector bytes → ~2× effective
+  bandwidth on the SpMV that limits us, AND halves VRAM**. The "weak-FP64→FP32"
+  caveat does NOT apply (B70 FP64 is strong) — but the *bandwidth* argument does,
+  independently. Accuracy: FP32 floor ~1e-6 (keep dot-products/residual in FP64);
+  fine for relTol 0.01. **This is likely a bigger win than the DP-SP MG patch.**
+- Implementation: wire a float solve path in OGL (convert device matrix+RHS to
+  float, `fcg`/float-precond, return double) — or OpenFOAM SPDP build. Contained
+  OGL patch; the `fcg`/`fbj` float aliases already exist.
+
+**C — VRAM (rebuild): DP-SP mixed-precision MG patch** — as in STEP 2 above
+(ceiling ~20M→~25M). Lower priority than FP32-solve given the util finding.
+
+**D — kill the 30% copy engine: GPU-aware MPI** — drop `forceHostBuffer`; needs
+an MPI built with Level-Zero support (check availability). +25–50% per literature.
+
+**E — correctness/build hygiene:** rebuild libOGL with
+`-DCMAKE_CXX_FLAGS=-ffp-model=precise` (Ginkgo INSTALL note: IEEE-754 differences
+in Intel SYCL compilers) — verify our current build has it.
+
+**F — upstream / watch (not usable yet):**
+- **Classical Ruge-Stüben AMG SYCL kernels** — Ginkgo PR #2034 (draft, no SYCL
+  yet). This is the *real* fix for the ~13-iter floor (→ GAMG-like 3–5 iters).
+  Watch / consider contributing the SYCL kernels.
+- **`find_blocks` BJ>1:** file the minimal repro upstream (Ginkgo #2013/#2018);
+  try explicit `block_pointers` to bypass the heuristic (needs small OGL change).
+
 ## Don't forget
 - Meshing: filenames with spaces in the case dir crash decomposePar at OF
   debug level 2 — keep the case root clean (stray files already in
