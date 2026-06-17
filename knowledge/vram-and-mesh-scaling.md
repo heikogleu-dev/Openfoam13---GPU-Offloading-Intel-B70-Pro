@@ -71,6 +71,33 @@ CG-coarse), double precision, np=8. Caveats:
 5. **Matrix format** is already CSR (the compact choice); ELL would pad, COO
    uses 3 arrays — no gain.
 
+## Projection: can 34M fit with mixed precision, and would it win? (EXTRAPOLATION — confirm at 18M)
+
+Extrapolated from the single measured point (MG CG-coarse double np=8 = 1.46
+GB/M solver). **These are estimates with wide error bars; the 18M run will
+calibrate them.**
+
+| Mesh | double | DP-SP (~0.78×) | FP32 (~0.6–0.7×) |
+|---|---|---|---|
+| 7.1M | 10.3 GB ✓ | 8.1 GB ✓ | 6–7 GB ✓ |
+| 18M | 26 GB ✓ | 20.5 GB ✓ | 16–18 GB ✓ |
+| **34M** | **50 GB ✗** | **39 GB ✗** | **30–35 GB ⚠ marginal** |
+
+- **34M VRAM verdict:** does **not** fit in double or DP-SP. **FP32-throughout
+  is the only path, and it's marginal** — ~30–35 GB at np=8 (over the ~31.5 GB
+  ceiling once the ~1.15 GB desktop is counted). It *might* fit at **np≤4** (less
+  Schwarz overlap, ~−10–15%) and/or with the desktop off the B70. Realistic FP32
+  ceiling is ~**25–28M** on a single 32 GB B70; 34M is at the absolute edge.
+- **Performance IF it fit (34M):** 34M is well past the ~10M-cells/GPU breakeven,
+  so the GPU is properly fed (compute util should rise well above the 46% seen at
+  7.1M). CPU GAMG baseline at 34M ≈ **35.7 s/step** (measured, np=16). Projected
+  GPU MG: double ≈ 25–40 s/step (util-improved); **FP32 ≈ 15–25 s/step** (FP32
+  gives up to ~2.3× on the bandwidth-bound SpMV, ~7 nnz/row, Loe model
+  5w/(2w+1)). → **plausibly a ~1.4–2× win over CPU GAMG at 34M, *if* VRAM allows.**
+- **Practical target:** ~**20–25M with FP32** is the sweet spot — comfortably
+  fits, well-fed GPU, likely the first clear GPU win. 34M is a stretch goal that
+  needs FP32 + low rank count (+ desktop off B70), or a 2nd GPU / 48–64 GB card.
+
 ## How VRAM was measured (no debugfs / no sudo needed)
 
 debugfs `vram_mm` needs a root `chmod` after each boot (can't do remotely).
