@@ -35,6 +35,42 @@ headroom; you need a substantially smaller mesh.
   directly reduces the headroom — relevant after the iGPU-PRIME removal
   (see hardware-system-grub.md).
 
+## Multigrid VRAM ceiling on the 32 GB B70
+
+Measured (7.1M, np=8, fdinfo incl. ~1.15 GB desktop): MG with a Jacobi
+smoother ≈ **10.5–11.5 GB** → **~1.5 GB / million cells** (total),
+~1.46 GB/M for the solver alone. SSOR smoother is the outlier at **26.5 GB**
+(avoid). Usable ≈ 32 − ~1.15 (desktop) − ~0.5 (reserve) ≈ **30.3 GB**.
+
+→ **Ceiling ≈ 20–21M cells** for the good MG config (V-cycle / Jacobi /
+CG-coarse), double precision, np=8. Caveats:
+- Could be a bit **higher** if per-cell overhead amortizes at scale (ILU
+  dropped 1.55→1.03 GB/M from 7.1M→30.5M); but MG's Galerkin coarse
+  operators add memory that grows too. Only a run at ~15M confirms it.
+- **np-dependent:** fewer ranks = less Schwarz overlap = less VRAM (ILU went
+  9.6→11.9 GB for np 2→12). At np=2 the ceiling is higher (~24M) but
+  wall-clock worse; at np=12 lower (~18M).
+
+## Levers to make VRAM leaner (ranked by impact)
+
+1. **Mixed precision DP-SP (biggest — but needs an OGL patch).** FP64 finest
+   vectors + FP32 coarse levels ~halves the coarse-hierarchy + matrix memory
+   → ceiling could rise to ~30M+. Ginkgo supports it; **OGL only exposes
+   `precision` for BJ (Preconditioner.hpp:172), not for Multigrid** — so it
+   requires wiring mixed precision into OGL's Multigrid path. Research note:
+   keep vectors higher precision than the matrix; **skip FP16** on Intel for
+   the short-row pressure Laplacian (subgroup {16,32} → FP16 SpMV can be
+   slower). See [gpu-amg-reference-configs.md](gpu-amg-reference-configs.md).
+2. **Fewer MPI ranks (np 8→4).** Less Schwarz halo duplication → ~1–2 GB
+   saved; costs some wall-clock (np=4 was ~26 s vs np=8 ~23 s for ILU).
+   Available now, pure config.
+3. **Leaner MG config.** `deep-coarse` (10.8 GB) slightly under `CG-coarse`
+   (11.5 GB); **never SSOR** (26.5 GB, 2.5×). Already the chosen default.
+4. **Desktop off the B70** (monitor → iGPU outputs): frees ~1.15 GB (~0.75M
+   cells). Not available remotely (no monitor re-plug).
+5. **Matrix format** is already CSR (the compact choice); ELL would pad, COO
+   uses 3 arrays — no gain.
+
 ## How VRAM was measured (no debugfs / no sudo needed)
 
 debugfs `vram_mm` needs a root `chmod` after each boot (can't do remotely).
