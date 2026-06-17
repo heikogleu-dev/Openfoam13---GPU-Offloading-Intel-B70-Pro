@@ -11,7 +11,30 @@
 - KB written under `knowledge/` (iron-rule maintained). Findings in
   `findings/30`. Everything committed + pushed.
 
-## STEP 1 (tomorrow first): 18M-mesh test — does feeding the GPU help?
+## ▶ Execution order for tomorrow (easy → hard, "Stück für Stück anspruchsvoller")
+
+1. **W-cycle + CG-coarse combo** on the existing 7.1M `Testcase-half` — one
+   fvSolution line, no rebuild, no meshing (~1 min). Confirm the best MG config
+   (untested combination of our two best levers). → detail: *leads A1* below.
+2. **18M mesh** (`Testcase-mid`, mesh on 16 cores) → best MG vs CPU GAMG **+ GPU
+   util**. The "feed the GPU above 10M/GPU" test. → detail: *STEP 1* below.
+3. **1-rank/GPU consolidation vs np=8** on the 18M mesh (`splitComm`/ranksPerGPU).
+   → detail: *leads A3*.
+4. **FP32 / mixed-FP32 solve** (OGL patch + rebuild) — attack the measured
+   bandwidth bottleneck; risk-low at relTol 0.01. → detail: *leads B*. ★ biggest.
+5. **DP-SP mixed-precision MG patch** (rebuild) — VRAM ceiling ~20M→~25M, for
+   meshes >20M. → detail: *STEP 2 / leads C*.
+6. **GPU-aware MPI** (drop `forceHostBuffer`) — kill the ~30% copy engine.
+   → detail: *leads D*.
+- Watch/upstream (not usable yet): classical RS-AMG SYCL kernels (Ginkgo #2034);
+  `find_blocks` repro + `block_pointers` (leads F).
+
+Each step is harder than the last (config → mesh → config-on-bigger → patch →
+patch → infra). Detail sections follow.
+
+---
+
+## STEP 1 (18M-mesh test — does feeding the GPU help?)
 
 Case **already prepared**: `~/CFD-Cases/Testcase-mid` (copied from original
 Testcase, blockMesh **90×45×30** = arithmetic mid of half 60×30×20 and
