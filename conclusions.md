@@ -7,6 +7,17 @@
 > their stack but several of their blockers are now resolved. Current
 > honest state:
 >
+> ### ⭐ Latest bottom line (2026-06-17 evening)
+> Tuned **Ginkgo Multigrid** (V-cycle, Jacobi smoother, CG coarse-solver) on
+> a 7.1M mesh: ~13 iters, **~9 s/step = ~1.17× CPU GAMG** (down from ILU's
+> 3×). But the **B70 is under-fed at 7.1M** — compute engine only ~46% busy,
+> copy ~30% (CPU-assembly/transfer bound, which is *why* more MPI ranks help).
+> So the next test is a **larger ~18M mesh** to feed the GPU above the
+> ~10M-cells/GPU win threshold (case prepared: `Testcase-mid`). VRAM ceiling
+> for MG ≈ 20M (double); a mixed-precision OGL patch (not yet wired by OGL)
+> would lift it to ~25–30M. The GPU-CFD win is now a *feeding + VRAM* problem,
+> not a preconditioner dead-end. See `scripts/next-session-plan.md`.
+>
 > ### The SYCL preconditioner bugs are FIXED in Ginkgo 2.0
 > The May verdict's central claim — "no viable GPU preconditioner exists"
 > — no longer holds. A standalone Ginkgo 2.0 SYCL sweep
