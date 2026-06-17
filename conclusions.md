@@ -69,19 +69,32 @@
 > non-issue**, because it needs ~40× more CG iterations (ILU is a local
 > preconditioner; GAMG is algebraic multigrid with ~O(N) convergence).
 >
+> ### Update — Ginkgo Multigrid DOES work (the path forward exists)
+> Testing every available preconditioner on the 7.1M mesh (np=8) changed
+> the conclusion: **Ginkgo's algebraic Multigrid runs, fits (10.4 GB), and
+> converges in 55–101 iterations at ~14 s/step — only ~1.8× slower than CPU
+> GAMG (7.7 s)**, vs ILU's ~3× (160–201 iters) and BJ/ISAI never
+> converging. And this is the *untuned* default (V-cycle, Jacobi smoother).
+>
+> | preconditioner (7.1M, np=8) | iters/solve | s/step | VRAM |
+> |---|---|---|---|
+> | GAMG (CPU) | 3–5 | 7.7 s | host |
+> | **Multigrid (Ginkgo GPU)** | **55–101** | **~14 s** | 10.4 GB |
+> | ILU (GPU) | 160–201 | ~23 s | 11.0 GB |
+> | ISAI / BJ(1) (GPU) | 201 (cap) | — | — |
+> | ICT / BJ(>1) (GPU) | crash | — | — |
+>
 > ### Net
-> "Hardware great, software not ready" still holds — and the gap is now
-> *precisely and conclusively* located. Ginkgo's preconditioner bugs are
-> fixed; the CR 26.05 LD-switch restores multi-rank; the B70 ran 8-way
-> GPU solves cleanly. But the decisive limiter is **preconditioner
-> convergence rate, not VRAM and not kernel speed**: block-Jacobi(1) is
-> too weak (never converges), BJ(>1) hits OGL's distributed `find_blocks`
-> underflow, ILU converges but at ~40× GAMG's iteration count (and OOMs
-> above ~25–30M cells), and Ginkgo Multigrid doesn't fit. The one thing
-> that could beat CPU GAMG — a VRAM-viable **GPU-side algebraic
-> multigrid** wired through OGL's distributed path — does not yet exist on
-> this stack. Until it does: **CPU GAMG for production pressure solving**;
-> the GPU for LLMs and visualization.
+> "Hardware great, software not *yet* ready" — but the path is now clear
+> and matches the field. BJ/ILU are one-level preconditioners that lose to
+> multigrid (textbook; AmgX/Hypre prove GPU-AMG is the answer). On this
+> stack the GPU-AMG exists — **Ginkgo Multigrid** — and already lands
+> within ~1.8× of CPU GAMG untuned at 7.1M. The remaining work is concrete
+> and bounded: (1) **tune** Ginkgo Multigrid (W-cycle, stronger smoother,
+> more levels) to close the ~1.8× gap, and (2) make it **VRAM-viable at
+> production mesh sizes** (~1027 bytes/row today). Until then: CPU GAMG for
+> production; but a real B70 GPU-CFD win is now a tuning problem, not a
+> dead end.
 
 ---
 

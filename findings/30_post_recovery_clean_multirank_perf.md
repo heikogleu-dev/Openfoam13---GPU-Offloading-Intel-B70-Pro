@@ -295,6 +295,42 @@ or decomposed.
 Artifacts: `Testcase-half/log.ILU-np{2,4,8,12}`, `log.BJ8`, `log.BJ16`,
 `gpu-diag/ilu-rank-sweep.sh`.
 
+## Addendum 4 (2026-06-17) — the preconditioner sweep: Multigrid works
+
+Prompted by the right question ("it can't be that *every* preconditioner
+is too weak/slow — and did you even measure VRAM?"), we ran a
+VRAM-monitored sweep of all viable OGL preconditioners on the 7.1M mesh at
+np=8 (`gpu-diag/precond-vram-sweep.sh`):
+
+| Preconditioner | iters/solve | s/step | peak VRAM | result |
+|---|---|---|---|---|
+| GAMG (CPU) | 3–5 | 7.7 s | host | reference |
+| **Multigrid (Ginkgo)** | **55–101** | **~14 s** | 10.4 GB | ✅ converges, best GPU |
+| ILU | 160–201 | ~23 s | 11.0 GB | converges slowly |
+| ISAI | 201 (caps) | ~15 s | 4.6 GB | too weak |
+| ICT | — | — | 2.7 GB | crash before solver |
+| BJ(8) | — | — | — | abort (`find_blocks`) |
+
+**The earlier "no strong GPU preconditioner works" was wrong — Multigrid
+does.** Ginkgo's algebraic multigrid converges in 55–101 iterations (real
+multigrid behaviour, far below ILU's 160–201 and unlike BJ/ISAI which cap
+at 201) and runs at ~14 s/step — only ~1.8× CPU GAMG, **untuned** (default
+V-cycle, Jacobi smoother). This is exactly the GPU-AMG class that makes
+NVIDIA AmgX win, now confirmed functional on Battlemage via Ginkgo/OGL.
+
+Also confirmed with VRAM this time (the rank-sweep table above lacked it):
+ILU peak VRAM rises with np (9.6 → 11.9 GB for np 2→12) from Schwarz
+overlap; iteration count stays rank-independent.
+
+**Revised conclusion:** the B70 GPU-CFD win is no longer a dead end but a
+**tuning problem** — close the ~1.8× gap by tuning Ginkgo Multigrid
+(W-cycle, stronger smoother, more levels) and make it VRAM-viable at
+production mesh sizes (~1027 bytes/row). See
+[knowledge/preconditioners-and-gpu-cfd.md](../knowledge/preconditioners-and-gpu-cfd.md).
+
+Artifacts: `Testcase-half/log.{A-ILU-np*,B-ISAI-np8,B-ICT-np8,B-BJ8-np8,B-Multigrid-np8}`,
+`gpu-diag/precond-vram-sweep.sh`.
+
 ## Artifacts
 
 - `Testcase-GPU/log.post-recovery/test-BJ1.log` — clean 3-step BJ(1) run
