@@ -1,5 +1,29 @@
 # Finding 02: BJ maxBlockSize > 1 — size_t Underflow in `dpcpp::jacobi::find_blocks` (NOT OOM)
 
+## Update — 2026-06-17: bug is in OGL distributed-matrix path, not Ginkgo `find_blocks` kernel
+
+Re-tested under Ginkgo 2.0 with the [CR 26.05 LD-switch workaround](27_cr2605_ld_switch_workaround.md):
+
+| Configuration | BJ(maxBlockSize=2) outcome |
+|---|---|
+| Ginkgo 2.0 standalone single-process, up to **36M rows** | ✅ runs clean (see [Finding 26](26_ginkgo_2.0_standalone_sweep.md)) |
+| OGL+OpenFOAM multi-rank np=8, 34M cells (~4.25M per rank shard) | ❌ **identical** `0xFFFFFFFFFFFFFFFF` underflow |
+
+Same Ginkgo 2.0 build, same `dpcpp::jacobi::find_blocks` kernel,
+different result depending on whether the matrix arrives via plain
+`gko::matrix::Csr` (standalone) or via OGL's distributed Schwarz
+wrapper. **The bug surfaces specifically in the distributed
+preconditioner generate path, not in the SYCL Jacobi kernel itself.**
+
+The 1.10/1.11 stack triggered the same underflow because OGL always
+runs distributed — we just never had a standalone reproducer to
+isolate the kernel from the wrapper. The framing below is preserved
+for historical context, but the upstream-actionable item for KIT/
+`@nbeams` is now: investigate how OGL's distributed Schwarz/Matrix
+path invokes `find_blocks` on per-rank shards.
+
+---
+
 ## Important Correction (May 6, 2026)
 
 Earlier versions of this document (filename `02_bj_maxblocksize_oom.md`)
