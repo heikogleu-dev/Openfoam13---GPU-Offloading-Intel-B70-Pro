@@ -186,6 +186,59 @@ ILUsyclGKOCG:  Solving for p, Initial residual = 0.03746, Final residual
 Artifact: `Oem30/log.oem30-ILU` →
 `logs/post-recovery-2026-06-17/oem30-ILU.log.gz`.
 
+## Addendum 2 (2026-06-17, late) — half-resolution mesh: the conclusive ILU-vs-GAMG comparison
+
+Finally, a mesh small enough that ILU runs to completion: we copied the
+original `Testcase`, halved the background blockMesh (120×60×40 →
+60×30×20, i.e. 2× coarser in every direction), and re-ran the full
+snappyHexMesh pipeline (castellate + snap + layers) **in parallel on 8
+cores**. Result: a clean **7,118,582-cell** mesh (`checkMesh`: Mesh OK,
+max non-orthogonality 73.5°, 2 severe faces). Decomposed to 8, started
+from uniform initial fields (t=0), identical solver tolerances
+(`tolerance 1e-6`, `relTol 0.01`). We ran **CPU GAMG and GPU ILU on the
+exact same mesh / decomposition / initial condition** — the only
+difference is the pressure solver. (U/k/ω are CPU PBiCGStab/DILU in both.)
+
+| Metric (steady-state) | **GAMG (CPU, np=8)** | **ILU (GPU B70, np=8)** |
+|---|---|---|
+| Wall-clock per step | **~7.7 s** | **~22–24 s** |
+| Pressure CG iterations / solve | **3–5** | **160–201** (often hits the 200 cap) |
+| Peak VRAM | n/a (host) | **10.7 GB** — fits with ~20 GB to spare |
+| Completes the run | ✅ | ✅ (5 steps clean, no DEVICE_LOST) |
+
+**ILU on the GPU is ~3× slower than GAMG on the CPU — at a mesh size
+where VRAM is a non-issue.** This is the conclusive result the whole
+investigation was after:
+
+- **VRAM was never the fundamental blocker.** At 7.1M, ILU peaks at 10.7
+  GB — trivially fits. The 34M/30.5M OOMs were a *symptom* of pushing
+  ILU to mesh sizes the 32 GB card can't hold, but even when it fits
+  comfortably, ILU loses.
+- **The real gap is the preconditioner's convergence rate.** ILU needs
+  ~40× more CG iterations than GAMG (160–201 vs 3–5). ILU is a *local*
+  preconditioner; GAMG is algebraic multigrid with near-optimal O(N)
+  convergence on elliptic pressure systems. No amount of GPU
+  per-iteration speed closes a 40× iteration gap when the CPU baseline
+  is only 3× faster in wall-clock.
+- **What would actually win:** a competitive **GPU-side algebraic
+  multigrid** as the pressure preconditioner. Ginkgo has Multigrid/PGM,
+  but it OOMs at these mesh sizes (Finding 26: ~1027 bytes/row) and isn't
+  effective through OGL's distributed path. Until GPU AMG is available
+  and VRAM-viable, block-Jacobi (too weak) and ILU (too slow to
+  converge) are the only options — and neither beats CPU GAMG.
+
+So across three mesh sizes the verdict is consistent and now *complete*:
+BJ(1) runs but never converges; BJ(>1) hits the `find_blocks` underflow;
+ILU converges but needs ~40× GAMG's iterations (and OOMs above ~25–30M);
+Multigrid doesn't fit. **GPU pressure-solve does not beat CPU GAMG on
+this class of problem with today's OGL + Ginkgo preconditioners — and the
+missing piece is GPU algebraic multigrid, not more VRAM or faster
+kernels.**
+
+Mesh build: `blockMesh` (36k base) → parallel `snappyHexMesh` (8 cores,
+~20 min) → 7.1M. Artifacts: `Testcase-half/log.GAMG-cpu`,
+`Testcase-half/log.ILU-gpu` → `logs/post-recovery-2026-06-17/`.
+
 ## Artifacts
 
 - `Testcase-GPU/log.post-recovery/test-BJ1.log` — clean 3-step BJ(1) run

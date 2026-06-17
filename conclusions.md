@@ -53,16 +53,35 @@
 > (BJ>1). The B70 ran 8-way multi-rank GPU solves cleanly — this is a
 > **software-stack** limit, not hardware.
 >
+> ### The conclusive test (half-resolution 7.1M mesh) — VRAM was a red herring
+> To remove VRAM from the equation we remeshed the case at half
+> resolution (7.1M cells, parallel snappyHexMesh on 8 cores) and ran CPU
+> GAMG vs GPU ILU on the **same mesh / decomposition / initial condition**
+> ([findings/30, Addendum 2](findings/30_post_recovery_clean_multirank_perf.md)):
+>
+> | per step | GAMG (CPU np=8) | ILU (GPU B70 np=8) |
+> |---|---|---|
+> | wall-clock | **~7.7 s** | **~22–24 s** |
+> | pressure CG iters | **3–5** | **160–201** |
+> | peak VRAM | host | 10.7 GB (fits easily) |
+>
+> ILU on the GPU is **~3× slower than CPU GAMG even where VRAM is a
+> non-issue**, because it needs ~40× more CG iterations (ILU is a local
+> preconditioner; GAMG is algebraic multigrid with ~O(N) convergence).
+>
 > ### Net
-> May's "hardware great, software not ready" still holds — but the gap is
-> now precisely located. Ginkgo's preconditioner bugs are fixed; the CR
-> 26.05 LD-switch restores multi-rank; the B70 itself is fully capable.
-> The two remaining walls are both above the hardware: (1) OGL's
-> distributed `find_blocks` underflow (blocks block-Jacobi BS>1), and
-> (2) the ILU factorization's Csr→Coo materialization blowing the 32 GB
-> budget at 34M cells. Fix either — or move to a larger-VRAM card — and
-> the strong-preconditioner GPU-CFD door opens. Until then: CPU GAMG for
-> production.
+> "Hardware great, software not ready" still holds — and the gap is now
+> *precisely and conclusively* located. Ginkgo's preconditioner bugs are
+> fixed; the CR 26.05 LD-switch restores multi-rank; the B70 ran 8-way
+> GPU solves cleanly. But the decisive limiter is **preconditioner
+> convergence rate, not VRAM and not kernel speed**: block-Jacobi(1) is
+> too weak (never converges), BJ(>1) hits OGL's distributed `find_blocks`
+> underflow, ILU converges but at ~40× GAMG's iteration count (and OOMs
+> above ~25–30M cells), and Ginkgo Multigrid doesn't fit. The one thing
+> that could beat CPU GAMG — a VRAM-viable **GPU-side algebraic
+> multigrid** wired through OGL's distributed path — does not yet exist on
+> this stack. Until it does: **CPU GAMG for production pressure solving**;
+> the GPU for LLMs and visualization.
 
 ---
 
