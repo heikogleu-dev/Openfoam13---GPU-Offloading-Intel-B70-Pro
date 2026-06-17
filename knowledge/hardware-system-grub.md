@@ -10,6 +10,20 @@
 - Drivers: `xe` (B70) + `i915` (iGPU). CR default **26.18** (see CR file).
 - Both GPUs visible in `sycl-ls`.
 
+### B70 compute throughput (measured)
+- **FP64: ~1335 GFLOPS** + **530 GB/s** memory bandwidth — our own clpeak,
+  posted in [Ginkgo #2013](https://github.com/ginkgo-project/ginkgo/issues/2013)
+  (93% / 87% of internally-computed spec).
+- **FP64:FP32 ≈ 1:8** — **strong for a consumer/pro GPU** (consumer NVIDIA is
+  ~1:64; Intel Alchemist had *no* native FP64, emulation only). Battlemage FP64
+  is **native but rate-limited on the general-purpose XVE units** (not the slow
+  Alchemist software-emulation path); `cl_khr_fp64` is exposed natively (no
+  emulation flags). FP64-CFD is viable on the B70.
+- Data-center contrast: Intel Max/Ponte Vecchio is FP64-first (1:1, ~52 TFLOPS).
+- **Consequence:** FP64 throughput is **not** the bottleneck for the (bandwidth-
+  bound) pressure solve. (clpeak not installed locally — build from source for a
+  fresh number if needed.)
+
 ## iGPU-PRIME desktop passthrough (set up for FluidX3D, removed 2026-06-17)
 
 Originally the desktop was forced onto the iGPU to free B70 VRAM for CFD.

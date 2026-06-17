@@ -18,6 +18,15 @@
 > would lift it to ~25–30M. The GPU-CFD win is now a *feeding + VRAM* problem,
 > not a preconditioner dead-end. See `scripts/next-session-plan.md`.
 >
+> **Platform fit (researched):** the B70 has **strong FP64** (~1335 GFLOPS
+> measured, ~1:8 — *not* the bottleneck; our earlier weak-FP64 guess was wrong),
+> and our CG + matrix-AMG + FP64 approach **matches community best practice**.
+> We are, per the public record, the **only ones running OGL/Ginkgo OpenFOAM on
+> a consumer Battlemage GPU** — bleeding edge; the gap is the Ginkgo SYCL
+> preconditioner software, not the silicon. Classical Ruge-Stüben AMG (the real
+> fix for the iter-count floor) just landed in Ginkgo `develop` but is CPU-only
+> so far (no SYCL kernels yet). See `knowledge/intel-platform-fit.md`.
+>
 > ### The SYCL preconditioner bugs are FIXED in Ginkgo 2.0
 > The May verdict's central claim — "no viable GPU preconditioner exists"
 > — no longer holds. A standalone Ginkgo 2.0 SYCL sweep

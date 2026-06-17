@@ -146,6 +146,11 @@ host-side LDU→CSR assembly / value-update / MPI / residual that the GPU waits
 on), and why the GPU is under-fed (matches the >10M-cells/GPU threshold).
 
 Implications:
+- **It is NOT weak FP64.** The B70 has strong FP64 (~1335 GFLOPS measured,
+  ~1:8, [hardware-system-grub.md](hardware-system-grub.md)); sparse SpMV/CG is
+  bandwidth-bound, so the FP64 ALU is not the wall. The limiter is the
+  preconditioner software + host↔device copy + CPU assembly. (Corrects an
+  earlier guess that weak FP64 caused the 46%.)
 - **More ranks faster is expected here** (single GPU + CPU-heavy assembly) — it
   is *not* a sign of "CPU solving"; the pressure solve does run on the GPU, the
   GPU just spends half its time waiting on host work.

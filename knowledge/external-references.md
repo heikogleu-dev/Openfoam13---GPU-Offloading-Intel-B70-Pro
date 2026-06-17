@@ -87,6 +87,50 @@ doing fresh external research.**
 > **RapidCFD** (CUDA OpenFOAM fork) on Titan X, **not** OGL/Ginkgo. Both real
 > OGL papers benchmark vs CPU **PCG**, not GAMG.
 
+## Intel-platform fit & FP64 / mixed precision (2026-06-17 research round)
+
+See [intel-platform-fit.md](intel-platform-fit.md) for the synthesis.
+
+- **B70 FP64 (our own measurement):** clpeak in
+  [Ginkgo #2013](https://github.com/ginkgo-project/ginkgo/issues/2013) →
+  **1335 GFLOPS FP64, 530 GB/s** (~1:8). Battlemage FP64 is native-rate-limited
+  on XVE units, not Alchemist-style emulation. Alchemist had no native FP64
+  ([Tom's Hardware](https://www.tomshardware.com/news/intel-arc-will-not-support-fp64-hardware)).
+  Compute-runtime FP64 policy / `cl_khr_fp64`:
+  [intel/compute-runtime FAQ](https://github.com/intel/compute-runtime/blob/master/opencl/doc/FAQ.md).
+  B580 ~909 GFLOPS clpeak: [Phoronix](https://www.phoronix.com/review/intel-arc-b580-gpu-compute/3).
+- **We are the only documented consumer-Battlemage OGL/Ginkgo OpenFOAM user** —
+  our [OGL #170](https://github.com/hpsim/OGL/issues/170),
+  [compute-runtime #922](https://github.com/intel/compute-runtime/issues/922),
+  Ginkgo [#2013](https://github.com/ginkgo-project/ginkgo/issues/2013)/[#2015](https://github.com/ginkgo-project/ginkgo/issues/2015)/[#2018](https://github.com/ginkgo-project/ginkgo/issues/2018).
+- **Classical RS-AMG merged to Ginkgo develop** (CPU-only, unreleased):
+  [PR #1985](https://github.com/ginkgo-project/ginkgo/pull/1985),
+  GPU-kernel draft [PR #2034](https://github.com/ginkgo-project/ginkgo/pull/2034).
+  Distributed MG since v1.8.0: [PR #1269](https://github.com/ginkgo-project/ginkgo/pull/1269).
+  Mixed-MG example: `ginkgo/examples/mixed-multigrid-solver`.
+- **Mixed-precision iterative-solver consensus** (FP64 outer + FP32 precond
+  keeps full accuracy): Carson & Higham 2018
+  [SISC](https://epubs.siam.org/doi/10.1137/17M1140819);
+  Bake/Carson/Ma 2025 [arXiv:2510.11379](https://arxiv.org/abs/2510.11379);
+  Abdelfattah et al. 2021 survey [arXiv:2007.06674](https://arxiv.org/abs/2007.06674).
+- **FP32 floor ~1e-6 (keep reductions in FP64):** Neko/Nekbone Chen et al. 2025
+  [arXiv:2503.02134](https://arxiv.org/abs/2503.02134). **Pure FP32 fails for
+  turbulent LES** → OpenFOAM keeps the solve FP64: Brogi et al. 2022
+  [arXiv:2209.06105](https://arxiv.org/abs/2209.06105).
+- **FP16/short-row verdict** (FP64→FP32 only ~2.33× at 7 nnz/row; index traffic
+  dominates): Loe et al. 2021 [arXiv:2105.07544](https://arxiv.org/abs/2105.07544);
+  Ginkgo-on-Intel subgroups {16,32}: Tsai/Cojean/Anzt 2021
+  [arXiv:2103.10116](https://arxiv.org/abs/2103.10116); FP16 range/squeezing:
+  Higham/Pranesh/Zounon 2019 [PDF](https://eprints.maths.manchester.ac.uk/2678/1/paper.pdf).
+- **FluidX3D on Intel Arc = excellent** (FP32/FP16 LBM, B70 ~6750 MLUPs/s):
+  [FluidX3D README](https://github.com/ProjectPhysX/FluidX3D),
+  [Phoronix B70](https://www.phoronix.com/review/intel-arc-pro-b70/5). Contrast:
+  FP64 OpenFOAM-via-OGL is experimental/unsupported on consumer Arc.
+
+> **Retraction logged:** an earlier research pass hallucinated a citation
+> (arXiv:2509.16081) for "OGL wires mixed precision only for Block-Jacobi" — that
+> paper says no such thing; the claim rests on our own code reading (Preconditioner.hpp:172).
+
 ## Where our work is genuinely new
 
 The fundamentals above are established. Our novel contribution is the

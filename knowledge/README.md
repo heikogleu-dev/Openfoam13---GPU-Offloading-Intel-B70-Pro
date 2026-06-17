@@ -30,6 +30,7 @@ This mirrors the KB discipline used in the sister FluidX3D project.
 |---|---|
 | [preconditioners-and-gpu-cfd.md](preconditioners-and-gpu-cfd.md) | **The core finding.** Why ILU/BJ lose to GAMG; the Multigrid tuning map (tuned to ~1.17× GAMG); theory (ILU ~N^(1/3) vs AMG ~O(1)); the PCG-not-GAMG baseline caveat; the AMG-resetup gotcha; cells/GPU win threshold |
 | [gpu-amg-reference-configs.md](gpu-amg-reference-configs.md) | Proven AmgX / Hypre-BoomerAMG / Ginkgo pressure configs from the literature — the tuning reference |
+| [intel-platform-fit.md](intel-platform-fit.md) | **Are we on the right track on Intel?** B70 FP64 reality (strong, ~1335 GFLOPS measured), community alignment/divergences, what's novel (we're the only ones), upstream roadmap (classical AMG incoming) |
 | [ginkgo-ogl-stack.md](ginkgo-ogl-stack.md) | Ginkgo SYCL preconditioner bugs (fixed in 2.0), the `find_blocks` distributed-path bug, OGL build patches + valid preconditioner keywords |
 | [intel-compute-runtime-and-driver.md](intel-compute-runtime-and-driver.md) | CR 26.05/26.14/26.18, the multi-process `zeInit` abort, the CR 26.05 LD-switch, GPU device-lost recovery |
 | [vram-and-mesh-scaling.md](vram-and-mesh-scaling.md) | Per-preconditioner VRAM (bytes/row), what fits at what mesh size on 32 GB, measured peaks |

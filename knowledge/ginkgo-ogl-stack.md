@@ -90,3 +90,32 @@ p
   rejects `-parallel` with a single rank). → **minimum is np=2.**
 - `ranksPerGPU` must match `mpirun -np`.
 - Multi-rank needs CR 26.05 (see intel-compute-runtime file).
+
+## Upstream status & roadmap (researched 2026-06-17)
+
+- **`find_blocks` underflow (BJ>1): NOVEL, never confirmed by a maintainer.**
+  Tracked only in our own issues ([Ginkgo #2013](https://github.com/ginkgo-project/ginkgo/issues/2013),
+  [#2018](https://github.com/ginkgo-project/ginkgo/issues/2018),
+  [OGL #170](https://github.com/hpsim/OGL/issues/170)). **Likely workaround:**
+  Ginkgo docs call `find_blocks` "merely a heuristic" — passing explicit
+  `block_pointers` bypasses it; may sidestep the underflow (untested). Best
+  upstream-contribution candidate (minimal repro + the `size_t(-1)` arithmetic).
+- **Classical Ruge-Stüben AMG just landed on Ginkgo `develop`**
+  ([PR #1985](https://github.com/ginkgo-project/ginkgo/pull/1985), 2026-06-15)
+  — **CPU reference only; GPU kernels are a draft ([#2034](https://github.com/ginkgo-project/ginkgo/pull/2034)),
+  no SYCL yet, unreleased.** This is the real fix for the ~13-iter MG floor
+  (classical AMG converges in few iters like GAMG) — but not usable on the B70
+  yet. Smoothed aggregation: still none. PMIS "on the maintainer's list".
+- **Distributed multigrid exists in Ginkgo since v1.8.0 (2024)** — only the
+  *OGL integration* of it is open. Caveat: PGM aggregation is local-per-rank.
+- **Mixed-precision multigrid is exampled + works** (Ginkgo
+  `mixed-multigrid-solver` instantiates `Pgm<float>`; bugfix PR #1663). No
+  SYCL-specific mixed-MG bug reported → an OGL DP-SP patch is feasible.
+- **Ginkgo SYCL backend = DPC++/icpx-only** ([#2008](https://github.com/ginkgo-project/ginkgo/issues/2008));
+  validated on data-center Max/PVC, consumer Arc untested. On SYCL in practice:
+  point-Jacobi + CG/BiCGStab/GMRES solid; BJ(>1)/IC/ILU/ICT/ISAI-at-scale/PGM
+  unreliable on Battlemage (our [#2015](https://github.com/ginkgo-project/ginkgo/issues/2015)).
+- **OGL is actively developed** (last commit 2026-05-09) but no tagged release
+  since v0.5.4 (2024); README documents only AMD MI100, no Intel guidance.
+- SYCL build caveat: may need `-DCMAKE_CXX_FLAGS=-ffp-model=precise` (IEEE-754
+  differences in Intel SYCL compilers) — relevant for mixed-precision results.
