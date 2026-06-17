@@ -1,0 +1,20 @@
+[rank 3/4] MPI init OK
+[rank 2/4] MPI init OK
+[rank 1/4] MPI init OK
+[rank 0/4] MPI init OK
+[rank 2/4] OK DpcppExecutor::create
+[rank 0/4] OK DpcppExecutor::create
+[rank 3/4] OK DpcppExecutor::create
+[rank 1/4] OK DpcppExecutor::create
+[rank 0/4] OK gko::array 1024 + fill
+[rank 3/4] OK gko::array 1024 + fill
+[rank 1/4] OK gko::array 1024 + fill
+[rank 2/4] OK gko::array 1024 + fill
+[rank 1/4] OK gko::array 200 MiB
+[rank 3/4] OK gko::array 200 MiB
+[rank 2/4] OK gko::array 200 MiB
+[rank 0/4] OK gko::array 200 MiB
+[rank 0/4] ALL DONE
+[rank 1/4] ALL DONE
+[rank 3/4] ALL DONE
+[rank 2/4] ALL DONE

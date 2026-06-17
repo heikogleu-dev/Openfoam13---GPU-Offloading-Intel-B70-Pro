@@ -1,0 +1,48 @@
+[rank 5/8] MPI init OK
+[rank 4/8] MPI init OK
+[rank 2/8] MPI init OK
+[rank 3/8] MPI init OK
+[rank 7/8] MPI init OK
+[rank 6/8] MPI init OK
+[rank 0/8] MPI init OK
+[rank 1/8] MPI init OK
+[rank 1/8] after MPI_Barrier (pre-Ginkgo)
+[rank 0/8] after MPI_Barrier (pre-Ginkgo)
+[rank 2/8] after MPI_Barrier (pre-Ginkgo)
+[rank 4/8] after MPI_Barrier (pre-Ginkgo)
+[rank 6/8] after MPI_Barrier (pre-Ginkgo)
+[rank 5/8] after MPI_Barrier (pre-Ginkgo)
+[rank 3/8] after MPI_Barrier (pre-Ginkgo)
+[rank 7/8] after MPI_Barrier (pre-Ginkgo)
+[rank 5/8] OK DpcppExecutor::create
+[rank 3/8] OK DpcppExecutor::create
+[rank 6/8] OK DpcppExecutor::create
+[rank 0/8] OK DpcppExecutor::create
+[rank 1/8] OK DpcppExecutor::create
+[rank 2/8] OK DpcppExecutor::create
+[rank 4/8] OK DpcppExecutor::create
+[rank 7/8] OK DpcppExecutor::create
+[rank 5/8] OK gko::array 1024 + fill
+[rank 6/8] OK gko::array 1024 + fill
+[rank 3/8] OK gko::array 1024 + fill
+[rank 0/8] OK gko::array 1024 + fill
+[rank 1/8] OK gko::array 1024 + fill
+[rank 2/8] OK gko::array 1024 + fill
+[rank 4/8] OK gko::array 1024 + fill
+[rank 7/8] OK gko::array 1024 + fill
+[rank 3/8] OK gko::array 200 MiB
+[rank 0/8] OK gko::array 200 MiB
+[rank 1/8] OK gko::array 200 MiB
+[rank 2/8] OK gko::array 200 MiB
+[rank 5/8] OK gko::array 200 MiB
+[rank 6/8] OK gko::array 200 MiB
+[rank 4/8] OK gko::array 200 MiB
+[rank 7/8] OK gko::array 200 MiB
+[rank 5/8] ALL DONE
+[rank 7/8] ALL DONE
+[rank 1/8] ALL DONE
+[rank 3/8] ALL DONE
+[rank 4/8] ALL DONE
+[rank 6/8] ALL DONE
+[rank 0/8] ALL DONE
+[rank 2/8] ALL DONE
