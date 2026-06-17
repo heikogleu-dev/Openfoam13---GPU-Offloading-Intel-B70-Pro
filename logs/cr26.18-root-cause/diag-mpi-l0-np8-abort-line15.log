@@ -1,0 +1,289 @@
+[rank 5/8] MPI init OK
+[rank 0/8] MPI init OK
+[rank 6/8] MPI init OK
+[rank 7/8] MPI init OK
+[rank 2/8] MPI init OK
+[rank 4/8] MPI init OK
+[rank 3/8] MPI init OK
+[rank 1/8] MPI init OK
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+[Tavea-Station:207725] *** Process received signal ***
+[Tavea-Station:207725] Signal: Aborted (6)
+[Tavea-Station:207725] Signal code:  (-6)
+[Tavea-Station:207726] *** Process received signal ***
+[Tavea-Station:207726] Signal: Aborted (6)
+[Tavea-Station:207726] Signal code:  (-6)
+[Tavea-Station:207726] [ 0] [Tavea-Station:207725] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x76a4df245cb0]
+[Tavea-Station:207725] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x730da7e45cb0]
+[Tavea-Station:207726] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x76a4df2a648c]
+[Tavea-Station:207725] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x730da7ea648c]
+[Tavea-Station:207726] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x76a4df245b7e]
+[Tavea-Station:207725] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x730da7e45b7e]
+[Tavea-Station:207726] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x76a4df2288ec]
+[Tavea-Station:207725] [ 4] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x730da7e288ec]
+[Tavea-Station:207726] [ 4] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x76a4c64fc682]
+[Tavea-Station:207725] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x730d8f4fc682]
+[Tavea-Station:207726] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x76a4c64fc693]
+[Tavea-Station:207725] [ 6] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x730d8f4fc693]
+[Tavea-Station:207726] [ 6] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x76a4c6c1ca35]
+[Tavea-Station:207725] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x730d8fc1ca35]
+[Tavea-Station:207726] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x76a4c6b87488]
+[Tavea-Station:207725] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x76a4c6b90f11]
+[Tavea-Station:207725] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x730d8fb87488]
+[Tavea-Station:207726] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x730d8fb90f11]
+/lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x76a4c6c6f39c]
+[Tavea-Station:207725] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x76a4c6adc516]
+[Tavea-Station:207725] [11] [Tavea-Station:207726] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x730d8fc6f39c]
+[Tavea-Station:207726] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x76a4c6af3e6a]
+[Tavea-Station:207725] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x76a4c6c13404]
+[Tavea-Station:207725] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x730d8fadc516]
+[Tavea-Station:207726] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x730d8faf3e6a]
+[Tavea-Station:207726] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x76a4c6b30120]
+[Tavea-Station:207725] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x76a4c662c03e]
+[Tavea-Station:207725] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x730d8fc13404]
+[Tavea-Station:207726] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x730d8fb30120]
+[Tavea-Station:207726] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x76a4c662f551]
+[Tavea-Station:207725] [16] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x730d8f62c03e]
+[Tavea-Station:207726] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x730d8f62f551]
+[Tavea-Station:207726] [16] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x76a4df2a97f4]
+[Tavea-Station:207725] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x730da7ea97f4]
+[Tavea-Station:207726] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x76a4df2a9869]
+[Tavea-Station:207725] [18] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x730da7ea9869]
+[Tavea-Station:207726] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x76a4c65d4a7b]
+[Tavea-Station:207725] [19] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x730d8f5d4a7b]
+[Tavea-Station:207726] [19] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x76a4e0044f93]
+[Tavea-Station:207725] [20] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x730da8b1ff93]
+[Tavea-Station:207726] [20] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x76a4dff969f7]
+[Tavea-Station:207725] [21] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x730da8a719f7]
+[Tavea-Station:207726] [21] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x76a4df2a97f4]
+[Tavea-Station:207725] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x730da7ea97f4]
+[Tavea-Station:207726] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x76a4df2a9869]
+[Tavea-Station:207725] [23] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x730da7ea9869]
+[Tavea-Station:207726] [23] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x76a4dff96ff1]
+[Tavea-Station:207725] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207725] [25] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x730da8a71ff1]
+[Tavea-Station:207726] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207726] [25] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x76a4df22a601]
+[Tavea-Station:207725] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x730da7e2a601]
+[Tavea-Station:207726] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x76a4df22a718]
+[Tavea-Station:207725] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207725] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x730da7e2a718]
+[Tavea-Station:207726] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207726] *** End of error message ***
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+[Tavea-Station:207729] *** Process received signal ***
+[Tavea-Station:207729] Signal: Aborted (6)
+[Tavea-Station:207729] Signal code:  (-6)
+[Tavea-Station:207728] *** Process received signal ***
+[Tavea-Station:207728] Signal: Aborted (6)
+[Tavea-Station:207728] Signal code:  (-6)
+[Tavea-Station:207729] [ 0] [Tavea-Station:207728] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x7fbfe2645cb0]
+[Tavea-Station:207729] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x7fbfe26a648c]
+[Tavea-Station:207729] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x7caed4045cb0]
+[Tavea-Station:207728] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x7caed40a648c]
+[Tavea-Station:207728] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x7fbfe2645b7e]
+[Tavea-Station:207729] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x7caed4045b7e]
+[Tavea-Station:207728] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x7fbfe26288ec]
+[Tavea-Station:207729] [ 4] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x7fbfca4fc682]
+[Tavea-Station:207729] [ 5] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x7caed40288ec]
+[Tavea-Station:207728] [ 4] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x7fbfca4fc693]
+[Tavea-Station:207729] [ 6] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x7fbfcac1ca35]
+[Tavea-Station:207729] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x7fbfcab87488]
+[Tavea-Station:207729] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x7fbfcab90f11]
+[Tavea-Station:207729] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x7fbfcac6f39c]
+[Tavea-Station:207729] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x7fbfcaadc516]
+[Tavea-Station:207729] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x7fbfcaaf3e6a]
+[Tavea-Station:207729] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x7fbfcac13404]
+[Tavea-Station:207729] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x7fbfcab30120]
+[Tavea-Station:207729] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x7fbfca62c03e]
+[Tavea-Station:207729] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x7fbfca62f551]
+[Tavea-Station:207729] [16] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7fbfe26a97f4]
+[Tavea-Station:207729] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7fbfe26a9869]
+[Tavea-Station:207729] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x7fbfca5d4a7b]
+[Tavea-Station:207729] [19] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x7caebb4fc682]
+[Tavea-Station:207728] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x7caebb4fc693]
+[Tavea-Station:207728] [ 6] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x7caebbc1ca35]
+[Tavea-Station:207728] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x7caebbb87488]
+[Tavea-Station:207728] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x7caebbb90f11]
+[Tavea-Station:207728] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x7caebbc6f39c]
+[Tavea-Station:207728] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x7caebbadc516]
+[Tavea-Station:207728] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x7caebbaf3e6a]
+[Tavea-Station:207728] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x7caebbc13404]
+[Tavea-Station:207728] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x7caebbb30120]
+[Tavea-Station:207728] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x7caebb62c03e]
+[Tavea-Station:207728] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x7caebb62f551]
+[Tavea-Station:207728] [16] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7caed40a97f4]
+[Tavea-Station:207728] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7caed40a9869]
+[Tavea-Station:207728] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x7caebb5d4a7b]
+[Tavea-Station:207728] [19] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x7fbfe3470f93]
+[Tavea-Station:207729] [20] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x7caed4d86f93]
+[Tavea-Station:207728] [20] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x7fbfe33c29f7]
+[Tavea-Station:207729] [21] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x7caed4cd89f7]
+[Tavea-Station:207728] [21] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7fbfe26a97f4]
+[Tavea-Station:207729] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7caed40a97f4]
+[Tavea-Station:207728] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7fbfe26a9869]
+[Tavea-Station:207729] [23] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7caed40a9869]
+[Tavea-Station:207728] [23] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x7fbfe33c2ff1]
+[Tavea-Station:207729] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207729] [25] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x7caed4cd8ff1]
+[Tavea-Station:207728] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207728] [25] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x7fbfe262a601]
+[Tavea-Station:207729] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x7fbfe262a718]
+[Tavea-Station:207729] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207729] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x7caed402a601]
+[Tavea-Station:207728] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x7caed402a718]
+[Tavea-Station:207728] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207728] *** End of error message ***
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+[Tavea-Station:207727] *** Process received signal ***
+[Tavea-Station:207727] Signal: Aborted (6)
+[Tavea-Station:207727] Signal code:  (-6)
+[Tavea-Station:207724] *** Process received signal ***
+[Tavea-Station:207724] Signal: Aborted (6)
+[Tavea-Station:207724] Signal code:  (-6)
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+[Tavea-Station:207727] [ 0] [Tavea-Station:207724] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x7e69e6045cb0]
+[Tavea-Station:207727] [ 1] [Tavea-Station:207731] *** Process received signal ***
+[Tavea-Station:207731] Signal: Aborted (6)
+[Tavea-Station:207731] Signal code:  (-6)
+/usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x763641e45cb0]
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+[Tavea-Station:207724] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x7e69e60a648c]
+[Tavea-Station:207727] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x763641ea648c]
+[Tavea-Station:207724] [ 2] [Tavea-Station:207730] *** Process received signal ***
+[Tavea-Station:207730] Signal: Aborted (6)
+[Tavea-Station:207730] Signal code:  (-6)
+/usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x7e69e6045b7e]
+[Tavea-Station:207727] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x7e69e60288ec]
+[Tavea-Station:207727] [ 4] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x763641e45b7e]
+[Tavea-Station:207724] [ 3] [Tavea-Station:207731] [ 0] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x7e69cd4fc682]
+[Tavea-Station:207727] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x7e69cd4fc693]
+[Tavea-Station:207727] [ 6] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x763641e288ec]
+[Tavea-Station:207724] [ 4] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x7636294fc682]
+[Tavea-Station:207724] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x7636294fc693]
+[Tavea-Station:207724] [ 6] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x763629c1ca35]
+[Tavea-Station:207724] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x763629b87488]
+[Tavea-Station:207724] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x763629b90f11]
+[Tavea-Station:207724] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x763629c6f39c]
+[Tavea-Station:207724] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x763629adc516]
+[Tavea-Station:207724] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x763629af3e6a]
+[Tavea-Station:207724] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x763629c13404]
+[Tavea-Station:207724] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x763629b30120]
+[Tavea-Station:207724] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x76362962c03e]
+[Tavea-Station:207724] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x76362962f551]
+[Tavea-Station:207724] [16] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x763641ea97f4]
+[Tavea-Station:207724] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x763641ea9869]
+[Tavea-Station:207724] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x7636295d4a7b]
+[Tavea-Station:207724] [19] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x7e69cdc1ca35]
+[Tavea-Station:207727] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x7e69cdb87488]
+[Tavea-Station:207727] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x7e69cdb90f11]
+[Tavea-Station:207727] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x7e69cdc6f39c]
+[Tavea-Station:207727] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x7e69cdadc516]
+[Tavea-Station:207727] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x7e69cdaf3e6a]
+[Tavea-Station:207727] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x7e69cdc13404]
+[Tavea-Station:207727] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x7e69cdb30120]
+[Tavea-Station:207727] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x7e69cd62c03e]
+[Tavea-Station:207727] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x7e69cd62f551]
+[Tavea-Station:207727] [16] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7e69e60a97f4]
+[Tavea-Station:207727] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7e69e60a9869]
+[Tavea-Station:207727] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x7e69cd5d4a7b]
+[Tavea-Station:207727] [19] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x7e69e6d20f93]
+[Tavea-Station:207727] [20] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x7e69e6c729f7]
+[Tavea-Station:207727] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x7952bde45cb0]
+[Tavea-Station:207731] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x7952bdea648c]
+[Tavea-Station:207731] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x7952bde45b7e]
+[Tavea-Station:207731] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x7952bde288ec]
+[Tavea-Station:207731] [ 4] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x7952a54fc682]
+[Tavea-Station:207731] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x7952a54fc693]
+[Tavea-Station:207731] [ 6] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x7952a5c1ca35]
+[Tavea-Station:207731] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x7952a5b87488]
+[Tavea-Station:207731] [ 8] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x7952a5b90f11]
+[Tavea-Station:207731] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x7952a5c6f39c]
+[Tavea-Station:207731] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x7952a5adc516]
+[Tavea-Station:207731] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x7952a5af3e6a]
+[Tavea-Station:207731] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x7952a5c13404]
+[Tavea-Station:207731] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x7952a5b30120]
+[Tavea-Station:207731] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x7952a562c03e]
+[Tavea-Station:207731] [15] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x7952a562f551]
+[Tavea-Station:207731] [16] [Tavea-Station:207730] [ 0] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x45cb0) [0x7d3742845cb0]
+[Tavea-Station:207730] [ 1] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_kill+0x11c) [0x7d37428a648c]
+[Tavea-Station:207730] [ 2] /usr/lib/x86_64-linux-gnu/libc.so.6(gsignal+0x1e) [0x7d3742845b7e]
+[Tavea-Station:207730] [ 3] /usr/lib/x86_64-linux-gnu/libc.so.6(abort+0x27) [0x7d37428288ec]
+[Tavea-Station:207730] [ 4] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc682) [0x7d372a4fc682]
+[Tavea-Station:207730] [ 5] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0xfc693) [0x7d372a4fc693]
+[Tavea-Station:207730] [ 6] [21] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x763642c1ef93]
+[Tavea-Station:207724] [20] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x81ca35) [0x7d372ac1ca35]
+[Tavea-Station:207730] [ 7] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x787488) [0x7d372ab87488]
+[Tavea-Station:207730] [ 8] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7952bdea97f4]
+[Tavea-Station:207731] [17] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x763642b709f7]
+[Tavea-Station:207724] [21] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x790f11) [0x7d372ab90f11]
+[Tavea-Station:207730] [ 9] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x86f39c) [0x7d372ac6f39c]
+[Tavea-Station:207730] [10] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6dc516) [0x7d372aadc516]
+/usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7e69e60a97f4]
+[Tavea-Station:207727] [22] [Tavea-Station:207730] [11] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x6f3e6a) [0x7d372aaf3e6a]
+[Tavea-Station:207730] [12] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x813404) [0x7d372ac13404]
+[Tavea-Station:207730] [13] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x730120) [0x7d372ab30120]
+[Tavea-Station:207730] [14] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22c03e) [0x7d372a62c03e]
+Abort was called at 15 line in file:
+../../neo/shared/source/gmm_helper/resource_info.cpp
+[Tavea-Station:207730] [15] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7952bdea9869]
+[Tavea-Station:207731] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x22f551) [0x7d372a62f551]
+[Tavea-Station:207730] [16] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x763641ea97f4]
+[Tavea-Station:207724] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7e69e60a9869]
+[Tavea-Station:207727] [23] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x7952a55d4a7b]
+[Tavea-Station:207731] [19] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x7e69e6c72ff1]
+[Tavea-Station:207727] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207727] [25] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x763641ea9869]
+[Tavea-Station:207724] [23] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x7952beb91f93]
+[Tavea-Station:207731] [20] /usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7d37428a97f4]
+[Tavea-Station:207730] [17] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x7e69e602a601]
+[Tavea-Station:207727] [26] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x763642b70ff1]
+[Tavea-Station:207724] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207724] [25] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x7952beae39f7]
+[Tavea-Station:207731] [21] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x7e69e602a718]
+[Tavea-Station:207727] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207727] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x763641e2a601]
+[Tavea-Station:207724] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7d37428a9869]
+[Tavea-Station:207730] [18] /lib/x86_64-linux-gnu/libze_intel_gpu.so.1(+0x1d4a7b) [0x7d372a5d4a7b]
+[Tavea-Station:207730] [19] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x763641e2a718]
+[Tavea-Station:207724] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207724] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7952bdea97f4]
+[Tavea-Station:207731] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7952bdea9869]
+[Tavea-Station:207731] [23] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0xfaf93) [0x7d37435d0f93]
+[Tavea-Station:207730] [20] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x7952beae3ff1]
+[Tavea-Station:207731] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207731] [25] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(+0x4c9f7) [0x7d37435229f7]
+[Tavea-Station:207730] [21] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x7952bde2a601]
+[Tavea-Station:207731] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x7952bde2a718]
+[Tavea-Station:207731] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207731] *** End of error message ***
+/usr/lib/x86_64-linux-gnu/libc.so.6(+0xa97f4) [0x7d37428a97f4]
+[Tavea-Station:207730] [22] /usr/lib/x86_64-linux-gnu/libc.so.6(pthread_once+0x19) [0x7d37428a9869]
+[Tavea-Station:207730] [23] /usr/lib/x86_64-linux-gnu/libze_loader.so.1(zeInit+0x71) [0x7d3743522ff1]
+[Tavea-Station:207730] [24] ./diag-mpi-l0() [0x40248e]
+[Tavea-Station:207730] [25] /usr/lib/x86_64-linux-gnu/libc.so.6(+0x2a601) [0x7d374282a601]
+[Tavea-Station:207730] [26] /usr/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x88) [0x7d374282a718]
+[Tavea-Station:207730] [27] ./diag-mpi-l0() [0x402d95]
+[Tavea-Station:207730] *** End of error message ***
+--------------------------------------------------------------------------
+Sorry!  You were supposed to get help about:
+    prun:proc-aborted-strsignal
+But I couldn't open the help file:
+    /usr/lib/x86_64-linux-gnu/pmix2/share/pmix/help-prun.txt: No such file or directory
+    /usr/lib/x86_64-linux-gnu/prrte3/share/prte/help-prun.txt: No such file or directory.
+Sorry!
+--------------------------------------------------------------------------
+ 
