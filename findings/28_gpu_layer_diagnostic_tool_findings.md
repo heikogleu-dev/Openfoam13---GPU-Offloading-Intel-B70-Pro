@@ -132,11 +132,56 @@ The same MPI launcher, the same Ginkgo build, the same CR 26.18 stack
 
 ## Upstream-actionable
 
-Drafted PR text against hpsim/OGL — inserts a single
-`MPI_Barrier(MPI_COMM_WORLD)` in `DeviceIdHandler::DeviceIdHandler`
-(`include/OGL/DevicePersistent/ExecutorHandler.hpp`) before any SYCL
-queue creation. To be tested + filed once GPU recovery permits one
-more OpenFOAM multi-rank smoke run with the patch in place.
+### Attempted: MPI_Barrier patch in OGL `ExecutorHandler` — INSUFFICIENT
+
+Tried directly: added `MPI_Barrier(MPI_COMM_WORLD)` calls in
+`include/OGL/DevicePersistent/ExecutorHandler.hpp` at two positions:
+(a) immediately before `gko::DpcppExecutor::get_num_devices("gpu")`
+(which already triggers SYCL platform enumeration), and (b)
+immediately before `gko::DpcppExecutor::create()`. Rebuilt OGL,
+re-installed, re-ran the BJ(1) np=8 OpenFOAM smoke test in three
+combinations:
+
+| Variant | Outcome |
+|---|---|
+| OGL patched, no CR 26.05 LD-switch | ❌ `pthread_once`/`zeInit` cascade |
+| OGL patched, CR 26.05 LD-switch active | ❌ `UR_RESULT_ERROR_DEVICE_LOST` |
+| OGL patched, LD-switch + `ONEAPI_DEVICE_SELECTOR=level_zero:0` | ❌ same DEVICE_LOST |
+
+Same time-window, the standalone `mpirun -np 8 ./diag-mpi-ginkgo`
+(with `DIAG_BARRIER_BEFORE_INIT=1` and the LD-switch) continued to
+pass cleanly all 8 ranks. So the workaround works for a minimal
+SYCL/Ginkgo init but does NOT work for the full OGL+OpenFOAM
+pipeline — meaning the race is reached **earlier** than OGL's
+`ExecutorHandler::init()`, probably during:
+
+- static-init of libOGL.so and its `libginkgo*.so.2.0.0` dependencies
+  (loaded at OpenFOAM `libs` directive processing time, before
+  `Pstream::parRun()` is even callable)
+- or in OpenFOAM's own `MPI_Init` + `Pstream::init` sequencing, which
+  may load the SYCL stack as a side effect
+
+That puts the fix outside what a single OGL source change can reach
+in this stack. The `MPI_Barrier` in `ExecutorHandler::init()` is
+still a small step forward (would help anyone whose stack triggers
+the race only at executor creation, not at lib-load), but does not
+close the issue for the OpenFOAM Foundation 13 / libOGL.so / Ginkgo 2.0
+combination tested here.
+
+The diagnostic tool itself remains the highest-value upstream output
+of this work — it gives `nbeams` / `greole` / Intel CR maintainers a
+crisp reproducer for the specific layer at which their stack breaks.
+
+### Per-process state cache amplifies the appearance
+
+Once one OGL multi-rank run fails, **the running shell session
+appears to have a poisoned SYCL state** even though a fresh process
+(e.g. the diag tool) elsewhere on the same system works fine. We
+have not yet pinned down whether this is the persistent libze
+loader cache in `/dev/shm`, an environment variable that gets set,
+or simply timing dependent. For now: every failed multi-rank OGL
+test is its own session; recovery comes from waiting (5-10 min)
+for the next fresh process to inherit a clean state.
 
 ## Files
 
