@@ -31,6 +31,7 @@ This mirrors the KB discipline used in the sister FluidX3D project.
 | [preconditioners-and-gpu-cfd.md](preconditioners-and-gpu-cfd.md) | **The core finding.** Why ILU/BJ lose to GAMG; the Multigrid tuning map (tuned to ~1.17× GAMG); theory (ILU ~N^(1/3) vs AMG ~O(1)); the PCG-not-GAMG baseline caveat; the AMG-resetup gotcha; cells/GPU win threshold |
 | [gpu-amg-reference-configs.md](gpu-amg-reference-configs.md) | Proven AmgX / Hypre-BoomerAMG / Ginkgo pressure configs from the literature — the tuning reference |
 | [per-iteration-diagnostics.md](per-iteration-diagnostics.md) | Per-phase breakdown (init_precond/solve/transfer); the AMG-rebuild lever; fix path |
+| [amg-reuse-port-plan.md](amg-reuse-port-plan.md) | The #1 lever — full port plan for AMG values-only reuse (interface, develop adaptation, build/test) |
 | [performance-maps.md](performance-maps.md) | Measured (preconditioner × ranks) maps for 7.1M + 17.2M: util/VRAM/iters/wall-clock. Verdict: GPU-MG ≈ CPU-GAMG in double; FP32 needed for a clear win |
 | [intel-platform-fit.md](intel-platform-fit.md) | **Are we on the right track on Intel?** B70 FP64 reality (strong, ~1335 GFLOPS measured), community alignment/divergences, what's novel (we're the only ones), upstream roadmap (classical AMG incoming) |
 | [ginkgo-ogl-stack.md](ginkgo-ogl-stack.md) | Ginkgo SYCL preconditioner bugs (fixed in 2.0), the `find_blocks` distributed-path bug, OGL build patches + valid preconditioner keywords |
