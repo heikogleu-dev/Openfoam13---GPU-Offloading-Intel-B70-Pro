@@ -1,5 +1,12 @@
 # Test: splitComm=false has no measurable effect on s/step
 
+> ⚠️ **CAVEAT (2026-06-18 source audit):** the README documents `splitComm`, but
+> OGL `dev` source actually reads **`splitMPIComm`** via `lookupOrDefault`. The
+> `splitComm false` tested here is very likely a **silently-ignored no-op** (which
+> would also explain the null result). Re-test with **`splitMPIComm false`** before
+> concluding the communicator split is irrelevant. See
+> [knowledge/ogl-ginkgo-config-reference.md](../knowledge/ogl-ginkgo-config-reference.md) §1b.
+
 ## Background
 
 OGL's README documents:

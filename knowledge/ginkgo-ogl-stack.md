@@ -56,11 +56,18 @@ This is the one OGL-actionable, still-open bug.
 Valid `preconditioner` names: **BJ, ILU, ILUT, IRILU, IC, ICT, ISAI,
 GISAI, Multigrid, none**.
 
-`Multigrid` sub-options: `smoother` (Jacobi), `coarseSolver` (Jacobi/CG),
-`cycle` (v/w/f), `maxLevels`, `maxIterSmoother`, `maxIterCoarse`,
-`minCoarseRows`, `fixedCoarsening`. Also `multiLevelSchwarz`, `Distributed`.
+`Multigrid` sub-options (verified dev source — see
+[ogl-ginkgo-config-reference.md](ogl-ginkgo-config-reference.md) for the full,
+corrected table): `type` (Schwarz/Distributed), `cycle` (v/w/f), `smoother`
+(Jacobi/SOR/SSOR), `coarseSolver` (Jacobi/CG), `maxIterCoarse`, `relTolCoarse`,
+`maxIterSmoother`, `relaxationFactor`, `maxLevels` (src default **20**, not 9),
+`minCoarseRows` (src default **64000**, not 10).
+⚠️ CORRECTION: `multiLevelSchwarz` and `fixedCoarsening` are **BJ-only** options
+(`wrap_multi_level_schwarz`), **NOT** Multigrid sub-options (the MG path always
+uses PGM). `precision` for Multigrid is our local patch only (upstream has it on BJ).
 
-`BJ` sub-option: `maxBlockSize`.
+`BJ` sub-option: `maxBlockSize`. **Full key reference:
+[ogl-ginkgo-config-reference.md](ogl-ginkgo-config-reference.md).**
 
 ## fvSolution GKOCG block (working template)
 
