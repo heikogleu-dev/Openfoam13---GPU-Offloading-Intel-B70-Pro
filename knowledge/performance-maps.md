@@ -72,3 +72,34 @@ win must come from **FP32** (halves the bandwidth-bound SpMV that limits us) —
 which also unlocks the 34M mesh (VRAM). That is the next step. See
 [vram-and-mesh-scaling.md](vram-and-mesh-scaling.md),
 [preconditioners-and-gpu-cfd.md](preconditioners-and-gpu-cfd.md).
+
+## Performance projection (2026-06-18) — PROJECTED, not measured
+
+Built on the measured baseline + audit-corrected lever sizes. **Baseline = measured;
+everything below = projected (uncertainty flagged).** 17.2M, np16, s/step:
+
+| Stage | s/step | vs CPU GAMG (22.1) | basis |
+|---|---|---|---|
+| **Baseline today** (single-MG) | **20.9** | 1.06× | ✅ measured |
+| + C (AMG values-only reuse) | ~16–17 | ~1.3–1.4× | projected |
+| + C + D + tuning (full-float, copy-engine/batching) | ~14–15 | ~1.4–1.6× | projected |
+| **Hard ceiling** (GPU p-solve → 0) | **~11.5** | ~1.9× | Amdahl |
+
+**Logic:** the GPU does only the pressure-solve (~40–48% of wall-clock); the other
+~52–60% is CPU (U/k/omega DILU solves + p-assembly) — GAMG runs that same CPU work.
+- **C** ~2× on the GPU p-solve → ~15–20% wall-clock → ~16–17 s.
+- **D (full-float)** is mainly a **VRAM** lever (enables 34M); ~5–10% extra bandwidth.
+- **Tuning A/Bs** (V1-batching, copy-engine, clock-pin): ~5% combined, uncertain.
+
+**The real ceiling:** even with GPU p-solve → 0, the step floors at ~11.5 s (the CPU
+half) = ~1.9× vs GAMG. Beating that needs offloading U/k/omega + assembly too (a
+separate, large project) — the true architectural lever.
+
+**Two nuances:** (1) the advantage **grows with mesh size** (B70 under-fed at 7.1M,
+~46% busy; better-fed at 17–34M → bigger per-cell margin over GAMG; at 34M+full-float
+the margin likely widens). (2) This is **not** FluidX3D/LBM territory (~6750 MLUPS,
+GPU-native) — implicit FVM pressure-solve is a different method; the goal is beating
+CPU GAMG + freeing CPU cores.
+
+**Uncertainties:** C's payoff depends on the value-refill cost + iteration-creep
+(untested); D's bandwidth gain is estimated; the CPU floor is firm.

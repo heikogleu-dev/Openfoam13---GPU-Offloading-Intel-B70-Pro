@@ -92,6 +92,7 @@ rule (search it first, cite external validation):
 | [performance-maps.md](knowledge/performance-maps.md) | Measured (preconditioner × ranks) maps for 7.1M + 17.2M |
 | [per-iteration-diagnostics.md](knowledge/per-iteration-diagnostics.md) | Per-phase breakdown; the AMG-rebuild lever; the fix path |
 | [amg-reuse-port-plan.md](knowledge/amg-reuse-port-plan.md) | The #1 lever — port plan for AMG values-only reuse |
+| [full-float-port-plan.md](knowledge/full-float-port-plan.md) | Plan D — full-float solve (VRAM lever for 30–35M) |
 | [config-pitfalls.md](knowledge/config-pitfalls.md) | Config mistakes we hit — check before every run |
 | [intel-b70-tuning-levers.md](knowledge/intel-b70-tuning-levers.md) | Real-vs-no-op triage of Intel/L0/SYCL/xe tuning flags; TOP-5 cheap levers |
 | [vram-and-mesh-scaling.md](knowledge/vram-and-mesh-scaling.md) | Per-preconditioner VRAM, ceilings, mixed-precision savings |
@@ -197,6 +198,21 @@ preconditioner bugs → CR 26.18 root cause → CR 26.05 LD-switch). Highlights:
 **The GPU pressure solve beats CPU GAMG** on this hardware with Ginkgo 2.0 +
 tuned Multigrid + single precision. For production today, either path is viable;
 the GPU frees CPU cores and wins outright at ≥17M cells.
+
+**Where this is headed (PROJECTED — baseline measured, rest projected; 17.2M np16):**
+
+| Stage | s/step | vs CPU GAMG (22.1) |
+|---|---|---|
+| Baseline today (single-MG) | **20.9** ✅ | 1.06× |
+| + C (AMG reuse) | ~16–17 | ~1.3–1.4× |
+| + C + D + tuning | ~14–15 | ~1.4–1.6× |
+| Hard ceiling (GPU p-solve → 0) | ~11.5 | ~1.9× |
+
+The GPU does only the pressure-solve (~40–48% of wall-clock); the CPU U/k/omega +
+assembly is the rest, so **p-only offload tops out at ~1.9× vs GAMG** (Amdahl) —
+beyond that needs offloading the momentum/turbulence solves too. The margin **grows
+with mesh size** (B70 under-fed below ~10M). Details + uncertainties in
+[`knowledge/performance-maps.md`](knowledge/performance-maps.md).
 
 **Top roadmap items** (see [`scripts/next-session-plan.md`](scripts/next-session-plan.md)):
 1. **AMG-hierarchy caching with value-update** (port the `update_matrix_value`
