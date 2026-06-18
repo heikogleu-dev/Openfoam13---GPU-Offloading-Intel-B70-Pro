@@ -70,3 +70,21 @@ checkMesh -constant
 ```
 Half-res mesh: blockMesh `(120 60 40)` → `(60 30 20)` (2× coarser/dir) →
 snappy → **7.1M cells** (layers nearly double the snapped 3.9M).
+
+## PCIe link — "Gen1×1" is a reporting artifact (not a downgrade)
+
+`lspci` on the B70 **endpoint** shows PCIe Gen1×1 — this is an **Intel-Arc
+switch-hierarchy reporting artifact** (the GPU sits behind an internal PCIe
+switch; the endpoint node always mis-reports), NOT a real link downgrade.
+- **Real link = Gen5-class:** clpeak transfer on an actual B70 measures ~48–56 GB/s
+  (write/read-back). Read the true speed from the **parent bridge**, not the endpoint:
+  `lspci -D -d 8086:e223`, then walk up sysfs and read `current_link_speed` /
+  `current_link_width` on the bridge BDF.
+- ASPM changes link *power state* only, never lane width → `pcie_aspm=off` can't fix
+  an "x1" reading (and there's nothing to fix).
+- **Implication:** the OGL `copy_x_back` D2H measuring 0.94 GB/s is a **software
+  transfer-path** issue (pageable host memory, map/unmap, tiny per-iteration copies),
+  not the PCIe link. Smoke-test with clpeak before chasing PCIe.
+- A *genuine* x1 lock (BIOS/CMOS/firmware) would show x1 on the **bridge** node too —
+  fixable via Above-4G Decoding / ReBAR / igsc firmware. (Source: Intel KB 000094587;
+  B70 community gist; kernel issue #10753.)
