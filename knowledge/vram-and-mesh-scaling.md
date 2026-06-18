@@ -104,3 +104,22 @@ debugfs `vram_mm` needs a root `chmod` after each boot (can't do remotely).
 Instead sum per-process drm memory from `/proc/<pid>/fdinfo/*`
 (`drm-total-vram0` / `drm-resident-vram0`) over the `foamRun` ranks — used
 in `gpu-diag/run-ilu-monitored.sh` and `precond-vram-sweep.sh`.
+
+## Mixed precision PROTOTYPED (standalone Ginkgo, 2026-06-18)
+
+`gpu-diag/diag-mixedmg.cpp` — Poisson 2.25M, MG-CG, measured device free-memory:
+| mode | iters | VRAM | saving |
+|---|---|---|---|
+| double | 89 | 2107 MiB | — |
+| DP-SP (double finest, float coarse) | 89 | 1800 | −16% |
+| all-float preconditioner | 87 | 1583 | −26% |
+| **fullfloat (matrix+vectors+MG all float)** | 68* | **1466** | **−30%** |
+
+Mixed precision **compiles, runs, converges with no accuracy/iteration penalty**
+in Ginkgo SYCL on the B70. Key: DP-SP / all-float-precond keep the *finest*
+SpMV in double (the bandwidth bottleneck + the dominant matrix), so they give
+little bandwidth benefit and don't fit 34M (~37 GB). **Only the full-float solve
+(~1.0 GB/M in OGL terms) delivers both the bandwidth win and brings 34M into
+range (~30–35 GB, fits at np≤4).** In OGL the precond change is contained
+(Preconditioner.hpp); the full-float solve is a multi-file change (lduLduBase +
+CG + MatrixWrapper, all `scalar`-templated).
