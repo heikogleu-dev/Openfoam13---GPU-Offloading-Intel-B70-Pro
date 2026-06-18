@@ -1,312 +1,241 @@
-# Intel Arc Pro B70 Pro + OpenFOAM CFD — Pioneer Documentation
+# Intel Arc Pro B70 + OpenFOAM CFD — Pioneer Documentation
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![OpenFOAM](https://img.shields.io/badge/OpenFOAM-Foundation%2013-green)](https://openfoam.org)
-[![Ginkgo](https://img.shields.io/badge/Ginkgo-1.10%20SYCL-orange)](https://github.com/ginkgo-project/ginkgo)
-[![Intel Arc Pro B70](https://img.shields.io/badge/Intel%20Arc%20Pro-B70%20Pro%2032GB-blue)](https://www.intel.com/content/www/us/en/products/sku/245797)
-[![GPU CFD Status](https://img.shields.io/badge/GPU%20CFD%20Status-Software%20Not%20Ready-red)]()
+[![Ginkgo](https://img.shields.io/badge/Ginkgo-2.0%20SYCL-orange)](https://github.com/ginkgo-project/ginkgo)
+[![Intel Arc Pro B70](https://img.shields.io/badge/Intel%20Arc%20Pro-B70%2032GB-blue)](https://www.intel.com/content/www/us/en/products/sku/245797)
+[![GPU CFD Status](https://img.shields.io/badge/GPU%20pressure%20solve-BEATS%20CPU%20GAMG-brightgreen)]()
 
-> **TL;DR: The hardware is excellent. The plumbing around it is not.**
+> **TL;DR (June 2026): the GPU now wins.** With Ginkgo 2.0 + a tuned algebraic
+> **Multigrid** preconditioner + **single-precision** preconditioning (our OGL
+> patch), the B70 GPU pressure solve **beats CPU GAMG** on this hardware — the
+> first clear GPU-CFD pressure-solve win documented on Intel Battlemage.
 >
-> GPU FP64: 1374 GFLOPS (96% of spec) ✅
-> VRAM: 530 GB/s sustained (87% of spec) ✅
-> Kernel-launch: 5.6 µs sync (CUDA-par) ✅
-> **GPU active during CFD: only 34% of wall clock** ❌
-> **GPU idle: 66% — waiting for MPI Allreduce + forced host-buffer copies** ❌
+> | 17.2M cells, np=8/16 | s/step | iters |
+> |---|---|---|
+> | CPU GAMG (np=16) | 22.1 | 5–9 |
+> | GPU Multigrid, double (np=16) | 22.7 | ~13 |
+> | **GPU Multigrid, single precision (np=16)** | **20.9** ✅ | ~13 |
+>
+> The May-2026 verdict ("software not ready, CPU wins 1.5×") is kept below as the
+> historical record — it was true for the Ginkgo-1.11/BJ(1) stack. Two months of
+> work (Ginkgo 2.0 migration, Multigrid tuning, a mixed-precision OGL patch)
+> turned the result around.
 
-First public documentation of OpenFOAM GPU acceleration (OGL/Ginkgo/SYCL)
-on Intel Arc Pro B70 Pro (Battlemage) for automotive CFD.
-Honest results, real bugs found, practical fixes documented.
+First public documentation of OpenFOAM GPU acceleration (OGL/Ginkgo/SYCL) on
+**Intel Arc Pro B70 (Battlemage)** for automotive CFD. Honest results, real bugs
+found and reported upstream, every config and finding reproducible.
+
+---
+
+## The performance journey (why it took until June to win)
+
+GPU-accelerating an **implicit FVM pressure (Poisson) solve** is one of the
+hardest things to put on a GPU — even NVIDIA's mature AmgX often only ties CPU
+GAMG. The bottleneck is never raw compute; it's the **preconditioner's
+convergence rate** and the **communication** around the solve.
+
+| Preconditioner (our path) | 7.1M s/step | 17.2M s/step | why |
+|---|---|---|---|
+| Block-Jacobi(1) | never converges (201-iter cap) | — | ≈ diagonal scaling, too weak |
+| Block-Jacobi(>1) | aborts | aborts | `find_blocks` size_t underflow (OGL distributed) |
+| ILU(0) | ~24 (160–201 iter) | ~60 | local precond, ~N^(1/3) iters; OOMs > ~25M |
+| **Multigrid (V + CG-coarse), double** | ~9.0 | ~22.7 | converges ~13 iters; **ties CPU GAMG** |
+| **Multigrid, single precision** ⭐ | **~7.95** | **~20.9** | **beats CPU GAMG**, −25% VRAM |
+| *CPU GAMG (reference)* | 8.5–9.3 | 22.1–25.9 | optimal multigrid, hierarchy cached |
+
+Full measured maps (preconditioner × ranks 2–16 × {util, VRAM, iters,
+wall-clock}) in [`knowledge/performance-maps.md`](knowledge/performance-maps.md).
+
+**Why single precision wins:** the SpMV that dominates the solve is
+memory-bandwidth-bound; FP32 halves the bytes (≈2× effective bandwidth) and the
+VRAM, with **no accuracy/iteration penalty at the solver tolerances used**
+(same ~13 iterations as double). B70 FP64 is *not* the bottleneck — it is
+respectable (~1.3 TFLOPS, ~1:8, our clpeak in Ginkgo #2013).
+
+---
+
+## The #1 remaining lever (full diagnostic)
+
+A per-phase breakdown (OGL's own `TIME_WITH_FIELDNAME` timers + Ginkgo
+ProfilerHook) found where the GPU time actually goes per pressure solve:
+
+| phase | share | note |
+|---|---|---|
+| **init_precond (AMG hierarchy rebuild)** | **~55–59%** | **rebuilt EVERY solve** |
+| solve (CG loop, MG-apply 96% of it) | ~41% | coarse-CG ≈50% of the apply; SpMV dominant |
+| call_update (H2D matrix values) | small | |
+| copy_x_back (D2H) | tiny | bandwidth only 0.94 GB/s (PCIe Gen1×1 xe downgrade) |
+
+**The AMG hierarchy is rebuilt on every solve — OpenFOAM GAMG avoids this
+(`cacheAgglomeration`).** Eliminating it would roughly **halve** the solve time
+(a bigger lever than the bandwidth win). The fix is identified: OGL has a
+`caching` mechanism, but the value-update path (`gko::UpdateMatrixValue`) is an
+hpsim Ginkgo-1.11-fork extension that was lost in the Ginkgo-2.0 migration.
+Porting it back (+ a Ginkgo SYCL rebuild) is the top roadmap item — see
+[`knowledge/per-iteration-diagnostics.md`](knowledge/per-iteration-diagnostics.md).
+
+---
+
+## 📚 Knowledge Base (start here)
+
+Everything we've tested/measured/researched, cross-checked against external
+literature, lives in [`knowledge/`](knowledge/) and is maintained as an iron
+rule (search it first, cite external validation):
+
+| Topic | |
+|---|---|
+| [preconditioners-and-gpu-cfd.md](knowledge/preconditioners-and-gpu-cfd.md) | Why ILU/BJ lose, why AMG wins; the Multigrid tuning map; theory + external validation |
+| [performance-maps.md](knowledge/performance-maps.md) | Measured (preconditioner × ranks) maps for 7.1M + 17.2M |
+| [per-iteration-diagnostics.md](knowledge/per-iteration-diagnostics.md) | Per-phase breakdown; the AMG-rebuild lever; the fix path |
+| [vram-and-mesh-scaling.md](knowledge/vram-and-mesh-scaling.md) | Per-preconditioner VRAM, ceilings, mixed-precision savings |
+| [gpu-amg-reference-configs.md](knowledge/gpu-amg-reference-configs.md) | Proven AmgX / Hypre / Ginkgo pressure configs from the literature |
+| [intel-platform-fit.md](knowledge/intel-platform-fit.md) | Are we on the right track on Intel? FP64 reality, community fit |
+| [ginkgo-ogl-stack.md](knowledge/ginkgo-ogl-stack.md) | SYCL preconditioner bugs (fixed in 2.0), OGL patches, mixed-precision patch |
+| [intel-compute-runtime-and-driver.md](knowledge/intel-compute-runtime-and-driver.md) | CR 26.05/26.18, the multi-process zeInit abort, the LD-switch |
+| [hardware-system-grub.md](knowledge/hardware-system-grub.md) | B70 specs (incl. measured FP64), GRUB/desktop-GPU |
+| [external-references.md](knowledge/external-references.md) | Papers + projects — the prior art we build on |
 
 ---
 
 ## Part of the Battlemage CFD Pioneer Series
 
-This is one of three repositories documenting CFD on Intel Arc Pro B70 (BMG-G31):
+1. **[FluidX3D-Intel-B70](https://github.com/heikogleu-dev/FluidX3D-Intel-B70)** — LBM via OpenCL. ~6750 MLUPS (production-ready vehicle-aero sandbox; FP32/FP16, GPU-native).
+2. **This repo** — implicit FVM pressure solver via Ginkgo SYCL. **GPU now beats CPU GAMG with the right config.**
+3. **[Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70](https://github.com/heikogleu-dev/Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70)** — PETSc-Kokkos-SYCL attempt; documents what doesn't work yet.
 
-1. **[FluidX3D-Intel-B70](https://github.com/heikogleu-dev/FluidX3D-Intel-B70)** — LBM via OpenCL. **99.5 % peak bandwidth, 5 464 MLUPS** (production-ready as iteration sandbox for vehicle aero).
-2. **This repo — [Openfoam13---GPU-Offloading-Intel-B70-Pro](https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro)** — FVM pressure solver via Ginkgo SYCL. **Hardware ready, software stack maturing**.
-3. **[Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70](https://github.com/heikogleu-dev/Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70)** — PETSc-Kokkos-SYCL attempt. **Abandoned** — documents what doesn't work yet on this stack.
-
-Together: first publicly documented end-to-end CFD evaluation on Battlemage Xe2 (Intel Arc Pro B70).
-
----
-
-## Hardware Performance — B70 Pro is Capable
-
-| Metric | Measured | Spec | Efficiency |
-|---|---|---|---|
-| **FP64 Compute** | **1374 GFLOPS** | 1430 GFLOPS | **96%** ✅ |
-| FP32 Compute | 12364 GFLOPS | 22940 GFLOPS | 54% |
-| **VRAM Bandwidth (sustained)** | **530 GB/s** | 608 GB/s | **87%** ✅ |
-| **Kernel-launch latency (sync)** | **5.6 µs** | ~5 µs (CUDA) | **on par** ✅ |
-| **Kernel-launch latency (async batched)** | **1.5 µs** | — | **3.3× better than CUDA sync** ✅ |
-| PCIe H2D Transfer | 15.5 GB/s | ~64 GB/s (Gen5 x16) | 24% — SYCL `copy-offload` path; **untested workaround:** `UR_L0_V2_FORCE_DISABLE_COPY_OFFLOAD=1` may force a direct memcpy code path (not yet validated on this stack) |
-| **GPU active during CFD** | **34 % of wall clock** | — | direct xe gtidle measurement |
-| GPU clock when active | 2528 MHz avg / 2800 max | 2800 MHz | 90 % of boost |
-| Power (CFD load, when active) | 181 W | 275 W max | 66% TDP |
-
-**The B70 Pro delivers excellent raw performance for compute workloads.**
-FP64 and VRAM bandwidth — the two metrics that matter most for CFD —
-are both above 87% efficiency. This is better than many data center GPUs.
+LBM (FluidX3D) is the GPU-native best case; implicit FVM (this repo) is the hard
+case where GPUs struggle everywhere — and where we now win on Battlemage.
 
 ---
 
-## Why GPU Acceleration Doesn't Win Yet — Software, Not Hardware
+## Hardware Performance — B70 is Capable
 
-| Root Cause | Impact |
-|---|---|
-| ~~Level Zero kernel launch latency: ~100 µs~~ → **CORRECTED: 5.6 µs (fine)** | none — see [findings/14](findings/14_kernel_launch_latency_revision.md) |
-| **No GPU-aware MPI for xe driver** | `forceHostBuffer=true` mandatory → PCIe round-trip per halo exchange |
-| **GPU idle 66% of wall clock** | MPI Allreduce + PCIe copies dominate over compute — see [profiling/bottleneck_analysis.md](profiling/bottleneck_analysis.md) |
-| **BJ(1) hits maxIter=200 cap** | every CG iteration triggers another Allreduce |
-| **No working SYCL preconditioner for distributed CFD** | Multigrid OOM, IC NotImplemented, ICT DEVICE_LOST |
-
-GPU active fraction during CFD measured directly via xe driver
-`gtidle/idle_residency_ms`: only **34 % of wall clock**. When active, the
-GPU runs at full boost (avg 2528 MHz). The other **66 % is idle** —
-waiting for MPI Allreduce barriers and PCIe host-buffer copies.
-
-> "It's not the GPU compute. It's the wait between compute calls —
-> 66 % of wall clock spent on MPI synchronisation and PCIe host-buffer copies."
-
----
-
-## CFD Benchmark Results
-
-**Case:** MR2 SW20 vehicle aerodynamics, 34M cells, simpleFoam k-ω SST
-**Metric:** Steady-state s/step (mean of Time=8,9,10)
-
-| Configuration | s/Step | Iterations | Verdict |
-|---|---|---|---|
-| **CPU GAMG, 16 cores (P+E)** | **35.7** | 5–10 ✅ | **Winner — fair comparison** |
-| GPU OGL BJ, np=16 (reduced quality) | 30.6 | 81 (capped) | Unfair — fewer correctors |
-| GPU OGL BJ, np=8 (fair, same settings) | 53.5 | 200 (never converges) | 1.5× slower than CPU |
-| GPU OGL BJ, np=8 (early test) | 52.0 | 200 (never converges) | |
-| CPU GAMG, 8 P-cores only | 43.3 | 5–10 ✅ | |
-
-**CPU GAMG with algebraic multigrid converges in 5–10 iterations.**
-**GPU BJ (point-Jacobi) never converges — always hits the 200-iteration cap.**
-This is an algorithmic mismatch, not a hardware limitation.
-
-When settings are equal, **CPU wins by 1.5×**.
-GPU only wins when the solver quality is artificially reduced — which
-would make CPU GAMG equally or more faster at those settings.
-
----
-
-## What Would Make GPU Win
-
-Concrete s/step estimates derived from the bottleneck breakdown
-(see [profiling/bottleneck_analysis.md](profiling/bottleneck_analysis.md)):
-
-| Improvement | Estimated effect on s/step | Timeline |
+| Metric | Measured | Note |
 |---|---|---|
-| **GPU-aware MPI for xe driver** | **−10 to −20 s/step** (eliminate PCIe round-trip + reduce Allreduce serialisation) | 2–3 years |
-| **Working SYCL Multigrid** (or any strong preconditioner) | **−20 to −30 s/step** (5–10× fewer iterations) | Ginkgo 2.0+ migration of OGL |
-| **SYCL Graph batched submission** | −5 s/step (collapse 600 launches/step into a few) | 1–2 years |
-| All three combined | could plausibly reach **<10 s/step** = ~3.5× faster than CPU GAMG (35.7 s/step) | uncertain |
+| **FP64 compute** | **~1.3 TFLOPS** (~1:8 of FP32) | clpeak; strong for a consumer/pro GPU (NVIDIA consumer ~1:64; Intel Alchemist had none). Not the CFD bottleneck. |
+| **VRAM bandwidth** | **530 GB/s** (87% of 608 spec) | the metric that matters for bandwidth-bound CFD |
+| FP32 compute | ~12–23 TFLOPS | |
+| VRAM | 32 GB GDDR6 | fits ~20M cells (double MG), ~25–28M (single) |
+| Kernel-launch latency | 5.6 µs sync / 1.5 µs batched | on par with CUDA |
+| PCIe H2D | ~15 GB/s | xe BMG Gen1×1 downgrade (known); D2H copy-back only 0.94 GB/s |
 
-The idle-time-dominated profile (66 % wall-clock idle) means **fixing the
-preconditioner has higher ROI than optimising kernels** — every iteration
-saved removes both its compute share AND its share of the MPI Allreduce
-wait time.
+The two metrics that matter for CFD — VRAM bandwidth and FP64 — are both solid.
+The limiter is the **SYCL solver software** (preconditioner setup + communication),
+not the silicon.
 
 ---
 
-## System
-
-| Component | Spec |
-|---|---|
-| GPU | Intel Arc Pro B70 Pro (Battlemage G31) — 32 GB GDDR6 ECC |
-| CPU | Intel Core Ultra 9 285K (8P+16E Cores) |
-| RAM | 96 GB DDR5-6800 |
-| Mainboard | ASRock Z890I Nova WiFi |
-| OS | Ubuntu 26.04 LTS, Kernel 7.0.0-15 |
-
-## Software Stack
+## System & Software Stack (June 2026)
 
 | Component | Version |
 |---|---|
+| GPU | Intel Arc Pro B70 (Battlemage BMG-G31) — 32 GB GDDR6 |
+| CPU | Intel Core Ultra 9 285K (8P+16E) |
+| OS | Ubuntu 26.04 LTS, kernel 7.0.0-22 |
 | OpenFOAM | Foundation 13 |
-| OGL (OpenFOAM-Ginkgo Layer) | dev branch, rebuilt with `GINKGO_JACOBI_FULL_OPTIMIZATIONS=ON` + `-fp-model=precise` |
-| Ginkgo | 1.11.0 (KIT branch `ogl_0600_gko110`, see [findings/20](findings/20_ginkgo_1.11_upgrade.md)) |
-| Intel oneAPI | 2026.0.0 |
-| Intel Compute Runtime | **26.05.37020.3-1** (pinned/held — see [findings/13](findings/13_stack_update_zeinit_race.md): 26.14 breaks multi-rank) |
-| Intel Graphics Compiler | **2.32.7** (Intel rolling, kept after rollback) |
+| **Ginkgo** | **2.0 (develop) SYCL** — the SYCL preconditioner bugs are fixed here |
+| **OGL** | PR #168 + our patches: OF13 API fix, Ginkgo-2.0 ILU template, **mixed-precision multigrid (`precision double\|mixed\|single`)** — [`findings/code/ogl-patches/`](findings/code/ogl-patches/) |
+| Intel oneAPI | 2026.0 |
+| Intel Compute Runtime | system 26.18; **multi-rank via CR 26.05 LD-switch** (no sudo) — CR ≥26.14 aborts multi-process `zeInit` ([#922](https://github.com/intel/compute-runtime/issues/922)) |
+
+**Best working config:** `GKOCG` + `Multigrid` (V-cycle, Jacobi smoother,
+`coarseSolver CG`, `maxIterCoarse 20`, **`precision single`**), `ranksPerGPU` =
+`mpirun -np` (8 is the saturation sweet spot), under the CR 26.05 LD-switch.
+See [`scripts/cr2605-shell.sh`](scripts/cr2605-shell.sh) and the working
+fvSolution in `configs/`.
 
 ---
 
-## Bugs Found & Documented (All New)
+## Findings (all new, upstream-reported where applicable)
 
-| # | Bug | Impact |
-|---|---|---|
-| [01](findings/01_pcie_reporting_bug.md) | lspci reports PCIe 1.0×1 (xe SR-IOV PF bug) | Diagnostic confusion |
-| [02](findings/02_bj_blocksize_int_underflow.md) | `size_t` underflow in `dpcpp::jacobi::find_blocks` for BJ>1 | Confirmed via direct VRAM measurement (peak 8.4/27.9 GB) |
-| [03](findings/03_preconditioner_subdict_syntax.md) | OGL preconditioner sub-dict syntax undocumented | Options silently ignored |
-| [04](findings/04_sycl_device_selector.md) | `ONEAPI_DEVICE_SELECTOR=level_zero:0` (not `gpu:0`) | Crash on startup |
-| [05](findings/05_sycl_preconditioner_status.md) | IC `NotImplemented` + ICT/ILU SYCL apply gaps (`lower_trs` absent) | No ILU family on SYCL — see KIT clarification |
-| [08](findings/08_multigrid_device_lost.md) | Multigrid OOM in PGM coarsening + divergence | No GPU multigrid |
-| [09](findings/09_pcie_nvtop_confirmation.md) | nvtop confirms PCIe Gen5×16 (lspci wrong) | Diagnostic only |
-| [10](findings/10_ginkgo2_api_breaks.md) | Ginkgo 2.0 API breaks OGL (3 locations) | Cannot upgrade yet |
-| [12](findings/12_cpu_tuning_no_effect.md) | CPU tuning has zero effect (DDR5 bandwidth-bound) | 35.7 s/step is hard CPU limit |
-| [13](findings/13_stack_update_zeinit_race.md) | CR 26.14 incompatible with multi-rank OGL | Stack pinned at 26.05 |
-| [14](findings/14_kernel_launch_latency_revision.md) | Kernel-launch latency 5.6 µs (NOT ~100 µs) | Bottleneck story revised |
-| [15](findings/15_scaling_for_spd_preconditioners.md) | `scaling -1.0` correct for SPD but cannot bridge SYCL impl gaps | OGL doc was right, blocked by separate bugs |
-| [16](findings/16_splitcomm_test.md) | `splitComm=false` has no effect | Eliminated as tuning knob |
-| [17](findings/17_hybrid_solver_test.md) | Hybrid (CPU GAMG `p` + GPU `U/k/ω`) shows no net gain | Tight coupling needs tighter integration |
-| [18](findings/18_v2_adapter_ruled_out.md) | V2 L0 adapter ruled out as cause of finding 02 underflow (V1+V2 produce bit-identical `0xFFFFFFFFFFFFFFFF`) | Bug is in Ginkgo `dpcpp/jacobi`, not L0 runtime |
-| [19](findings/19_ginkgo_111_upgrade_bug_persists.md) | Ginkgo 1.11 upgrade — `find_blocks` underflow bit-identical to 1.10. BJ(1) perf-neutral (53.2 vs 53.5 s/step) | Bug deterministic across two minor versions, not addressed by 1.11 fixes |
-| [20](findings/20_ginkgo_1.11_upgrade.md) | Upgrade procedure: KIT branch `ogl_0600_gko110` + 2 patches against icpx 2026 (`-fsycl-device-lib=all` removed, `foam-shim/` include path) | Reproducible upgrade path for next pioneers |
-| [21](findings/21_preconditioner_mapping_bmg.md) | Systematic preconditioner sweep on BMG-G31. Only `GKOCG + BJ(1)` runs across both 1.10 and 1.11; ICT/ISAI/Multigrid/Chebyshev each fail in distinct ways | First full SYCL-preconditioner mapping on this hardware |
-| [22](findings/22_vram_pressure_gmres_oom.md) | GKOGMRES on 34M cells hits hardware VRAM limit (27.87/27.9 GB), USM spills 7 GB into DDR5. `krylovDim` reduction has no effect (~26 GB fixed overhead) | 32 GB VRAM insufficient for GMRES on automotive-CFD scale; not a Ginkgo bug |
-| [23](findings/23_pr168_ginkgo_2.0_migration_test.md) | OGL PR #168 (Ginkgo 2.0 migration) blocks on 2 errors: `cyclicFvPatch::nbrPatchID` not in OF13 (renamed to `nbrPatchIndex`), and `Ilu<ir,ir>` 1.x template form not in Ginkgo 2.0 | Ginkgo 2.0 ILU migration in PR #168 incomplete; 4 environmental adjustments documented |
-| [24](findings/24_pr168_patched_ilu_first_test.md) | PR #168 + 2 minimal patches builds OGL on Ginkgo 2.0 ✅ — BJ(1) runs, ILU reaches generate-phase (PR #2023 `lower_trs` unblocks code path), but VRAM plateau ~26.5 GB + spike >32 GB at `Csr::convert_to(Coo)` → OOM | First working OGL+Ginkgo-2.0 on BMG-G31; ILU now algorithmically possible but ~3× theoretical-bedarf VRAM blocks on 34M cells |
-| [25](findings/25_cr_26.18_multirank_pthread_race.md) | Compute Runtime 26.18 reproduces multi-rank `pthread_once`/`zeInit` race (same class as Finding 13 for CR 26.14). No ENV-var workaround for np≥8; np=2 hangs even with workarounds | Second CR major-version bump breaking multi-rank OGL on BMG; standalone Ginkgo tests now the only path for algorithm-level verification |
-| [26](findings/26_ginkgo_2.0_standalone_sweep.md) | Standalone Ginkgo 2.0 SYCL sweep confirms FOUR 1.10/1.11 bugs are FIXED: BJ(>1) `find_blocks`, ICT `add_candidates`, `lower_trs` (via PR #2023), Multigrid PGM. BJ(4-16) run up to 36M rows; bytes/row scaling table for 32 GB extrapolation | Pioneer-era SYCL algorithm bugs all resolved on standalone Ginkgo 2.0 |
-| [27](findings/27_cr2605_ld_switch_workaround.md) | CR 26.05 LD_LIBRARY_PATH workaround restores multi-rank OGL without sudo/rollback — `apt download` + `dpkg-deb -x` user-side. **BJ(1) multi-rank @ 34M cells runs again** (94 s/step, identical to pre-26.18 era). BJ(2) Multi-Rank still hits the `find_blocks` underflow → bug isolated to OGL distributed-matrix path, not Ginkgo kernel | Multi-rank OGL CFD on BMG-G31 restored. Finding 02 narrative refined: bug is in OGL distributed wrapper, not Ginkgo SYCL kernel |
-| [28](findings/28_gpu_layer_diagnostic_tool_findings.md) | Six-binary layer-by-layer GPU diagnostic harness (L0/SYCL/Ginkgo × single/multi-rank). Localises where the stack breaks; also documents xe-driver auto-reset + "non-killed execqueue" zombie that self-clears (no reboot needed for light workloads) | Reusable diagnostic; reframes "broken GPU" as per-process state, not hardware |
-| [29](findings/29_cr_26.18_root_cause_pure_l0_multiprocess_abort.md) | **ROOT CAUSE**: CR 26.18 `libze_intel_gpu` calls `abort()` in `zeInit` whenever ≥2 processes init the same GPU (pure Level-Zero, deterministic, staggering doesn't help). Minimal 120-line MPI+L0 reproducer. CR 26.05 LD-switch fixes it | Clean Intel Compute Runtime regression report; multi-process single-GPU is normal MPI mode → broad impact |
+Findings 01–29 are the pioneer trail (PCIe reporting bug → the 4 Ginkgo SYCL
+preconditioner bugs → CR 26.18 root cause → CR 26.05 LD-switch). Highlights:
+
+- [26](findings/26_ginkgo_2.0_standalone_sweep.md) — the four 1.10/1.11 SYCL
+  preconditioner bugs (BJ>1 `find_blocks`, ICT `add_candidates`, `lower_trs`,
+  Multigrid PGM) are all **fixed in Ginkgo 2.0**.
+- [27](findings/27_cr2605_ld_switch_workaround.md) — CR 26.05 LD-switch restores
+  multi-rank OGL with no sudo.
+- [29](findings/29_cr_26.18_root_cause_pure_l0_multiprocess_abort.md) — **root
+  cause** of the multi-rank break: CR ≥26.14 `abort()` in `zeInit` for ≥2
+  processes (pure-L0 reproducer); upstream [intel/compute-runtime#922](https://github.com/intel/compute-runtime/issues/922).
+- [30](findings/30_post_recovery_clean_multirank_perf.md) — **the turnaround**:
+  clean-boot multi-rank perf; BJ(1)/ILU/Multigrid verdict; the Multigrid tuning
+  map; mixed-precision; the GPU-beats-GAMG result; full per-phase diagnostic.
+
+(Full table with 01–29 retained in [findings/](findings/).)
 
 ---
 
 ## Repository Structure
 
 ```
-├── README.md              — This file
-├── hardware.md            — Full hardware specs and measured performance
-├── conclusions.md         — Honest CPU-vs-GPU verdict
-├── references.md          — Cross-references to upstream papers + projects
-├── setup/
-│   ├── install_stack.md   — OGL/Ginkgo/oneAPI installation + required patches
-│   └── bios_settings.md   — BIOS optimization for compute workloads
-├── benchmarks/
-│   ├── results.md         — All CFD benchmark results
-│   └── hardware_results.json — Machine-readable hardware metrics
-├── profiling/             — Bottleneck + VRAM analysis
-│   ├── bottleneck_analysis.md — Where do the 53 s/step actually go?
-│   └── vram_analysis.md       — Direct xe-debugfs VRAM measurement
-├── findings/              — 24 findings (01–05, 08–10, 12–27)
-│   └── code/              — Standalone test sources (e.g. ginkgo_precond_sweep.cpp)
-├── scripts/               — Workaround utilities (e.g. cr2605-shell.sh)
-├── configs/               — Working fvSolution configurations
-└── logs/                  — Raw diagnostic logs for upstream debugging
-    ├── vram-traces/       — CSVs + mpirun logs from the VRAM measurement
-    ├── v1-adapter-test/   — V1 Level-Zero adapter retest of finding 02
-    ├── ginkgo-1.11-test/  — Ginkgo 1.11 upgrade BJ(1)+BJ(2) traces
-    ├── stufe4-ginkgo111/  — Preconditioner sweep + GMRES VRAM characterization
-    ├── pr168-test/        — OGL PR #168 first build attempt (failed at 2 errors)
-    ├── pr168-patched/     — OGL PR #168 + 2 minimal patches: build success + BJ(1)/ILU smoke
-    ├── cr-26.18-multirank-race/ — CR 26.18 pthread_once/zeInit race traces (Finding 25)
-    ├── ginkgo-2.0-standalone/   — Standalone Ginkgo 2.0 SYCL sweep results (Finding 26)
-    └── cr26.05-switch-test/     — Multi-rank runs with the CR 26.05 LD-switch (Finding 27)
+├── README.md                — this file
+├── conclusions.md           — honest CPU-vs-GPU verdict (June update at top)
+├── knowledge/               — ★ the maintained knowledge base (10 topics)
+├── findings/                — 30 findings (the pioneer trail)
+│   └── code/                — standalone reproducers (gpu-diag/, ogl-patches/)
+├── scripts/                 — cr2605-shell.sh, next-session-plan.md, sweeps
+├── logs/                    — raw diagnostic logs + the performance maps
+├── configs/                 — working fvSolution configurations
+└── references.md            — upstream papers + projects
 ```
 
 ---
 
-## Status: May 2026
+## Status: June 2026
 
-**Current recommendation:** Use CPU GAMG for production CFD on this hardware.
-The 32 GB ECC VRAM is excellent for LLM inference workloads in the meantime.
+**The GPU pressure solve beats CPU GAMG** on this hardware with Ginkgo 2.0 +
+tuned Multigrid + single precision. For production today, either path is viable;
+the GPU frees CPU cores and wins outright at ≥17M cells.
 
-**Watch for:** OGL Ginkgo 2.0 migration, SYCL triangular-solve kernel
-implementation, GPU-aware MPI for the `xe` driver. Re-evaluate when at
-least one of these materialises.
-
-### Cross-Stack Performance Indicator
-
-A May-2026 SpMV microbenchmark (1M-row Poisson, identical hardware,
-identical SYCL runtime) shows Ginkgo's `dpcpp` backend at **3.2× the
-throughput of PETSc `aijkokkos`**: 0.089 ms/iter vs 0.287 ms/iter.
-
-This is a microbenchmark, not a production result — the `x` vector
-fits in B70's L2 cache, and the comparison measures hand-tuned vs
-default CSR-SpMV kernels. **It does not yet translate into a Ginkgo
-solver win** because the stability blockers documented in this repo
-(BJ underflow, SYCL triangular-solve gap, GMRES VRAM pressure) remain.
-
-If those blockers land upstream, the resulting Ginkgo + OGL stack on
-B70 has a plausible path to outperforming the petsc4Foam alternative.
-
-[Full cross-stack finding](findings/23_cross_stack_spmv_b70.md) ·
-[Sister repo's symmetric finding](https://github.com/heikogleu-dev/Openfoam-v2512-Petsc-Kokkos-Sycl-Intel-B70/blob/main/findings/25_ginkgo_3x_faster_microbench.md)
-
-*Pioneer documentation independently maintained.*
-*Full reproducibility intended for the next Battlemage CFD pioneer.*
-
----
-
-## When to Re-evaluate GPU Offloading
-
-The current limitation is **partly** software, **partly** hardware:
-
-- **CG-based solvers + BJ/ISAI**: peak 9.4 GB / 27.9 GB available
-  ([`profiling/vram_analysis.md`](profiling/vram_analysis.md)). Plenty of
-  headroom for stronger SYCL preconditioners *if and when* the integer
-  underflow ([finding 02](findings/02_bj_blocksize_int_underflow.md)) and
-  triangular-solve gaps ([finding 05](findings/05_sycl_preconditioner_status.md))
-  are fixed.
-- **GMRES-based solvers**: peak **27.87 GB / 27.9 GB** — the 32 GB VRAM
-  ceiling on B70 Pro is reached on this 34M-cell mesh, regardless of
-  `krylovDim` ([finding 22](findings/22_vram_pressure_gmres_oom.md)).
-  For GMRES, BMG-G31 hardware is currently undersized for automotive-CFD
-  scale; that is not a software gap.
-
-Re-test when **at least one** of these conditions is met:
-
-| Condition | Expected Gain | Status |
-|---|---|---|
-| OGL migrates to Ginkgo 2.0 | BJ maxBlockSize > 1, ParIC / Multigrid available | Waiting on KIT — see [findings/10](findings/10_ginkgo2_api_breaks.md) |
-| Ginkgo SYCL IC / ILU production-ready | Real preconditioner: 20–50 iter vs current 200 (cap) | Unclear — see [findings/05](findings/05_sycl_preconditioner_status.md) |
-| GPU-aware MPI for `xe` driver | Eliminates `forceHostBuffer`: ~−13 % per step | 1–2 years |
-| Compute Runtime ≥ 26.14 stable for multi-rank | Removes the 26.05 pinning — see [findings/13](findings/13_stack_update_zeinit_race.md) | Filed upstream |
-
-**Minimum viable re-test:** Ginkgo 2.0 + OGL migration complete.
-**Optimistic timeline:** 12–18 months (mid-2027).
-**Watch:** [hpsim/OGL](https://github.com/hpsim/OGL) and
-[ginkgo-project/ginkgo releases](https://github.com/ginkgo-project/ginkgo/releases)
+**Top roadmap items** (see [`scripts/next-session-plan.md`](scripts/next-session-plan.md)):
+1. **AMG-hierarchy caching with value-update** (port the `update_matrix_value`
+   extension to Ginkgo 2.0) — ~2× the solve, the biggest remaining lever.
+2. **Full-float solve** (re-template the OGL solve path) — more bandwidth + the
+   34M mesh on a single 32 GB card.
+3. **GPU-aware MPI** for the xe driver — kill the ~30% copy-engine cost.
+4. Watch: Ginkgo classical Ruge-Stüben AMG (landed in develop, SYCL kernels pending).
 
 ---
 
 ## How to Cite
 
-If this documentation helped your research or work, please cite:
-
 ```bibtex
 @misc{gleu2026battlemage,
   author = {Gleu, Heiko},
-  title  = {Intel Arc Pro B70 Pro + OpenFOAM CFD: Pioneer Documentation
-             of GPU Acceleration via OGL/Ginkgo/SYCL on Battlemage},
+  title  = {Intel Arc Pro B70 + OpenFOAM CFD: Pioneer Documentation of GPU
+            Acceleration via OGL/Ginkgo/SYCL on Battlemage},
   year   = {2026},
   url    = {https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro}
 }
 ```
 
 ## Related Projects
+- [hpsim/OGL](https://github.com/hpsim/OGL) · [ginkgo-project/ginkgo](https://github.com/ginkgo-project/ginkgo) · [intel/compute-runtime](https://github.com/intel/compute-runtime)
+- [Phoronix B70 Linux Benchmarks](https://www.phoronix.com/review/intel-arc-pro-b70-linux)
 
-- [hpsim/OGL](https://github.com/hpsim/OGL) — OpenFOAM Ginkgo Layer (GPU solver plugin)
-- [ginkgo-project/ginkgo](https://github.com/ginkgo-project/ginkgo) — Ginkgo linear algebra library
-- [OpenFOAM/OpenFOAM-Intel](https://github.com/OpenFOAM/OpenFOAM-Intel) — Intel's official OpenFOAM contributions
-- [Phoronix B70 Pro Linux Benchmarks](https://www.phoronix.com/review/intel-arc-pro-b70-linux) — Reference benchmarks, same hardware
-
-## Community & Discussion
-
-Found different results on your hardware? Have a fix?
-→ [Open an Issue](https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro/issues)
-
-General GPU-accelerated CFD discussion:
-→ [CFD-Online OpenFOAM Forum](https://www.cfd-online.com/Forums/openfoam/)
-→ [Reddit r/CFD](https://reddit.com/r/CFD)
-→ [Reddit r/IntelArc](https://reddit.com/r/IntelArc)
+## Community
+Different results on your hardware? A fix? → [Open an Issue](https://github.com/heikogleu-dev/Openfoam13---GPU-Offloading-Intel-B70-Pro/issues) ·
+[CFD-Online](https://www.cfd-online.com/Forums/openfoam/) · [r/IntelArc](https://reddit.com/r/IntelArc)
 
 ## License
+GPL-3.0-or-later — see [LICENSE](LICENSE). Third-party attribution in [NOTICE.md](NOTICE.md).
 
-This repository is licensed under **GPL-3.0-or-later** — see [LICENSE](LICENSE).
+---
 
-Third-party software attribution and license compatibility are documented
-in [NOTICE.md](NOTICE.md).
+<details>
+<summary><b>Historical record — May 2026 verdict (superseded)</b></summary>
 
-The repository documents integration work; it does not redistribute
-substantial portions of upstream projects (OpenFOAM, Ginkgo, OGL, Intel
-oneAPI). Build artifacts (compiler logs, binary diagnostic logs) are
-mechanical output and not source redistribution.
+The original May-2026 conclusion was **"hardware excellent, software not ready;
+CPU GAMG wins by 1.5×"** — true for the Ginkgo-1.11 / BJ(1) stack, where BJ(1)
+never converged (201-iter cap) and no strong SYCL preconditioner worked. The
+34M-cell automotive case ran CPU GAMG at 35.7 s/step (np=16) vs GPU BJ(1)
+~53 s/step. That stack had: no GPU multigrid, IC `NotImplemented`, the BJ>1
+`find_blocks` underflow, and GMRES hitting the 32 GB VRAM ceiling. The Ginkgo
+2.0 migration + Multigrid tuning + mixed precision (documented above and in
+`findings/30`) superseded that verdict. Full May detail in `conclusions.md` and
+findings 01–29.
+
+</details>
