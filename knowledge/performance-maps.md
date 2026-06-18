@@ -32,6 +32,27 @@ MG V+CG-coarse rank curve:
 Preconditioners @np=8: MG-VcgC 24.2s (40%, ~13 it) · MG-WcgC 34s (~8 it) ·
 MG-default 38.5s (~64 it) · ILU 60s (~201 it, capped) · **GAMG-CPU 25.9s (np=8), 22.1s (np=16)**.
 
+## Single-precision MG (our OGL mixed-precision patch, `precision single`)
+
+17.2M MG V+CG-coarse, `precision single` (all-float preconditioner) rank curve:
+| np | VRAM | util | s/step | vs double | vs GAMG |
+|---|---|---|---|---|---|
+| 2 | 14.4 GB | 20% | 45.9 | −4% | — |
+| 4 | 14.8 GB | 28% | 31.4 | −5% | — |
+| 8 | 17.5 GB | 36% | 22.4 | −7% | **GAMG 25.9 → −14%** |
+| 12 | 17.5 GB | 38% | 21.0 | −8% | — |
+| 16 | 17.5 GB | 38% | **20.9** | −8% | **GAMG 22.1 → −6%** |
+
+→ **🏆 GPU single-precision MG BEATS CPU GAMG at 17.2M, at every rank count**
+(np=16: 20.9 vs 22.1; np=8: 22.4 vs 25.9) — and via just the *preconditioner*
+patch, no full-float solve yet. Iters identical to double (~13, no accuracy
+penalty). VRAM −17% (np=8, 21→17.5 GB) to −27% (np=2). 7.1M: single 7.95 s/step
+also beats GAMG (8.5–9.3).
+
+**Net with mixed precision: the GPU clearly wins at ≥17M.** The double-precision
+near-tie is broken by `precision single`. VRAM ceiling lifts ~20M→~28-30M; 34M
+still needs the full-float *solve* (CG matrix stays double).
+
 ## Verdict (double precision)
 
 - **GPU-MG ≈ CPU-GAMG, a near-tie across 7–17M.** GPU wins at np=8 (+3–7%),

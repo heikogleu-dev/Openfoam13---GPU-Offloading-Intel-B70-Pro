@@ -7,6 +7,18 @@
 > their stack but several of their blockers are now resolved. Current
 > honest state:
 >
+> ### 🏆 GPU BEATS CPU GAMG (2026-06-18) — via mixed precision
+> We patched OGL to wire mixed precision into the Multigrid preconditioner
+> (`precision double|mixed|single`; was BJ-only). With `precision single`
+> (all-float preconditioner) the tuned Multigrid (V-cycle + CG coarse-solver)
+> **beats CPU GAMG**: at 17.2M, **20.9 s/step (np=16) vs GAMG 22.1** (−6%), and
+> 22.4 vs 25.9 at np=8 (−14%); at 7.1M 7.95 vs 8.5–9.3. Same ~13 iterations as
+> double (no accuracy penalty), and **−17 to −27% VRAM** (ceiling ~20M→~28-30M).
+> This is the first clear GPU-CFD pressure-solve win on Battlemage. (Double
+> precision alone was only a near-tie — see maps.) Full-float *solve* (for 34M +
+> more bandwidth) is the next step. See `knowledge/performance-maps.md`,
+> `findings/code/ogl-patches/mixed-precision-multigrid.patch`.
+>
 > ### ⭐ Latest bottom line (2026-06-17 evening)
 > Tuned **Ginkgo Multigrid** (V-cycle, Jacobi smoother, CG coarse-solver) on
 > a 7.1M mesh: ~13 iters, **~9 s/step = ~1.17× CPU GAMG** (down from ILU's

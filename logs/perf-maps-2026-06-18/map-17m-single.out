@@ -1,0 +1,7 @@
+########## SINGLE-PRECISION MG-VcgC MAP: /home/heiko/CFD-Cases/Testcase-mid 20:08:38 ##########
+### single np=2  | VRAM=14399MiB util=20%  | iters=[21 17 14 14 13 12 15 13 13 ] | times=[93.33505 138.5581 184.5021 ]
+### single np=4  | VRAM=14831MiB util=28%  | iters=[21 17 14 14 13 12 15 13 13 ] | times=[61.81531 92.61998 123.9853 ]
+### single np=8  | VRAM=17509MiB util=36%  | iters=[21 17 14 14 13 12 15 13 13 ] | times=[44.23668 66.40375 88.83395 ]
+### single np=12 | VRAM=17485MiB util=38%  | iters=[21 17 14 14 13 12 15 13 13 ] | times=[42.12835 62.85908 83.8432 ]
+### single np=16 | VRAM=17517MiB util=38%  | iters=[21 17 14 14 13 12 15 13 13 ] | times=[40.10631 60.8591 81.79173 ]
+########## FERTIG 20:33:26 ##########
