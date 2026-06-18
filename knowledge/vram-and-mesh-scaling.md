@@ -123,3 +123,17 @@ little bandwidth benefit and don't fit 34M (~37 GB). **Only the full-float solve
 range (~30–35 GB, fits at np≤4).** In OGL the precond change is contained
 (Preconditioner.hpp); the full-float solve is a multi-file change (lduLduBase +
 CG + MatrixWrapper, all `scalar`-templated).
+
+## Full GPU offload (p + U + k + omega) — MEASURED 2026-06-18
+
+Smoke-tested on 17.2M np16 single (Testcase-mid), all four equations via OGL
+(p: GKOCG+MG; U/k/omega: GKOBiCGStab+BJ):
+| config | VRAM peak |
+|---|---|
+| p-only (current architecture) | ~17.0–17.4 GB |
+| full-offload (p+U+k+omega) | ~24.4–26.2 GB |
+
+→ **+~9 GB = +~50%** (a bit above the earlier ~35–45% estimate). Fits 32 GB at
+17.2M. Ceiling impact: full-offload single ≈ **~18–20M** on 32 GB (vs ~25–28M
+p-only) — so full-offload **competes with the 34M goal** for VRAM.
+**But it is also ~3× SLOWER (see per-iteration-diagnostics.md) → as-is a net loss.**

@@ -201,3 +201,25 @@ how much GPU-solve optimization can move wall-clock.
 - `init_precond` ≈ **50–59% of the GPU pressure-solve time** (the old "55–59%" — true, narrow slice) but only **~18–21% of wall-clock**.
 - **C (AMG values-only reuse)** removes ~⅔ of `init_precond` (the value-refill still costs) → **~10–15% wall-clock**, NOT ~2×. (May reach ~15–20% at 17.2M, where the GPU share of wall-clock is larger.)
 - C is still worth doing (meaningful + ahead-of-field) — but expectations corrected.
+
+## Full GPU offload — MEASURED negative result (2026-06-18)
+
+Smoke (17.2M np16 single, 1 step): routing U/k/omega through OGL (GKOBiCGStab+BJ)
+alongside p →
+- **~3× slower** (s/step ~68 vs ~20.9 p-only), **compute-util collapses 38% → ~1%**.
+- **Dominated by `call_init` ≈ 60 s/step** (n=18 — GPU matrix construction for 4
+  equations, rebuilt every solve); a single k-solve took **10 s** (matrix build+transfer).
+- VRAM +~50% (17→26 GB; see vram-and-mesh-scaling.md). It converges fine
+  (U 3 iters, k 1, omega 2) — the problem is pure setup/transfer overhead, not math.
+
+**Root cause:** U/k/omega are too cheap on CPU (1 DILU iter, ms) to amortize the
+per-equation GPU matrix-build + H2D transfer (seconds each). You trade ms-CPU-solves
+for s-GPU-setup. **Confirms the p-only architecture is correct** — the CPU is the
+right place for the cheap turbulence/momentum solves.
+
+**Connection to C:** same root cause as the AMG-rebuild (matrix/setup re-built every
+solve). Full-offload would only be viable *with* matrix-setup caching (Plan C class),
+and even then the cheap solves may never justify GPU offload. So the
+"offload-everything to break the Amdahl ceiling" path is much harder than projected.
+*(Caveat: 1-step smoke = cold setup; steady-state may amortize call_init somewhat,
+but the 3× magnitude rules out a quick win.)*
