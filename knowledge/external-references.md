@@ -138,3 +138,31 @@ The fundamentals above are established. Our novel contribution is the
 driver multi-process bug, the Ginkgo SYCL preconditioner bugs and their
 2.0 fixes, the `find_blocks` distributed-path failure, and the first
 measured BJ/ILU/ISAI/**Multigrid** numbers on this hardware.
+
+## Research sources (2026-06-18 deep dive) — the prior art we build on
+
+**AMG hierarchy reuse (the #1 lever):**
+- NVIDIA AmgX `structure_reuse_levels` + open coarse-sparsity-skip: [AMGX#127](https://github.com/NVIDIA/AMGX/issues/127)
+- AMGCL partial reuse (−40–200% setup): Demidov [arXiv:2108.02054](https://arxiv.org/abs/2108.02054)
+- Trilinos MueLu `reuse: RAP` (3.5×, problem-dependent): [OSTI 1364816](https://www.osti.gov/servlets/purl/1364816)
+- PETSc-GAMG `-pc_gamg_reuse_interpolation`: [PETSc docs](https://petsc.org/release/manualpages/PC/PCGAMGSetReuseInterpolation/)
+- **Ginkgo has NO reuse API:** issues [#1681](https://github.com/ginkgo-project/ginkgo/issues/1681), [#1158](https://github.com/ginkgo-project/ginkgo/issues/1158)
+- OpenFOAM `cacheAgglomeration` (caches map, re-sums coarse ops): OpenFOAM-dev GAMGSolver.C
+
+**Mixed / single precision (validates our single-precision win):**
+- Oo & Vogel 2020 (FP32 inner MG + FP64 IR = full accuracy, 2.5×): [arXiv:2007.07539](https://arxiv.org/abs/2007.07539)
+- Brogi 2022 (OpenFOAM: pure-FP32 fails turbulence; keep LA FP64): [arXiv:2209.06105](https://arxiv.org/abs/2209.06105)
+- Carson & Higham 2018 (3-precision IR theory): [10.1137/17M1140819](https://doi.org/10.1137/17M1140819)
+- Cojean et al. 2024 (Ginkgo per-level MP-AMG beats AmgX 1.5×): [10.1177/10943420241268323](https://doi.org/10.1177/10943420241268323)
+- Neko 2025 (FP32 PCG, FP64 reductions, 29–38%): [arXiv:2503.02134](https://arxiv.org/abs/2503.02134)
+
+**Smoother (the #2 lever, deprioritised by our 72%-setup finding):**
+- Lottes 2022, 4th-kind Chebyshev: [arXiv:2202.08830](https://arxiv.org/abs/2202.08830); D'Ambra 2025 [arXiv:2407.09848](https://arxiv.org/abs/2407.09848)
+
+**OpenFOAM-on-GPU ecosystem:**
+- AmgX gold standard (7–9× pressure): coupled study [arXiv:2403.07882](https://arxiv.org/abs/2403.07882)
+- Intel/KIT benchmark OGL+Ginkgo-SYCL on Max: [oneAPI Ginkgo blog](https://oneapi.io/blog/ginkgo-and-oneapi-accelerate-numerical-simulations-on-intel-gpus/)
+- AMD MI300A OpenMP offload (4× H100): [arXiv:2405.00436](https://arxiv.org/abs/2405.00436); SPUMA portable fork (no Intel): [arXiv:2512.22215](https://arxiv.org/abs/2512.22215)
+
+> Our contribution = the **Intel-Battlemage + SYCL/Ginkgo/OGL** combination, not the
+> linear-algebra fundamentals above. See [gpu-comparison.md](gpu-comparison.md) for hardware context.
