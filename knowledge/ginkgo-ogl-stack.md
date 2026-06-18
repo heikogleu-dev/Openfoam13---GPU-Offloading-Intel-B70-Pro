@@ -119,3 +119,23 @@ p
   since v0.5.4 (2024); README documents only AMD MI100, no Intel guidance.
 - SYCL build caveat: may need `-DCMAKE_CXX_FLAGS=-ffp-model=precise` (IEEE-754
   differences in Intel SYCL compilers) — relevant for mixed-precision results.
+
+## Mixed-precision multigrid WIRED INTO OGL (2026-06-18, our patch)
+
+`findings/code/ogl-patches/mixed-precision-multigrid.patch` adds a `precision`
+keyword to the OGL Multigrid preconditioner block (was BJ-only before):
+- `double` (default) — unchanged
+- `mixed` — DP-SP: double finest level + float coarse levels (heterogeneous
+  `with_mg_level(pgm_double, fpgm_float)` + `with_level_selector`)
+- `single` — all-float MG preconditioner (`Pgm<float>`, float smoother + float CG coarse)
+
+Validated 7.1M np=8 (CG-coarse, same ~12 iters all modes = no accuracy penalty):
+| precision | VRAM | s/step |
+|---|---|---|
+| double | 11.4 GB | 8.67 |
+| mixed | 10.4 GB (−9%) | 8.16 (−6%) |
+| **single** | **8.5 GB (−25%)** | **7.95 (−8%)** |
+
+`single` is the winner: −25% VRAM + −8% wall-clock, and it makes GPU-MG beat
+CPU-GAMG (~8.5–9.3) even at 7.1M. VRAM ceiling ~20M→~25M. 34M still needs the
+full-float *solve* (the double CG matrix remains) — next step.

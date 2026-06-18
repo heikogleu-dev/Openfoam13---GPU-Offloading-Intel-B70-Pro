@@ -1,0 +1,121 @@
+--- include/OGL/Preconditioner.hpp.bak-premixed-20260618-192927	2026-06-18 19:29:27.804685254 +0200
++++ include/OGL/Preconditioner.hpp	2026-06-18 19:58:55.989290209 +0200
+@@ -26,6 +26,8 @@
+     using fcg = gko::solver::Cg<float>;
+     using mg = gko::solver::Multigrid;
+     using pgm = gko::multigrid::Pgm<scalar, label>;
++    using fpgm = gko::multigrid::Pgm<float, label>;
++    using fir = gko::solver::Ir<float>;
+     using ras =
+         gko::experimental::distributed::preconditioner::Schwarz<scalar, label,
+                                                                 label>;
+@@ -375,6 +377,7 @@
+             auto coarseSolver =
+                 d.lookupOrDefault("coarseSolver", word("Jacobi"));
+             auto maxIterS = d.lookupOrDefault("maxIterSmoother", label(1));
++            word precision(d.lookupOrDefault("precision", word("double")));
+ 
+             gko::solver::multigrid::cycle cycle;
+             if (cycleName == "v") cycle = gko::solver::multigrid::cycle::v;
+@@ -466,20 +469,87 @@
+                                          << abort(FatalError);
+                 }
+ 
+-                auto pre_factory =
+-                    mg::build()
+-                        .with_max_levels(static_cast<gko::uint32>(maxLevels))
+-                        .with_cycle(cycle)
+-                        .with_min_coarse_rows(
+-                            static_cast<gko::uint32>(minRowsC))
+-                        .with_pre_smoother(smoother_gen)
+-                        .with_post_uses_pre(true)
+-                        .with_mg_level(
+-                            pgm::build().with_deterministic(false).on(
+-                                device_exec))
+-                        .with_coarsest_solver(coarsest_solver)
+-                        .with_criteria(single_it)
+-                        .on(device_exec);
++                std::unique_ptr<mg::Factory> pre_factory{};
++                if (precision == "double") {
++                    pre_factory =
++                        mg::build()
++                            .with_max_levels(static_cast<gko::uint32>(maxLevels))
++                            .with_cycle(cycle)
++                            .with_min_coarse_rows(
++                                static_cast<gko::uint32>(minRowsC))
++                            .with_pre_smoother(smoother_gen)
++                            .with_post_uses_pre(true)
++                            .with_mg_level(
++                                pgm::build().with_deterministic(false).on(
++                                    device_exec))
++                            .with_coarsest_solver(coarsest_solver)
++                            .with_criteria(single_it)
++                            .on(device_exec);
++                } else {
++                    // mixed precision: float smoother + float coarse (Jacobi)
++                    auto smf = gko::share(
++                        fir::build()
++                            .with_solver(fbj::build()
++                                             .with_max_block_size(1u)
++                                             .with_skip_sorting(true)
++                                             .on(device_exec))
++                            .with_relaxation_factor(
++                                static_cast<float>(relaxFac))
++                            .with_criteria(it::build().with_max_iters(
++                                static_cast<gko::uint32>(maxIterS)))
++                            .on(device_exec));
++                    auto fcof = gko::share(
++                        fcg::build()
++                            .with_preconditioner(fbj::build()
++                                                     .with_max_block_size(1u)
++                                                     .with_skip_sorting(true)
++                                                     .on(device_exec))
++                            .with_criteria(it::build().with_max_iters(
++                                static_cast<gko::uint32>(maxIterCoarseS)))
++                            .on(device_exec));
++                    if (precision == "mixed") {
++                        // DP-SP: double finest level, float coarse levels
++                        pre_factory =
++                            mg::build()
++                                .with_max_levels(
++                                    static_cast<gko::uint32>(maxLevels))
++                                .with_cycle(cycle)
++                                .with_min_coarse_rows(
++                                    static_cast<gko::uint32>(minRowsC))
++                                .with_pre_smoother(smoother_gen, smf)
++                                .with_post_uses_pre(true)
++                                .with_mg_level(
++                                    pgm::build().with_deterministic(false).on(
++                                        device_exec),
++                                    fpgm::build().with_deterministic(false).on(
++                                        device_exec))
++                                .with_level_selector(
++                                    [](const gko::size_type lvl,
++                                       const gko::LinOp *) {
++                                        return lvl == 0 ? 0 : 1;
++                                    })
++                                .with_coarsest_solver(fcof)
++                                .with_criteria(it::build().with_max_iters(1u))
++                                .on(device_exec);
++                    } else {
++                        // single: all levels float
++                        pre_factory =
++                            mg::build()
++                                .with_max_levels(
++                                    static_cast<gko::uint32>(maxLevels))
++                                .with_cycle(cycle)
++                                .with_min_coarse_rows(
++                                    static_cast<gko::uint32>(minRowsC))
++                                .with_pre_smoother(smf)
++                                .with_post_uses_pre(true)
++                                .with_mg_level(
++                                    fpgm::build().with_deterministic(false).on(
++                                        device_exec))
++                                .with_coarsest_solver(fcof)
++                                .with_criteria(it::build().with_max_iters(1u))
++                                .on(device_exec);
++                    }
++                }
+                 return wrap_schwarz(gkomatrix, device_exec,
+                                     std::move(pre_factory));
+             }
