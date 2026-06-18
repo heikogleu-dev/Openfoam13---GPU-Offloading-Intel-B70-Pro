@@ -94,6 +94,8 @@ rule (search it first, cite external validation):
 | [ginkgo-ogl-stack.md](knowledge/ginkgo-ogl-stack.md) | SYCL preconditioner bugs (fixed in 2.0), OGL patches, mixed-precision patch |
 | [intel-compute-runtime-and-driver.md](knowledge/intel-compute-runtime-and-driver.md) | CR 26.05/26.18, the multi-process zeInit abort, the LD-switch |
 | [hardware-system-grub.md](knowledge/hardware-system-grub.md) | B70 specs (incl. measured FP64), GRUB/desktop-GPU |
+| [ogl-ginkgo-config-reference.md](knowledge/ogl-ginkgo-config-reference.md) | **Config reference** — every OGL/Ginkgo flag, valid values, defaults, B70 recommendation |
+| [gpu-comparison.md](knowledge/gpu-comparison.md) | B70 vs current AMD/NVIDIA/Intel GPUs (bandwidth-bound CFD); VRAM-per-$ verdict |
 | [external-references.md](knowledge/external-references.md) | Papers + projects — the prior art we build on |
 
 ---

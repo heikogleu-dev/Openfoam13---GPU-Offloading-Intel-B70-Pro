@@ -38,6 +38,8 @@ This mirrors the KB discipline used in the sister FluidX3D project.
 | [intel-compute-runtime-and-driver.md](intel-compute-runtime-and-driver.md) | CR 26.05/26.14/26.18, the multi-process `zeInit` abort, the CR 26.05 LD-switch, GPU device-lost recovery |
 | [vram-and-mesh-scaling.md](vram-and-mesh-scaling.md) | Per-preconditioner VRAM (bytes/row), what fits at what mesh size on 32 GB, measured peaks |
 | [hardware-system-grub.md](hardware-system-grub.md) | B70 specs, iGPU-PRIME GRUB setup/removal, desktop-on-B70 VRAM cost |
+| [gpu-comparison.md](gpu-comparison.md) | B70 vs AMD/NVIDIA/Intel GPUs (bandwidth-bound CFD) |
+| [ogl-ginkgo-config-reference.md](ogl-ginkgo-config-reference.md) | Every OGL/Ginkgo flag + recommended values |
 | [external-references.md](external-references.md) | Papers, upstream projects, and links — the prior art we are building on |
 
 ## One-line summary of the whole investigation

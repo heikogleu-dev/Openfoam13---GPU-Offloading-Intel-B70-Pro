@@ -93,3 +93,54 @@ we have now via single precision). Bigger than full-float.
 **maxIterCoarse is NOT a lever:** reducing 20→5 raised outer iterations
 (12-21 → 27-41) enough to negate the cheaper coarse solve → net slightly worse.
 20 is well-tuned. (Diagnostic logs: Testcase-half/log.lever-*, log.cache-*.)
+
+## External validation + ranked levers (research 2026-06-18)
+
+Our #1 finding (AMG hierarchy rebuilt every solve) is a **known, named problem**;
+every major GPU-AMG library except Ginkgo already solves it by **reusing the
+coarsening + transfer operators (P/R) and recomputing only the Galerkin coarse
+operator values Ac = R·A·P** (sparsity fixed because the mesh is fixed):
+
+| Library | reuse knob | reported |
+|---|---|---|
+| NVIDIA AmgX | `structure_reuse_levels=-1` (exactly our case) | gold standard; but even AmgX still recomputes coarse *sparsity* on resetup (open issue #127) |
+| AMGCL (Demidov 2021) | partial reuse | **setup −40–200%, total −up to 20%**; **full reuse "hit or miss" → counterproductive for Navier-Stokes (iteration creep)** |
+| Trilinos MueLu | `reuse: RAP` | setup 77→22 s (3.5×); but problem-dependent (16× *worse* on one MHD case) |
+| PETSc-GAMG | `-pc_gamg_reuse_interpolation` | constant setup across timesteps |
+| Hypre BoomerAMG | **none** | setup grows linearly with timesteps (relevant to our PETSc track) |
+| OpenFOAM GAMG | `cacheAgglomeration` | caches only the *agglomeration map*; coarse matrices rebuilt by cheap **summation** of fine coefficients → that's why GAMG setup is cheap |
+
+**This explains our caching=20/2 divergence empirically:** Demidov shows full
+hierarchy reuse is *hit-or-miss and counterproductive for N-S* (iteration creep) —
+exactly what we saw (201-iter cap after step 1). The correct path is **values-only
+Galerkin refill, not stale full-reuse.**
+
+**★ Key correction:** **Ginkgo has NO AMG-reuse API** (open issues #1681 "Reuse
+pgm and multigrid", #1158 "values-only update, fixed sparsity"). `set_system_matrix`
+only swaps the Krylov matrix, not the MG hierarchy. The hpsim 1.11 `update_matrix_value`
+extension was an attempt at exactly this; it was dropped in the 2.0 migration. So a
+**true values-only Galerkin refill in Ginkgo 2.0 would put us *ahead of the field***
+(even AmgX leaves the coarse-sparsity-skip imperfect).
+
+### Ranked levers to adopt (externally grounded)
+1. **★★★ Values-only AMG hierarchy reuse** (cache PGM aggregation + Galerkin
+   sparsity, refill Ac values per timestep). #1 bottleneck (~55–59%), fixed-mesh
+   holds. Needs a Ginkgo-side patch (no API; port/rebuild the hpsim extension or
+   implement against #1158). Interim: rebuild-frequency tuning (full-reuse is risky).
+2. **★★ Fourth-kind Chebyshev polynomial smoother** (Lottes 2022, arXiv:2202.08830)
+   — pure SpMV, no triangular solves, near-zero per-step setup, needs only a λmax
+   estimate (reuse across fixed-pattern steps). Ideal for the B70's strong SpMV.
+   Replace Ginkgo's default Ir+Jacobi smoother. (GPU framing is our inference; the
+   paper is convergence theory.)
+3. **★★ Mixed precision in the MG path** — DONE (our `precision single` patch);
+   Ginkgo per-level MP-AMG exists upstream and beat AmgX 1.5× (Cojean 2024). Keep
+   global reductions/residual in FP64 (Brogi 2022, Neko 2025, Oo&Vogel 2020).
+4. **★ ParILUT + ISAI** cheaper-setup fallbacks (if AMG reuse stalls) — but only
+   multigrid is mesh-independent for Poisson; ILU is not.
+
+Sources: AMGX #127; AMGCL [arXiv:2108.02054](https://arxiv.org/abs/2108.02054);
+MueLu [OSTI 1364816](https://www.osti.gov/servlets/purl/1364816); PETSc GAMG docs;
+Ginkgo issues [#1681](https://github.com/ginkgo-project/ginkgo/issues/1681)/[#1158](https://github.com/ginkgo-project/ginkgo/issues/1158);
+Oo&Vogel [arXiv:2007.07539](https://arxiv.org/abs/2007.07539);
+Brogi [arXiv:2209.06105](https://arxiv.org/abs/2209.06105);
+Cojean 2024 (IJHPCA 10.1177/10943420241268323); Lottes [arXiv:2202.08830](https://arxiv.org/abs/2202.08830).
