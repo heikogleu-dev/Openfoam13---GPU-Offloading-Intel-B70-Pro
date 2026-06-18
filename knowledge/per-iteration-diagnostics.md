@@ -144,3 +144,28 @@ Ginkgo issues [#1681](https://github.com/ginkgo-project/ginkgo/issues/1681)/[#11
 Oo&Vogel [arXiv:2007.07539](https://arxiv.org/abs/2007.07539);
 Brogi [arXiv:2209.06105](https://arxiv.org/abs/2209.06105);
 Cojean 2024 (IJHPCA 10.1177/10943420241268323); Lottes [arXiv:2202.08830](https://arxiv.org/abs/2202.08830).
+
+## A — config-wins tested + refined per-phase split (2026-06-18)
+
+Tested on 7.1M single MG np=8 (clean per-phase ms, OGL timers):
+| config | init_precond | solve | call_update | call_init | s/step |
+|---|---|---|---|---|---|
+| baseline | 490 | 373 | 37 | 1415 (1×/step) | 7.97 |
+| GINKGO_FORCE_GPU_AWARE_MPI=0 | 487 | 370 | 37 | 1415 | 7.95 (no change) |
+| splitMPIComm false | 490 | 495 | 37 | 1410 | 8.2 (worse) |
+
+**No config win** — both knobs already optimal: GPU-aware-MPI is a **no-op with
+`forceHostBuffer`** (host buffers used regardless); `splitMPIComm true` (default)
+beats false. (Confirms Finding 16's `splitComm` was the wrong key, and the right
+one is already set best.)
+
+**★ Refined finding — GPU time is SETUP-dominated, not solve-dominated:**
+- Setup = call_init (1415, 1×/step) + init_precond (490×3) ≈ **2885 ms ≈ 72%**
+- Solve (CG loop) = 373×3 ≈ **1119 ms ≈ 28%**
+
+→ **Reprioritises away from the Chebyshev smoother (B):** it would only touch the
+28% solve portion (and needs eigenvalue-bound estimation — Ginkgo's Chebyshev
+has default foci {0,1}, no built-in estimator, no 4th-kind → risky). The 72%
+setup (AMG rebuild + matrix init, every solve/step) is the real lever → **AMG
+values-only reuse (C)** plus **call_init/matrix-structure reuse**. Data-driven:
+do C before B.
