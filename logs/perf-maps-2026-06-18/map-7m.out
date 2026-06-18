@@ -1,0 +1,18 @@
+########## MAP 18:30:11 ##########
+nCells:     note        "nPoints: 1008790 nCells: 894485 nFaces: 2794566 nInternalFaces: 2676543";
+===== decompose -> 2  18:30:11 =====
+### MG-VcgC        np=2  | VRAM= 9383MiB util=21%  | iters=[21 17 14 13 12 12 14 12 12 ] | times=[37.93084 56.03749 74.04146 ]
+===== decompose -> 4  18:32:47 =====
+### MG-VcgC        np=4  | VRAM= 9972MiB util=34%  | iters=[21 17 14 13 12 12 14 12 12 ] | times=[25.00268 37.19875 49.41828 ]
+===== decompose -> 8  18:34:56 =====
+### MG-VcgC        np=8  | VRAM=11415MiB util=44%  | iters=[21 17 14 13 11 12 14 12 12 ] | times=[18.39382 27.29869 36.2703 ]
+### MG-default     np=8  | VRAM=10392MiB util=67%  | iters=[101 81 65 55 64 66 68 55 68 ] | times=[24.97796 38.88551 52.99941 ]
+### MG-WcgC        np=8  | VRAM=11552MiB util=62%  | iters=[11 9 8 7 8 9 9 9 9 ] | times=[22.26022 34.69797 47.77469 ]
+### ILU            np=8  | VRAM=10991MiB util=79%  | iters=[201 161 161 142 201 201 201 201 201 ] | times=[30.6428 52.98261 76.9833 ]
+### GAMGcpu        np=8  | VRAM=    0MiB util=-    | iters=[8 4 4 5 8 11 6 7 13 ] | times=[12.97284 21.96045 31.25807 ]
+===== decompose -> 12  18:40:45 =====
+### MG-VcgC        np=12 | VRAM=11015MiB util=38%  | iters=[21 17 14 13 12 12 14 12 12 ] | times=[17.9217 26.73745 35.59633 ]
+===== decompose -> 16  18:42:46 =====
+### MG-VcgC        np=16 | VRAM=13344MiB util=43%  | iters=[21 17 14 13 12 12 13 11 12 ] | times=[16.9561 25.46915 33.93486 ]
+### GAMGcpu        np=16 | VRAM=    0MiB util=-    | iters=[8 4 5 5 9 13 6 8 15 ] | times=[11.17175 19.38216 27.84288 ]
+########## MAP FERTIG 18:46:34 ##########
