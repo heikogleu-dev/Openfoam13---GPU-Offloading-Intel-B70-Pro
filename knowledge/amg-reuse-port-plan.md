@@ -1,10 +1,14 @@
-# AMG values-only reuse — port plan (C, the 72%-setup lever)
+# AMG values-only reuse — port plan (C, the init_precond lever)
 
 **Goal:** stop rebuilding the AMG hierarchy every solve. Reuse the cached PGM
 aggregation + transfer operators (P/R); recompute only the Galerkin coarse
-operator **values** Ac = R·A·P (sparsity fixed because the mesh is fixed). Target
-≈ halve the per-solve GPU time (init_precond is 55–59% / setup ≈72% of GPU time;
-see [per-iteration-diagnostics.md](per-iteration-diagnostics.md)).
+operator **values** Ac = R·A·P (sparsity fixed because the mesh is fixed).
+**Honest payoff (audited 2026-06-18):** `init_precond` is ~50–59% of the GPU
+*pressure-solve* time but only **~18–21% of wall-clock** (the GPU p-solve is just
+~40–48% of the step; CPU U/k/omega + assembly is the rest). Values-only reuse
+removes ~⅔ of `init_precond` → **~10–15% wall-clock** (maybe ~15–20% at 17.2M).
+NOT ~2× — earlier "halve the step" framing was an overstatement, corrected. Still
+worth it (meaningful + ahead-of-field). See [per-iteration-diagnostics.md](per-iteration-diagnostics.md).
 
 **Status (2026-06-18):** fully scoped, reference located, develop API drift mapped.
 Remaining = the code surgery + a ~1h Ginkgo-SYCL rebuild + compile-fix loop +

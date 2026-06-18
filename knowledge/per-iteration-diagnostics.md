@@ -18,8 +18,9 @@ phase timers (logged at `verbose>0`, already in run logs) + Ginkgo ProfilerHook.
 
 **~55–59% of GPU solve time is the AMG hierarchy rebuild, repeated every
 pressure solve.** This is the "AMG-resetup-per-step" gotcha — OpenFOAM GAMG
-avoids it (`cacheAgglomeration`: keep hierarchy, refresh values). Eliminating
-it would roughly **halve** the solve time — a bigger lever than full-float.
+avoids it (`cacheAgglomeration`: keep hierarchy, refresh values). Eliminating it
+would ~2× the *GPU pressure-solve*, but only **~15–20% of wall-clock** (the GPU
+p-solve is ~40–48% of the step — audit-corrected, see bottom of file).
 
 ## The caching lever — present but NOT usable on our build
 
@@ -38,7 +39,7 @@ define `...EXTENSIONS` (plural) — a naming bug**. So reuse keeps *stale* value
 → the AMG preconditioner becomes ineffective after the matrix changes (step 2+)
 → CG hits the 201-iter cap → net much slower. **Keep `caching 0` for now.**
 
-## To unlock the ~halving (highest-value roadmap item)
+## To unlock the GPU-solve speedup (highest-value GPU-side roadmap item)
 1. Build Ginkgo with the **OGL extension** that provides `UpdateMatrixValue`
    (hpsim's Ginkgo fork) — a Ginkgo rebuild.
 2. Fix the OGL `#ifdef GINKGO_WITH_OGL_EXTENSION` → `...EXTENSIONS` naming
@@ -47,9 +48,12 @@ define `...EXTENSIONS` (plural) — a naming bug**. So reuse keeps *stale* value
    init_precond ~0 + convergence preserved → ~2× on the solve.
 
 ## Other communication notes
-- **copy_x_back bandwidth 0.94 GB/s** — far below PCIe; the D2H is tiny/
-  latency-bound (consistent with the known PCIe Gen1x1 xe-BMG downgrade). Small
-  absolute cost (18 ms) so low priority, but flags the slow host link.
+- **copy_x_back bandwidth 0.94 GB/s** — a **software transfer-path** issue (tiny/
+  latency-bound D2H: pageable host memory, map/unmap, small per-iteration copies),
+  **NOT the PCIe link.** ★ Corrected 2026-06-18: the "PCIe Gen1×1" reading is an
+  Intel-Arc switch-hierarchy **reporting artifact** — the real link (read at the
+  parent bridge) is Gen5-class (~48–56 GB/s, clpeak on B70). Smoke-test with clpeak
+  before chasing PCIe. Small absolute cost (18 ms) so low priority either way.
 - `forceHostBuffer true` (no GPU-aware MPI) → the ~30% copy-engine in the maps.
 
 ## Within-solve breakdown (Ginkgo ProfilerHook nested summary, single, 0.5M)
@@ -85,10 +89,13 @@ reused hierarchy is always stale vs the current matrix).
 3. Fix the OGL `#ifdef GINKGO_WITH_OGL_EXTENSION` → `...EXTENSIONS` (Preconditioner.hpp:667)
    + enable the CMake option; rebuild OGL.
 4. Then `caching N` reuses the hierarchy WITH value-update (GAMG-style) →
-   init_precond ~0 → **~2× on the solve** (init_precond was ~55-59%).
+   init_precond drops ~91% (caching data: 487→42 ms) → **~2× on the GPU
+   pressure-solve portion**.
 
-Estimated payoff: solve ~halved → GPU would beat CPU GAMG by ~2× (vs the ~1.06×
-we have now via single precision). Bigger than full-float.
+Estimated payoff (audit-corrected, see bottom): ~2× on the GPU pressure-solve, but
+that solve is only ~40–48% of the wall-clock step → **~15–20% wall-clock**, NOT 2×
+over GAMG. Still the biggest GPU-side lever; bigger than full-float (which is a
+VRAM lever for 34M, not a speed lever).
 
 **maxIterCoarse is NOT a lever:** reducing 20→5 raised outer iterations
 (12-21 → 27-41) enough to negate the cheaper coarse solve → net slightly worse.
@@ -169,3 +176,28 @@ has default foci {0,1}, no built-in estimator, no 4th-kind → risky). The 72%
 setup (AMG rebuild + matrix init, every solve/step) is the real lever → **AMG
 values-only reuse (C)** plus **call_init/matrix-structure reuse**. Data-driven:
 do C before B.
+
+## ★ AUDIT-CORRECTION (2026-06-18): honest wall-clock balance + C payoff
+
+Earlier framing ("setup 72% of GPU time", C "~2×"/"halve the step") was **too
+optimistic** — corrected here from phase-occurrence counts (A-baseline, 7.1M single
+np=8, 5 steps):
+
+| phase | per step | ms/step | note |
+|---|---|---|---|
+| init_precond | 3× (per p-solve) | 1470 | the AMG-rebuild — what C addresses |
+| solve | 3× | 1119 | |
+| call_update | ~8× | 311 | |
+| call_init | **only 3× per 5 steps** (~0.6×/step) | ~849 avg, →~0 steady-state | matrix assembly, NOT every step |
+| copy_x_back | 3× | 21 | |
+| **GPU total** | | **~3770 (~2921 steady-state)** | |
+| **wall-clock** | | **~7900** | |
+
+**The GPU pressure-solve is only ~40–48% of the wall-clock step.** The other
+~52–60% is **CPU** (U/k/omega DILU solves + p-matrix assembly + MPI) — GAMG runs
+that same CPU work too, so the apples-to-apples comparison is fair, but it bounds
+how much GPU-solve optimization can move wall-clock.
+
+- `init_precond` ≈ **50–59% of the GPU pressure-solve time** (the old "55–59%" — true, narrow slice) but only **~18–21% of wall-clock**.
+- **C (AMG values-only reuse)** removes ~⅔ of `init_precond` (the value-refill still costs) → **~10–15% wall-clock**, NOT ~2×. (May reach ~15–20% at 17.2M, where the GPU share of wall-clock is larger.)
+- C is still worth doing (meaningful + ahead-of-field) — but expectations corrected.

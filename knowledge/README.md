@@ -37,7 +37,8 @@ This mirrors the KB discipline used in the sister FluidX3D project.
 | [intel-platform-fit.md](intel-platform-fit.md) | **Are we on the right track on Intel?** B70 FP64 reality (strong, ~1335 GFLOPS measured), community alignment/divergences, what's novel (we're the only ones), upstream roadmap (classical AMG incoming) |
 | [ginkgo-ogl-stack.md](ginkgo-ogl-stack.md) | Ginkgo SYCL preconditioner bugs (fixed in 2.0), the `find_blocks` distributed-path bug, OGL build patches + valid preconditioner keywords |
 | [ogl-ginkgo-config-reference.md](ogl-ginkgo-config-reference.md) | **Full cited config reference.** Every fvSolution solver key, all Multigrid sub-options, all preconditioner keywords + options, env vars, build flags — grounded in OGL `dev` source + Ginkgo `develop`, with README-vs-source conflicts + B70 recommendations |
-| [intel-compute-runtime-and-driver.md](intel-compute-runtime-and-driver.md) | CR 26.05/26.14/26.18, the multi-process `zeInit` abort, the CR 26.05 LD-switch, GPU device-lost recovery |
+| [intel-compute-runtime-and-driver.md](intel-compute-runtime-and-driver.md) |
+| [intel-b70-tuning-levers.md](intel-b70-tuning-levers.md) | Real-vs-no-op triage of Intel/L0/SYCL/xe tuning flags; TOP-5 cheap levers | CR 26.05/26.14/26.18, the multi-process `zeInit` abort, the CR 26.05 LD-switch, GPU device-lost recovery |
 | [vram-and-mesh-scaling.md](vram-and-mesh-scaling.md) | Per-preconditioner VRAM (bytes/row), what fits at what mesh size on 32 GB, measured peaks |
 | [hardware-system-grub.md](hardware-system-grub.md) | B70 specs, iGPU-PRIME GRUB setup/removal, desktop-on-B70 VRAM cost |
 | [gpu-comparison.md](gpu-comparison.md) | B70 vs AMD/NVIDIA/Intel GPUs (bandwidth-bound CFD) |

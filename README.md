@@ -60,16 +60,19 @@ respectable (~1.3 TFLOPS, ~1:8, our clpeak in Ginkgo #2013).
 A per-phase breakdown (OGL's own `TIME_WITH_FIELDNAME` timers + Ginkgo
 ProfilerHook) found where the GPU time actually goes per pressure solve:
 
-| phase | share | note |
+| phase | share of GPU pressure-solve | note |
 |---|---|---|
-| **init_precond (AMG hierarchy rebuild)** | **~55–59%** | **rebuilt EVERY solve** |
-| solve (CG loop, MG-apply 96% of it) | ~41% | coarse-CG ≈50% of the apply; SpMV dominant |
+| **init_precond (AMG hierarchy rebuild)** | **~50–59%** | **rebuilt EVERY solve** |
+| solve (CG loop, MG-apply 96% of it) | ~40% | coarse-CG ≈50% of the apply; SpMV dominant |
 | call_update (H2D matrix values) | small | |
-| copy_x_back (D2H) | tiny | bandwidth only 0.94 GB/s (PCIe Gen1×1 xe downgrade) |
+| copy_x_back (D2H) | tiny | 0.94 GB/s — a *software transfer-path* issue (pageable host mem / tiny copies), **not** the PCIe link (see note below) |
 
 **The AMG hierarchy is rebuilt on every solve — OpenFOAM GAMG avoids this
-(`cacheAgglomeration`).** Eliminating it would roughly **halve** the solve time
-(a bigger lever than the bandwidth win). The fix is identified: OGL has a
+(`cacheAgglomeration`).** Caveat (audited): the GPU pressure-solve is only ~40–48%
+of the wall-clock step (CPU U/k/omega + assembly is the rest), so eliminating the
+rebuild is worth **~10–20% wall-clock**, not 2× — but it's the biggest single
+GPU-side lever and puts us ahead of the field (Ginkgo has no reuse API). The fix
+is identified: OGL has a
 `caching` mechanism, but the value-update path (`gko::UpdateMatrixValue`) is an
 hpsim Ginkgo-1.11-fork extension that was lost in the Ginkgo-2.0 migration.
 Porting it back (+ a Ginkgo SYCL rebuild) is the top roadmap item — see
@@ -90,6 +93,7 @@ rule (search it first, cite external validation):
 | [per-iteration-diagnostics.md](knowledge/per-iteration-diagnostics.md) | Per-phase breakdown; the AMG-rebuild lever; the fix path |
 | [amg-reuse-port-plan.md](knowledge/amg-reuse-port-plan.md) | The #1 lever — port plan for AMG values-only reuse |
 | [config-pitfalls.md](knowledge/config-pitfalls.md) | Config mistakes we hit — check before every run |
+| [intel-b70-tuning-levers.md](knowledge/intel-b70-tuning-levers.md) | Real-vs-no-op triage of Intel/L0/SYCL/xe tuning flags; TOP-5 cheap levers |
 | [vram-and-mesh-scaling.md](knowledge/vram-and-mesh-scaling.md) | Per-preconditioner VRAM, ceilings, mixed-precision savings |
 | [gpu-amg-reference-configs.md](knowledge/gpu-amg-reference-configs.md) | Proven AmgX / Hypre / Ginkgo pressure configs from the literature |
 | [intel-platform-fit.md](knowledge/intel-platform-fit.md) | Are we on the right track on Intel? FP64 reality, community fit |
@@ -122,7 +126,7 @@ case where GPUs struggle everywhere — and where we now win on Battlemage.
 | FP32 compute | ~12–23 TFLOPS | |
 | VRAM | 32 GB GDDR6 | fits ~20M cells (double MG), ~25–28M (single) |
 | Kernel-launch latency | 5.6 µs sync / 1.5 µs batched | on par with CUDA |
-| PCIe H2D | ~15 GB/s | xe BMG Gen1×1 downgrade (known); D2H copy-back only 0.94 GB/s |
+| PCIe link | Gen5-class (~48–56 GB/s, clpeak) | the "Gen1×1" lspci reading is an Arc switch-hierarchy **artifact** (read the parent bridge); our 0.94 GB/s D2H is a software transfer-path issue, not the link |
 
 The two metrics that matter for CFD — VRAM bandwidth and FP64 — are both solid.
 The limiter is the **SYCL solver software** (preconditioner setup + communication),
@@ -196,10 +200,14 @@ the GPU frees CPU cores and wins outright at ≥17M cells.
 
 **Top roadmap items** (see [`scripts/next-session-plan.md`](scripts/next-session-plan.md)):
 1. **AMG-hierarchy caching with value-update** (port the `update_matrix_value`
-   extension to Ginkgo 2.0) — ~2× the solve, the biggest remaining lever.
-2. **Full-float solve** (re-template the OGL solve path) — more bandwidth + the
-   34M mesh on a single 32 GB card.
-3. **GPU-aware MPI** for the xe driver — kill the ~30% copy-engine cost.
+   extension to Ginkgo 2.0) — ~2× on the GPU pressure-solve = **~15–20% wall-clock**
+   (the GPU p-solve is ~40–48% of the step; CPU U/k/omega + assembly is the rest).
+   Biggest GPU-side lever; see [`knowledge/amg-reuse-port-plan.md`](knowledge/amg-reuse-port-plan.md).
+2. **Full-float solve** (re-template the OGL solve path) — a **VRAM** lever for the
+   34M mesh on a single 32 GB card (not a speed lever).
+3. **Cheap tuning A/Bs** (no rebuild): diagnose the 0.94 GB/s D2H with clpeak first
+   (the link is fine), SYCL copy-engine / V1-batching, GPU-clock pinning — see
+   [`knowledge/intel-b70-tuning-levers.md`](knowledge/intel-b70-tuning-levers.md).
 4. Watch: Ginkgo classical Ruge-Stüben AMG (landed in develop, SYCL kernels pending).
 
 ---
