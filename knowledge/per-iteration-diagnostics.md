@@ -51,3 +51,45 @@ define `...EXTENSIONS` (plural) — a naming bug**. So reuse keeps *stale* value
   latency-bound (consistent with the known PCIe Gen1x1 xe-BMG downgrade). Small
   absolute cost (18 ms) so low priority, but flags the slow host link.
 - `forceHostBuffer true` (no GPU-aware MPI) → the ~30% copy-engine in the maps.
+
+## Within-solve breakdown (Ginkgo ProfilerHook nested summary, single, 0.5M)
+
+Ignore "synchronize" rows (= the profiler's set_synchronization overhead); real
+kernel time = "(self)".
+- **MG preconditioner apply = ~96% of the solve** (CG outer vector ops are tiny).
+- Within MG apply: **coarse-grid CG (maxIterCoarse=20) ≈ 50%** of the apply.
+- **csr::spmv is the dominant kernel** (≈56% of the coarse CG) → bandwidth-bound
+  → FP32/full-float helps.
+
+→ **2nd lever: `maxIterCoarse` (default 20) looks oversized** — ~half the MG
+apply is the coarse solve. Reducing it (5–10) should speed the solve with little
+convergence cost. Cheap config test (unlike `caching`, this one should work).
+
+## Root cause + fix path (refined 2026-06-18)
+
+The `caching` value-update path needs `gko::UpdateMatrixValue` /
+`Pgm/Multigrid::update_matrix_value` — an **hpsim Ginkgo-fork extension**
+(branch `ogl_0600_gko110`, our old Ginkgo **1.11**; 82 symbols in that build).
+It is **NOT in ginkgo-project develop** (our Ginkgo 2.0, which instead now has
+the classical RS-AMG from PR #1985). The 2.0 migration dropped the extension →
+caching reuse has no value-update → diverges (confirmed: even within-step reuse
+fails because OGL's `call_update` refreshes matrix values every solve, so a
+reused hierarchy is always stale vs the current matrix).
+
+**Fix path (feasible, but a real project — the #1 performance lever, > full-float):**
+1. Port the `update_matrix_value` extension from the `ogl_0600_gko110` 1.11 fork
+   to the Ginkgo 2.0 source (UpdateMatrixValue interface + Pgm/Multigrid
+   methods + the kernels that recompute Galerkin operators with new values —
+   Ginkgo internals across a major version).
+2. Rebuild Ginkgo 2.0 (heavy SYCL build, ~1h).
+3. Fix the OGL `#ifdef GINKGO_WITH_OGL_EXTENSION` → `...EXTENSIONS` (Preconditioner.hpp:667)
+   + enable the CMake option; rebuild OGL.
+4. Then `caching N` reuses the hierarchy WITH value-update (GAMG-style) →
+   init_precond ~0 → **~2× on the solve** (init_precond was ~55-59%).
+
+Estimated payoff: solve ~halved → GPU would beat CPU GAMG by ~2× (vs the ~1.06×
+we have now via single precision). Bigger than full-float.
+
+**maxIterCoarse is NOT a lever:** reducing 20→5 raised outer iterations
+(12-21 → 27-41) enough to negate the cheaper coarse solve → net slightly worse.
+20 is well-tuned. (Diagnostic logs: Testcase-half/log.lever-*, log.cache-*.)
