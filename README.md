@@ -88,6 +88,8 @@ rule (search it first, cite external validation):
 | [preconditioners-and-gpu-cfd.md](knowledge/preconditioners-and-gpu-cfd.md) | Why ILU/BJ lose, why AMG wins; the Multigrid tuning map; theory + external validation |
 | [performance-maps.md](knowledge/performance-maps.md) | Measured (preconditioner × ranks) maps for 7.1M + 17.2M |
 | [per-iteration-diagnostics.md](knowledge/per-iteration-diagnostics.md) | Per-phase breakdown; the AMG-rebuild lever; the fix path |
+| [amg-reuse-port-plan.md](knowledge/amg-reuse-port-plan.md) | The #1 lever — port plan for AMG values-only reuse |
+| [config-pitfalls.md](knowledge/config-pitfalls.md) | Config mistakes we hit — check before every run |
 | [vram-and-mesh-scaling.md](knowledge/vram-and-mesh-scaling.md) | Per-preconditioner VRAM, ceilings, mixed-precision savings |
 | [gpu-amg-reference-configs.md](knowledge/gpu-amg-reference-configs.md) | Proven AmgX / Hypre / Ginkgo pressure configs from the literature |
 | [intel-platform-fit.md](knowledge/intel-platform-fit.md) | Are we on the right track on Intel? FP64 reality, community fit |
