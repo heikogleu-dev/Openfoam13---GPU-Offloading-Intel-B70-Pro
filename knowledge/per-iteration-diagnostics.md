@@ -223,3 +223,23 @@ and even then the cheap solves may never justify GPU offload. So the
 "offload-everything to break the Amdahl ceiling" path is much harder than projected.
 *(Caveat: 1-step smoke = cold setup; steady-state may amortize call_init somewhat,
 but the 3× magnitude rules out a quick win.)*
+
+## ★ 17.2M per-phase decomposition + GPU-util (2026-06-19) — CPU-bound, call_init = next lever
+
+caching=2, 17.2M np16, per-step (avg×occurrences/steps):
+| phase | ms/step | share | C touches? |
+|---|---|---|---|
+| **CPU (U/k/omega + assembly)** | ~9150 | **~49%** | no |
+| solve (CG, GPU) | ~3240 | 17% | no |
+| init_precond (AMG, GPU) | ~2770 | 15% | ✅ C (was ~4940) |
+| **call_init (GPU matrix construction)** | ~2070 | 11% | **no — next lever** |
+| call_update (H2D values) | ~1390 | 7% | no |
+
+- C drove init_precond reuse-solves **1658→558 ms (−66%)** — worked great on its phase.
+- But **compute-util is only ~31%** → GPU idle ~70%, **CPU-bound** → C's wall-clock
+  impact is capped (~11-13%).
+- **`call_init` (~2 s/step, GPU device-matrix construction) is NOT cached** and is the
+  reason full-offload was 3× slower (each equation rebuilds its matrix every step). It
+  is the **next C-style lever**: cache the device-matrix structure (build once, refresh
+  values), which (a) saves p's call_init, and (b) makes U/k/omega offload viable →
+  feeds the idle GPU → attacks the CPU half. This is the path to a *bigger* jump than C.

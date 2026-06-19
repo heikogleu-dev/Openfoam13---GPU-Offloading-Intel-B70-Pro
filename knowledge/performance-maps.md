@@ -132,3 +132,22 @@ Iters identical/healthy. As predicted, the wall-clock gain is larger at 17.2M
 step. **New GPU best at 17.2M = 18.67 s/step (single-MG + AMG-reuse) → ~1.18× faster
 than CPU GAMG** (was 20.9 = 1.06× without caching). The audit projection (~16–17 /
 ~1.3×) was a touch optimistic; measured ~1.18×.
+
+## ★ Kartierung 17.2M MIT caching + the CPU-bound finding (2026-06-19)
+
+Rank map, GPU single-MG + caching=2 vs CPU GAMG:
+| ranks | GPU single-MG+C | CPU GAMG | speedup |
+|---|---|---|---|
+| np8  | 20.33 | 25.00 | **1.23×** |
+| np16 | 18.67 | 22.10 | **1.18×** |
+
+Higher caching (np16): caching=2 → 19.0/init_precond 923ms; caching=10 → 18.3/705ms
+(marginal extra, no iter-creep). C plateaus ≈ 18.0 s/step (~1.23× GAMG).
+
+**★★ THE key finding — GPU is only ~30% utilized (compute-util ccs=31% @caching=2,
+29% @caching=10; copy-util bcs ~9-10%).** The workload is **CPU-BOUND**: the GPU sits
+idle ~70% of the time waiting on the CPU half (U/k/omega DILU solves + matrix assembly
+≈ 49% of the step). This is **why C is capped at ~11-13%** — optimizing a GPU phase
+(AMG setup) frees GPU time that was already idle. The big lever is feeding the GPU
+(offloading the CPU half), gated by `call_init` (matrix construction) — see
+per-iteration-diagnostics.md.
