@@ -123,3 +123,35 @@ the culprit). The double-precision 201 case is the cleaner debug target (no NaN 
 
 **System state:** build kept (extension ON); `caching` unset = full-rebuild path = production
 works normally. Backups at `*.bak-20260618-prereuse` for rollback.
+
+## ★ ROOT-CAUSE LOCALIZED (2026-06-19 cont.) — bug is the OGL caching DRIVER, not the Ginkgo port
+
+Instrumented the reuse path (unconditional `printf` in `Multigrid::update_matrix_value`
++ checked the OGL `"Update Multigrid"` marker). Decisive finding: **`update_matrix_value`
+is NEVER called** on the cache-hit path (printf count 0). So the Ginkgo extension is
+sound but never exercised — the reuse just returns the **stale** stored precond →
+cross-step divergence. Isolation steps that led here:
+- full-regen-in-update (recompute agg_+all) STILL diverged → not the agg-reuse/value math.
+- `cache_.state` regen added → STILL diverged → not the MG state.
+- → the update is never invoked at all.
+
+**Two concrete OGL-side bugs in `init_preconditioner` (Preconditioner.hpp:650–710):**
+1. **`if (rows == 0) return ret;` (line 677) fires before the update** — `rows` =
+   `as<RepartDistMatrix>(gkomatrix)->get_dist_matrix()->get_local_matrix()->get_size()[0]`.
+   With `ranksPerGPU=8` (repartition to 1 GPU rank) this is 0 on the measured rank
+   (repartitioner interaction) → early return, no `update_matrix_value`. **Need to
+   understand which rank holds the fused matrix on the cache-hit path / why rows==0.**
+2. **Rebuild branch (lines 697–710) does NOT store the rebuilt precond back** —
+   `precond_ptr = generated_precond;` only reassigns a local shared_ptr; the registry
+   keeps the ORIGINAL (step-1) precond. So even periodic rebuilds don't refresh the
+   cached object → reuse always returns the very first precond.
+
+**So C's remaining work is OGL-caching-driver fixes (tractable C++, not Ginkgo
+internals):** make the cache-hit actually reach `update_matrix_value` (fix/inspect the
+rows==0 guard under repartitioning), and store rebuilds back. The Ginkgo extension
+(interface + Pgm/Multigrid update_matrix_value + Schwarz getter) is implemented,
+builds, and is ready — it just needs the OGL driver to call it. **Status: ~80% — the
+hard Ginkgo port is done; the OGL caching wiring is the open piece.**
+
+Source restored to the clean values-only port (matches amg-reuse-2.0-port.patch);
+diagnostics removed; production unaffected (`caching` unset = full rebuild).
