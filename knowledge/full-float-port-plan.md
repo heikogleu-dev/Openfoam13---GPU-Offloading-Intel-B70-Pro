@@ -21,6 +21,13 @@ verified via `nm` — so **no Ginkgo rebuild**). Patch: `findings/code/ogl-patch
 - **Accuracy:** FP32 outer reproduces FP64 convergence (Carson-Higham: FP64 RHS/tol +
   FP32 solve). iters match double essentially exactly. **No creep, no stall.**
 - **Perf (7.1M):** float p-solve ~10–15% faster, wall ~3% faster (bandwidth).
+- **★ Perf (34M, measured 2026-06-19, np=16, precision single + caching 2):** steady
+  **~37 s/step** (periodic ~41 s rebuild steps), GPU compute util **35.7 %**, copy 6.2 %,
+  render 0 % → still **CPU-bound** (~64 % wall = U/k/omega + assembly + MPI). **CPU GAMG
+  34M = ~35.7 s/step → GPU is ~3–4% SLOWER at 34M.** So 34M = **VRAM win only, NOT a
+  speed win** (the 7–17M ~1.2–1.3× edge does NOT extend to 34M: GPU scales 18→37 s
+  17.2→34M [2.06×] vs CPU GAMG 22.1→35.7 [1.6× sublinear]; AMG rebuild 4.6 s vs 1.18 s
+  reuse drives it). **Lever (untested):** higher caching to thin the 34M rebuilds.
 - **VRAM:** per-cell slope **halved** (double ~0.94 → float ~0.45 GB/Mcell on 7.1→17.2).
   The +0.73 GB at 7.1M is a fixed-offset artifact (crossover ~8.6M); float wins big at
   scale. **Ceiling raised ~28-30M (double) → ≥34M (float). GOAL MET.**

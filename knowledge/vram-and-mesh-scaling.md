@@ -88,15 +88,24 @@ calibrate them.**
   ceiling once the ~1.15 GB desktop is counted). It *might* fit at **np≤4** (less
   Schwarz overlap, ~−10–15%) and/or with the desktop off the B70. Realistic FP32
   ceiling is ~**25–28M** on a single 32 GB B70; 34M is at the absolute edge.
-- **Performance IF it fit (34M):** 34M is well past the ~10M-cells/GPU breakeven,
-  so the GPU is properly fed (compute util should rise well above the 46% seen at
-  7.1M). CPU GAMG baseline at 34M ≈ **35.7 s/step** (measured, np=16). Projected
-  GPU MG: double ≈ 25–40 s/step (util-improved); **FP32 ≈ 15–25 s/step** (FP32
-  gives up to ~2.3× on the bandwidth-bound SpMV, ~7 nnz/row, Loe model
-  5w/(2w+1)). → **plausibly a ~1.4–2× win over CPU GAMG at 34M, *if* VRAM allows.**
-- **Practical target:** ~**20–25M with FP32** is the sweet spot — comfortably
-  fits, well-fed GPU, likely the first clear GPU win. 34M is a stretch goal that
-  needs FP32 + low rank count (+ desktop off B70), or a 2nd GPU / 48–64 GB card.
+- **★ MEASURED 2026-06-19 (full-float, FP32, np=16, precision single + caching 2):**
+  34M **FITS** at **26.3 GB steady / 28.1 GB peak** on one 32 GB B70 (desktop on iGPU).
+  - **s/step = ~37 s** (steady; periodic ~41 s steps when the AMG hierarchy rebuilds).
+  - **CPU GAMG baseline at 34M = ~35.7 s/step (np=16).** → **GPU is ~3–4% SLOWER, NOT
+    faster.** The 34M result is a **pure VRAM win** (fits at all; double OOMs), NOT a
+    speed win. The earlier projection (~1.4–2× win at 34M) was **WRONG** — corrected.
+  - **GPU compute util 35.7 %, copy 6.2 %, render 0 %** → still **CPU-bound** (~64 % wall
+    = U/k/omega DILU + FVM assembly + flux + MPI). Util DID rise vs 7.1M (~30→36 %) but
+    not enough to win.
+  - **Why the GPU loses its 7–17M edge at 34M:** GPU scales 17.2→34M as 18→37 s/step
+    (2.06×) vs CPU GAMG 22.1→35.7 (1.6×, sublinear) — the lines cross. Drivers: AMG
+    rebuild at 34M = **4.6 s** (vs 1.18 s reuse), frequent at caching 2; more p-iters.
+  - **Lever (untested):** higher `caching` (3–4) thins the expensive 4.6 s rebuilds at
+    34M — could push s/step below the CPU 35.7 (caching plateau was 2–3 at 7.1M, but the
+    34M rebuild is far costlier in absolute terms, so more headroom here).
+- **Practical target:** ~**20–25M with FP32** = sweet spot (fits comfortably, GPU win
+  likely). 34M with FP32 = **runs on one card (VRAM goal met) but ≈ CPU-GAMG speed**;
+  a real 34M *speed* win needs the caching lever and/or better CPU/GPU overlap.
 
 ## How VRAM was measured (no debugfs / no sudo needed)
 
