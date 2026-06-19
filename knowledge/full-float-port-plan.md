@@ -51,3 +51,31 @@ Ginkgo's `range_accessors.hpp` stores the matrix in FP32 but **computes in FP64*
 (storage precision ≠ compute precision). Halves matrix VRAM with zero accuracy
 change, less bandwidth bonus than full-float. Fallback if D's FP32 solve shows any
 convergence issue at 34M.
+
+## ★ Precise scope (2026-06-19) — the crux is device-ingestion conversion, not typedefs
+
+Mapped the full surface. `scalar` = `Foam::scalar` (=double, OpenFOAM-global), NOT an
+OGL typedef → cannot just swap. The re-template surface:
+- `Preconditioner.hpp`: `cg=Cg<scalar>`, `ras=Schwarz<scalar>` → float (fcg/fpgm/fir already exist from the precision patch).
+- `lduLduBase.hpp`: `dist_vec=Vector<scalar>`, `dist_mtx=Matrix<scalar>`, `PersistentVector<scalar>` (b/x), `create_dist_solver` call.
+- `GKOlduBase.hpp`: `create_dist_solver`/`create_precond`/`create_default` (dist_vec).
+- `StoppingCriterion.hpp`: `dist_vec=Vector<scalar>`.
+
+**The hard part (the crux):** `HostMatrixWrapper` holds **double** LDU pointers and
+`PersistentVector<T>` reads the **double** OpenFOAM source. So the device side going
+float needs **double→float conversion in the host→device copy** — in
+`src/MatrixWrapper/Distributed.cpp` (`create_impl`/`update`, the `device_matrix_data`
+build) and `DevicePersistent/Vector.hpp` (the vector init). This is a deep change to
+the core data ingestion, not a typedef swap.
+
+**Effort:** multi-file re-template + ingestion-conversion logic + rebuild + **`ninja
+install`** (!) + accuracy test (FP32-inner/FP64-outer; watch iter-creep) + VRAM test
+(17.2M then 34M). Comparable to C but riskier (conversion in the ingestion path).
+**Recommend: execute fresh** (like C) — not at the tail of a long session.
+
+**Accuracy-safe alternative — memory accessor:** keep the solver FP64 (no CG/Schwarz/
+vector re-template), store ONLY the matrix in FP32 via Ginkgo `range_accessors`
+(storage≠compute). Halves matrix VRAM with zero accuracy change. **Caveat:** must
+verify Ginkgo's distributed Csr SpMV supports a mixed storage/compute accessor (uncertain;
+the research listed it as a *potential* alternative). If supported, it's simpler +
+safer than full-float and may suffice for the VRAM goal.
