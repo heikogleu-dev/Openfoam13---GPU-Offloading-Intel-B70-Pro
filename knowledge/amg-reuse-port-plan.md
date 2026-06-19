@@ -89,3 +89,37 @@ PETSc-GAMG, AMGCL −40–200% setup). **Ginkgo mainline has no reuse API**
 (issues #1681/#1158); even AmgX leaves the coarse-sparsity-skip imperfect → a clean
 values-only Galerkin refill in Ginkgo 2.0 puts us ahead of the field. Reference
 methods saved under `findings/code/ginkgo-patches/`.
+
+## IMPLEMENTATION STATUS (2026-06-19) — ported + builds; cross-step refresh BUG
+
+**Done:** the port is implemented (commit in `findings/code/ginkgo-patches/amg-reuse-2.0-port.patch`)
+and **builds clean** (full SYCL build 2m35s; `update_matrix_value` symbol now in libginkgo;
+`GINKGO_WITH_OGL_EXTENSIONS=ON`). 4 Ginkgo files + OGL `#ifdef` fix. The dev-API-drift fix
+was a missing `Schwarz::get_local_solver()` getter (added). **Simpler than planned:** no new
+Pgm cache members — the distributed coarse_imap/off_diag_map are recomputed from `agg_`; the
+OGL Schwarz path only exercises the **non-distributed** branch (local block).
+
+**Validated working:** caching path engages (init_precond drops 487→~230 avg on cache-hits);
+**within-step reuse is correct** (iters 18→15→13, identical-matrix nNonOrth solves) — proves the
+plumbing (OGL→Schwarz→MG→Pgm update) is wired right.
+
+**THE BUG (open):** **cross-step reuse produces a broken preconditioner** — when the matrix
+changes between timesteps, the refreshed preconditioner diverges: precision `double` → CG hits
+the 201-iter cap; precision `single` → NaN residual (`OpenFOAMDistStoppingCriterion`). Pattern:
+`18 15 13 13 [201 201 161 …]` — healthy until the first cross-step reuse.
+
+**Ruled out (by reading, no rebuild):** stale `cache_.state` (apply uses `get_system_matrix()`
+fresh, line 1152); stale matrix values (`updateSysMatrix` default true → dist_A_v current);
+`set_multigrid_level`/dims; the apply reads `mg_level_list_`/smoothers/coarsest fresh each apply.
+So my refresh *receives* the new values but yields a *broken* (not merely suboptimal) precond
+— points to a correctness bug in the refreshed coarse op (generate_coarse(M_new, agg_)) and/or
+the regenerated smoother/coarsest, NOT a no-op.
+
+**Next (needs instrumentation = rebuild cycles):** add a checksum/norm log in
+`Pgm::update_matrix_value` (input matrix + new coarse op) to confirm the new values reach
+generate_coarse and the coarse op changes cross-step; bisect coarse-refresh vs smoother-regen
+vs coarsest-regen (e.g. temporarily skip smoother/coarsest regen to see if the coarse alone is
+the culprit). The double-precision 201 case is the cleaner debug target (no NaN noise).
+
+**System state:** build kept (extension ON); `caching` unset = full-rebuild path = production
+works normally. Backups at `*.bak-20260618-prereuse` for rollback.
