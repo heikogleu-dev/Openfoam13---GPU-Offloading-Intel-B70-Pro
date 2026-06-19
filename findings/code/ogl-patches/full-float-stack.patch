@@ -1,0 +1,1758 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index be1aa5e..0c2ef82 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -215,6 +215,15 @@ target_link_libraries(
+ if(${GINKGO_WITH_OGL_EXTENSIONS})
+   target_compile_definitions(OGL PRIVATE GINKGO_WITH_OGL_EXTENSIONS=1)
+ endif()
++
++# Full-float (plan D): run the whole GPU pressure solve (matrix + vectors + CG +
++# Schwarz + MG) in FP32 instead of just the preconditioner. Halves the dominant
++# matrix VRAM (fits the 34M mesh on one 32 GB card). gscalar=float when ON,
++# gscalar=double (== previous behaviour) when OFF. See common.hpp.
++option(OGL_FULL_FLOAT "Full-float FP32 device pressure solve (plan D)" OFF)
++if(OGL_FULL_FLOAT)
++  target_compile_definitions(OGL PRIVATE OGL_GSCALAR_FLOAT=1)
++endif()
+ if(${GINKGO_BUILD_CUDA})
+   find_package(CUDAToolkit REQUIRED)
+   target_compile_definitions(OGL PRIVATE GINKGO_BUILD_CUDA=1)
+diff --git a/include/CMakeLists.txt b/include/CMakeLists.txt
+index 6bac7b7..31624c1 100644
+--- a/include/CMakeLists.txt
++++ b/include/CMakeLists.txt
+@@ -11,3 +11,8 @@ set_property(
+ set_property(
+   TARGET OGL_public_api APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+                                         "${CMAKE_CURRENT_BINARY_DIR}")
++
++# foam-shim: Local shim for OpenFOAM Foundation 13 (fvCFD.H removed upstream)
++set_property(
++  TARGET OGL_public_api APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
++                                        "${CMAKE_CURRENT_SOURCE_DIR}/foam-shim")
+diff --git a/include/OGL/CommunicationPattern.hpp b/include/OGL/CommunicationPattern.hpp
+index 7fcf542..a2222ea 100644
+--- a/include/OGL/CommunicationPattern.hpp
++++ b/include/OGL/CommunicationPattern.hpp
+@@ -76,9 +76,10 @@ label compute_owner_rank(label rank, label ranks_per_owner);
+  * @param send_buffer Pointer to the data buffer to send
+  * @param recv_buffer Pointer to the data buffer to recv
+  */
++template <class T>
+ void communicate_values(const ExecutorHandler &exec_handler,
+                         const AllToAllPattern &comm_pattern,
+-                        const scalar *send_buffer, scalar *recv_buffer);
++                        const T *send_buffer, T *recv_buffer);
+ 
+ /* @brief Given a comm_pattern this function executes the communication
+  *
+@@ -92,12 +93,13 @@ void communicate_values(const ExecutorHandler &exec_handler,
+  * @param send_buffer Pointer to the data buffer to send
+  * @param recv_buffer Pointer to the data buffer to recv
+  */
++template <class T>
+ void communicate_values(
+     std::shared_ptr<const gko::Executor> src_exec,
+     std::shared_ptr<const gko::Executor> target_exec,
+     std::shared_ptr<const gko::experimental::mpi::communicator> comm,
+-    const AllToAllPattern &comm_pattern, const scalar *send_buffer,
+-    scalar *recv_buffer, bool force_host_buffer);
++    const AllToAllPattern &comm_pattern, const T *send_buffer, T *recv_buffer,
++    bool force_host_buffer);
+ 
+ /* @brief A function that can perform an offsetted gather to owner rank
+  *
+diff --git a/include/OGL/DevicePersistent/ExecutorHandler.hpp b/include/OGL/DevicePersistent/ExecutorHandler.hpp
+index 3c9b7da..7f5fb07 100644
+--- a/include/OGL/DevicePersistent/ExecutorHandler.hpp
++++ b/include/OGL/DevicePersistent/ExecutorHandler.hpp
+@@ -10,6 +10,7 @@
+ #include "fvCFD.H"
+ 
+ #include <ginkgo/ginkgo.hpp>
++#include <mpi.h>
+ 
+ namespace Foam {
+ 
+@@ -165,9 +166,26 @@ struct ExecutorInitFunctor {
+                        "with SYCL backend enabled."
+                     << abort(FatalError);
+             }
++            // Workaround for SYCL multi-rank init race on Intel BMG-G31
++            // + Compute Runtime 26.18: synchronise all ranks BEFORE the
++            // first SYCL-touching call. get_num_devices() already triggers
++            // SYCL platform/device enumeration which loads the OpenCL
++            // adapter and hits a pthread_once race in clGetPlatformIDs
++            // when invoked concurrently from many ranks. The barrier here
++            // serialises the platform-init window enough to avoid the
++            // race in practice. See findings/28 of the pioneer
++            // documentation repo for the layer-by-layer diagnostic that
++            // localises this. OF Foundation 13's Pstream API has no
++            // direct barrier primitive; we call MPI directly.
++            if (Pstream::parRun()) {
++                MPI_Barrier(MPI_COMM_WORLD);
++            }
+             label id = device_id_handler_.compute_device_id(
+                 gko::DpcppExecutor::get_num_devices("gpu"));
+             LOG_0(verbose_, msg(executor_name_, id))
++            if (Pstream::parRun()) {
++                MPI_Barrier(MPI_COMM_WORLD);
++            }
+             return gko::share(gko::DpcppExecutor::create(id, host_exec));
+         }
+         if (executor_name_ == "hip") {
+diff --git a/include/OGL/DevicePersistent/Vector.hpp b/include/OGL/DevicePersistent/Vector.hpp
+index 4d75f21..c9102b8 100644
+--- a/include/OGL/DevicePersistent/Vector.hpp
++++ b/include/OGL/DevicePersistent/Vector.hpp
+@@ -18,8 +18,8 @@ namespace Foam {
+ 
+ template <class T>
+ struct VectorInitFunctor {
+-    using vec = gko::matrix::Dense<scalar>;
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using vec = gko::matrix::Dense<T>;
++    using dist_vec = gko::experimental::distributed::Vector<T>;
+ 
+     const ExecutorHandler &exec_;
+ 
+@@ -31,12 +31,15 @@ struct VectorInitFunctor {
+ 
+     const bool on_device_;
+ 
+-    // Memory from which array will be initialised
+-    const T *other_;
++    // Memory from which array will be initialised. This is the OpenFOAM source
++    // (always double = Foam::scalar). The device vector value type T may differ
++    // (gscalar=float in full-float); the double->T conversion happens in
++    // init()/update() so the device side stays pure FP32.
++    const scalar *other_;
+ 
+     VectorInitFunctor(const ExecutorHandler &exec, const word name,
+                       std::shared_ptr<const RepartDistMatrix> dist_matrix,
+-                      const T *other, const label verbose,
++                      const scalar *other, const label verbose,
+                       const bool on_device = false)
+         : exec_(exec),
+           name_(name),
+@@ -62,16 +65,19 @@ struct VectorInitFunctor {
+                  std::to_string(repart_size)};
+         LOG_1(verbose_, msg)
+ 
+-        auto host_view = gko::array<T>::const_view(ref_exec, host_size, other_);
++        // OpenFOAM source is double; convert to the device value type T on the
++        // host so the MPI gather type matches the (float) device buffer.
++        auto host_g = convert_value_array<T>(ref_exec, other_, host_size);
+ 
+         //// TODO store
+         auto comm_pattern = compute_gather_to_owner_counts(
+             exec_, repartitioner->get_ranks_per_gpu(), host_size);
+         bool host_buffer = !exec_.get_non_orig_device_comm();
+ 
+-        communicate_values(ref_exec, exec, comm, comm_pattern,
+-                           host_view.get_const_data(),
+-                           persistent_vector->get_local_values(), host_buffer);
++        communicate_values<T>(ref_exec, exec, comm, comm_pattern,
++                              host_g.get_const_data(),
++                              persistent_vector->get_local_values(),
++                              host_buffer);
+     }
+ 
+     std::shared_ptr<gko::experimental::distributed::Vector<T>> init() const
+@@ -87,17 +93,16 @@ struct VectorInitFunctor {
+                  std::to_string(host_size)};
+         LOG_1(verbose_, msg)
+ 
+-        auto host_view =
+-            gko::array<T>::const_view(exec_.get_ref_exec(), host_size, other_);
++        auto host_g = convert_value_array<T>(ref_exec, other_, host_size);
+ 
+         // TODO store, this could be stored in dist_matrix_
+         auto comm_pattern = compute_gather_to_owner_counts(
+             exec_, repartitioner->get_ranks_per_gpu(), host_size);
+ 
+-        auto values = gko::array<scalar>(ref_exec, repart_size);
++        auto values = gko::array<T>(ref_exec, repart_size);
+ 
+-        communicate_values(exec_, comm_pattern, host_view.get_const_data(),
+-                           values.get_data());
++        communicate_values<T>(exec_, comm_pattern, host_g.get_const_data(),
++                              values.get_data());
+ 
+         auto device_comm = exec_.get_device_comm();
+         auto ret = gko::share(dist_vec::create(
+@@ -117,14 +122,15 @@ template <class T>
+ class PersistentVector
+     : public PersistentBase<gko::experimental::distributed::Vector<T>,
+                             VectorInitFunctor<T>> {
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<T>;
++    using vec = gko::matrix::Dense<T>;
+ 
+     const objectRegistry &db_;
+ 
+     const word name_;
+ 
+-    const T *memory_;
++    // OpenFOAM source/target memory (always double); the device vector is T.
++    const scalar *memory_;
+ 
+     std::shared_ptr<const RepartDistMatrix> dist_matrix_;
+ 
+@@ -150,8 +156,8 @@ public:
+      * device or host
+      * @param ranks_per_gpu
+      */
+-    PersistentVector(const T *memory, const word name, const objectRegistry &db,
+-                     const ExecutorHandler &exec,
++    PersistentVector(const scalar *memory, const word name,
++                     const objectRegistry &db, const ExecutorHandler &exec,
+                      std::shared_ptr<const RepartDistMatrix> dist_matrix,
+                      const label verbose, const bool update,
+                      const bool init_on_device)
+@@ -186,9 +192,15 @@ public:
+         auto comm_pattern = compute_scatter_from_owner_counts(
+             exec_, repartitioner->get_ranks_per_gpu(), host_size);
+ 
+-        communicate_values(exec, ref_exec, comm, comm_pattern,
+-                           get_vector()->get_local_values(),
+-                           const_cast<T *>(memory_), host_buffer);
++        // Scatter the device value type T back to the host, then convert to the
++        // double OpenFOAM target. MPI runs in T (matches the device buffer);
++        // the T->double convert happens on the host afterwards.
++        auto host_tmp = gko::array<T>(ref_exec, host_size);
++        communicate_values<T>(exec, ref_exec, comm, comm_pattern,
++                              get_vector()->get_local_values(),
++                              host_tmp.get_data(), host_buffer);
++        convert_value_buffer<scalar>(host_tmp.get_const_data(),
++                                     const_cast<scalar *>(memory_), host_size);
+     }
+ 
+     /** Writes the content of the distributed vector to disk
+diff --git a/include/OGL/MatrixWrapper/Combination.hpp b/include/OGL/MatrixWrapper/Combination.hpp
+index 761b94b..81847b8 100644
+--- a/include/OGL/MatrixWrapper/Combination.hpp
++++ b/include/OGL/MatrixWrapper/Combination.hpp
+@@ -19,10 +19,10 @@ template <typename InnerMatrixType>
+ class CombinationMatrix
+     : public gko::EnableLinOp<CombinationMatrix<InnerMatrixType>>,
+       public gko::EnableCreateMethod<CombinationMatrix<InnerMatrixType>>,
+-      public gko::ReadableFromMatrixData<scalar, label>,
+-      public gko::ConvertibleTo<gko::matrix::Coo<scalar, label>>,
+-      public gko::ConvertibleTo<gko::matrix::Csr<scalar, label>>,
+-      public gko::WritableToMatrixData<scalar, label> {
++      public gko::ReadableFromMatrixData<gscalar, label>,
++      public gko::ConvertibleTo<gko::matrix::Coo<gscalar, label>>,
++      public gko::ConvertibleTo<gko::matrix::Csr<gscalar, label>>,
++      public gko::WritableToMatrixData<gscalar, label> {
+     friend class gko::EnableCreateMethod<CombinationMatrix<InnerMatrixType>>;
+     friend class gko::EnablePolymorphicObject<
+         CombinationMatrix<InnerMatrixType>, gko::LinOp>;
+@@ -31,14 +31,14 @@ public:
+     using gko::EnableLinOp<CombinationMatrix<InnerMatrixType>>::convert_to;
+     using gko::EnableLinOp<CombinationMatrix<InnerMatrixType>>::move_to;
+ 
+-    using matrix_data = gko::matrix_data<scalar, label>;
++    using matrix_data = gko::matrix_data<gscalar, label>;
+ 
+     void read([[maybe_unused]] const matrix_data &data) override
+     {
+         FatalErrorInFunction << "Not implemented" << abort(FatalError);
+     }
+ 
+-    std::shared_ptr<gko::Combination<scalar>> get_combination() const
++    std::shared_ptr<gko::Combination<gscalar>> get_combination() const
+     {
+         return this->comb_;
+     }
+@@ -71,19 +71,19 @@ public:
+     }
+ 
+ 
+-    void write(gko::matrix_data<scalar, label> &res) const override
++    void write(gko::matrix_data<gscalar, label> &res) const override
+     {
+         auto exec = this->get_executor();
+         auto operators = this->get_operators();
+ 
+-        std::vector<gko::matrix_data_entry<scalar, label>> data;
++        std::vector<gko::matrix_data_entry<gscalar, label>> data;
+         for (auto op : operators) {
+-            auto tmp_mat_data = gko::matrix_data<scalar, label>();
++            auto tmp_mat_data = gko::matrix_data<gscalar, label>();
+             gko::as<InnerMatrixType>(op)->write(tmp_mat_data);
+             data.insert(data.end(), tmp_mat_data.nonzeros.begin(),
+                         tmp_mat_data.nonzeros.end());
+         }
+-        auto mat_data = gko::matrix_data<scalar, label>();
++        auto mat_data = gko::matrix_data<gscalar, label>();
+         res.nonzeros = data;
+         res.size = this->get_size();
+     }
+@@ -114,19 +114,19 @@ public:
+     /*
+      * @warning assumes that all entries are unique
+      */
+-    void convert_to(gko::matrix::Coo<scalar, label> *result) const override
++    void convert_to(gko::matrix::Coo<gscalar, label> *result) const override
+     {
+         auto exec = this->get_executor();
+         auto operators = this->get_operators();
+ 
+-        std::vector<gko::matrix_data_entry<scalar, label>> data;
++        std::vector<gko::matrix_data_entry<gscalar, label>> data;
+         for (auto op : operators) {
+-            auto tmp_mat_data = gko::matrix_data<scalar, label>();
++            auto tmp_mat_data = gko::matrix_data<gscalar, label>();
+             gko::as<InnerMatrixType>(op)->write(tmp_mat_data);
+             data.insert(data.end(), tmp_mat_data.nonzeros.begin(),
+                         tmp_mat_data.nonzeros.end());
+         }
+-        auto mat_data = gko::matrix_data<scalar, label>();
++        auto mat_data = gko::matrix_data<gscalar, label>();
+         mat_data.nonzeros = data;
+         mat_data.size = this->get_size();
+ 
+@@ -136,19 +136,19 @@ public:
+     /*
+      * @warning assumes that all entries are unique
+      */
+-    void convert_to(gko::matrix::Csr<scalar, label> *result) const override
++    void convert_to(gko::matrix::Csr<gscalar, label> *result) const override
+     {
+         auto exec = this->get_executor();
+         auto operators = this->get_operators();
+ 
+-        std::vector<gko::matrix_data_entry<scalar, label>> data;
++        std::vector<gko::matrix_data_entry<gscalar, label>> data;
+         for (auto op : operators) {
+-            auto tmp_mat_data = gko::matrix_data<scalar, label>();
++            auto tmp_mat_data = gko::matrix_data<gscalar, label>();
+             gko::as<InnerMatrixType>(op)->write(tmp_mat_data);
+             data.insert(data.end(), tmp_mat_data.nonzeros.begin(),
+                         tmp_mat_data.nonzeros.end());
+         }
+-        auto mat_data = gko::matrix_data<scalar, label>();
++        auto mat_data = gko::matrix_data<gscalar, label>();
+         mat_data.nonzeros = data;
+         mat_data.size = this->get_size();
+ 
+@@ -158,7 +158,7 @@ public:
+     /*
+      * @warning assumes that all entries are unique
+      */
+-    void move_to(gko::matrix::Coo<scalar, label> *result) override
++    void move_to(gko::matrix::Coo<gscalar, label> *result) override
+     {
+         this->convert_to(result);
+         this->comb_ = nullptr;
+@@ -168,7 +168,7 @@ public:
+     /*
+      * @warning assumes that all entries are unique
+      */
+-    void move_to(gko::matrix::Csr<scalar, label> *result) override
++    void move_to(gko::matrix::Csr<gscalar, label> *result) override
+     {
+         this->convert_to(result);
+         this->comb_ = nullptr;
+@@ -178,7 +178,7 @@ public:
+ protected:
+     CombinationMatrix(std::shared_ptr<const gko::Executor> exec)
+         : gko::EnableLinOp<CombinationMatrix>(exec),
+-          comb_(gko::share(gko::Combination<scalar>::create(exec)))
++          comb_(gko::share(gko::Combination<gscalar>::create(exec)))
+     {}
+ 
+     CombinationMatrix(std::shared_ptr<const gko::Executor> exec,
+@@ -190,12 +190,12 @@ protected:
+         this->set_size(size);
+     }
+ 
+-    static std::shared_ptr<gko::Combination<scalar>> build_combination(
++    static std::shared_ptr<gko::Combination<gscalar>> build_combination(
+         std::shared_ptr<const gko::Executor> exec, gko::dim<2> size,
+         const std::vector<std::shared_ptr<gko::LinOp>> &operators)
+     {
+         if (size[1] == 0 || operators.empty()) {
+-            return gko::share(gko::Combination<scalar>::create(exec));
++            return gko::share(gko::Combination<gscalar>::create(exec));
+         }
+         std::vector<std::shared_ptr<const gko::LinOp>> coeffs;
+         std::vector<std::shared_ptr<const gko::LinOp>> ops;
+@@ -203,10 +203,10 @@ protected:
+         ops.reserve(operators.size());
+         for (const auto &op : operators) {
+             coeffs.push_back(
+-                gko::initialize<gko::matrix::Dense<scalar>>({1}, exec));
++                gko::initialize<gko::matrix::Dense<gscalar>>({1}, exec));
+             ops.push_back(op);
+         }
+-        return gko::share(gko::Combination<scalar>::create(
++        return gko::share(gko::Combination<gscalar>::create(
+             coeffs.begin(), coeffs.end(), ops.begin(), ops.end()));
+     }
+ 
+@@ -237,11 +237,11 @@ protected:
+ 
+ private:
+     std::vector<std::shared_ptr<gko::LinOp>> coeffs_;  //
+-    std::shared_ptr<gko::Combination<scalar>> comb_;
++    std::shared_ptr<gko::Combination<gscalar>> comb_;
+ };
+ 
+ namespace detail {
+-std::shared_ptr<gko::matrix::Coo<scalar, label>> convert_combination_to_coo(
++std::shared_ptr<gko::matrix::Coo<gscalar, label>> convert_combination_to_coo(
+     std::shared_ptr<const gko::Executor> exec,
+     std::shared_ptr<const gko::LinOp> in);
+ }  // namespace detail
+diff --git a/include/OGL/MatrixWrapper/Distributed.hpp b/include/OGL/MatrixWrapper/Distributed.hpp
+index bda53b8..47d214c 100644
+--- a/include/OGL/MatrixWrapper/Distributed.hpp
++++ b/include/OGL/MatrixWrapper/Distributed.hpp
+@@ -30,23 +30,23 @@ class RepartDistMatrix
+ 
+ public:
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+     using part_type = gko::experimental::distributed::Partition<label, label>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using device_matrix_data = gko::device_matrix_data<scalar, label>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using device_matrix_data = gko::device_matrix_data<gscalar, label>;
+     using communicator = gko::experimental::mpi::communicator;
+     using reorder_map_type =
+-        std::tuple<std::shared_ptr<gko::array<label>>, scalar *,
++        std::tuple<std::shared_ptr<gko::array<label>>, gscalar *,
+                    std::shared_ptr<gko::array<label>>>;
+-    using all_to_all_data = std::tuple<label, AllToAllPattern, scalar *>;
++    using all_to_all_data = std::tuple<label, AllToAllPattern, gscalar *>;
+ 
+     struct pairwise_data {
+-        label id;          // original interface id on orig rank
+-        label send;        // 0 - send, 1, receive, 2 same_rank
+-        label comm_rank;   // other side of communication
+-        label length;      // length of the interface to communicate
+-        label send_id;     //
+-        scalar *recv_ptr;  //
++        label id;           // original interface id on orig rank
++        label send;         // 0 - send, 1, receive, 2 same_rank
++        label comm_rank;    // other side of communication
++        label length;       // length of the interface to communicate
++        label send_id;      //
++        gscalar *recv_ptr;  //
+     };
+ 
+     using gko::EnableLinOp<RepartDistMatrix>::convert_to;
+@@ -148,7 +148,7 @@ public:
+                      std::vector<pairwise_data> pairwise_update_data,
+                      std::vector<reorder_map_type> reorder_maps,
+                      std::vector<label> compress_to_global,
+-                     std::map<label, scalar *> linops)
++                     std::map<label, gscalar *> linops)
+         : gko::EnableLinOp<RepartDistMatrix>(exec),
+           gko::experimental::distributed::DistributedBase(comm),
+           fuse_(fuse),
+@@ -229,7 +229,7 @@ private:
+ 
+     std::vector<label> compress_to_global_;
+ 
+-    std::map<label, scalar *>
++    std::map<label, gscalar *>
+         linops_;  // map between linop id and shared ptr to linop
+ };
+ 
+diff --git a/include/OGL/Preconditioner.hpp b/include/OGL/Preconditioner.hpp
+index 0353348..2e23b28 100644
+--- a/include/OGL/Preconditioner.hpp
++++ b/include/OGL/Preconditioner.hpp
+@@ -14,20 +14,25 @@
+ 
+ namespace Foam {
+ class Preconditioner {
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using bj = gko::preconditioner::Jacobi<scalar, label>;
++    // Device value type (gscalar) = matrix/outer solve precision. With full-
++    // float gscalar=float; otherwise double. The f* aliases stay float for the
++    // mixed/single precond paths (used on a double matrix in the default build).
++    using mtx = gko::matrix::Csr<gscalar>;
++    using bj = gko::preconditioner::Jacobi<gscalar, label>;
+     using fbj = gko::preconditioner::Jacobi<float, label>;
+     using dbj = gko::preconditioner::Jacobi<double, label>;
+-    using sor = gko::preconditioner::Sor<scalar, label>;
++    using sor = gko::preconditioner::Sor<gscalar, label>;
+     using ic = gko::preconditioner::Ic<>;
+-    using ir = gko::solver::Ir<scalar>;
++    using ir = gko::solver::Ir<gscalar>;
+     using it = gko::stop::Iteration;
+-    using cg = gko::solver::Cg<scalar>;
++    using cg = gko::solver::Cg<gscalar>;
+     using fcg = gko::solver::Cg<float>;
+     using mg = gko::solver::Multigrid;
+-    using pgm = gko::multigrid::Pgm<scalar, label>;
++    using pgm = gko::multigrid::Pgm<gscalar, label>;
++    using fpgm = gko::multigrid::Pgm<float, label>;
++    using fir = gko::solver::Ir<float>;
+     using ras =
+-        gko::experimental::distributed::preconditioner::Schwarz<scalar, label,
++        gko::experimental::distributed::preconditioner::Schwarz<gscalar, label,
+                                                                 label>;
+ 
+ private:
+@@ -59,9 +64,9 @@ public:
+         std::shared_ptr<PrecondFactory> precond, const dictionary &d,
+         label local_rows) const
+     {
+-        using pgm = gko::multigrid::Pgm<scalar, label>;
+-        using fc = gko::multigrid::FixedCoarsening<scalar, label>;
+-        using solver = gko::solver::Cg<scalar>;
++        using pgm = gko::multigrid::Pgm<gscalar, label>;
++        using fc = gko::multigrid::FixedCoarsening<gscalar, label>;
++        using solver = gko::solver::Cg<gscalar>;
+ 
+         auto selCoarseRows = d.lookupOrDefault("selCoarseRows", label(5));
+         auto fixedCoarsening =
+@@ -88,7 +93,7 @@ public:
+                 .with_preconditioner(pre_factory)
+                 .with_criteria(
+                     gko::stop::Iteration::build().with_max_iters(maxIterCoarse),
+-                    gko::stop::ResidualNorm<scalar>::build()
++                    gko::stop::ResidualNorm<gscalar>::build()
+                         .with_reduction_factor(solveNormC))
+                 .on(device_exec));
+ 
+@@ -178,7 +183,7 @@ public:
+             if (precision == "double") {
+                 if (multi_level_schwarz) {
+                     auto pre_factory = gko::share(
+-                        dbj::build()
++                        bj::build()
+                             .with_skip_sorting(skip_sorting)
+                             .with_max_block_size(
+                                 static_cast<gko::uint32>(max_block_size))
+@@ -192,7 +197,7 @@ public:
+                                                     pre_factory, d, local_rows);
+                 } else {
+                     auto pre_factory =
+-                        dbj::build()
++                        bj::build()
+                             .with_skip_sorting(skip_sorting)
+                             .with_max_block_size(
+                                 static_cast<gko::uint32>(max_block_size))
+@@ -219,7 +224,7 @@ public:
+             MLOG_0(verbose_, msg)
+ 
+             auto factorization_factory =
+-                gko::factorization::ParIlu<scalar, label>::build()
++                gko::factorization::ParIlu<gscalar, label>::build()
+                     .with_skip_sorting(skip_sorting)
+                     .with_iterations(iterations)
+                     .on(device_exec);
+@@ -227,7 +232,7 @@ public:
+                 gko::as<RepartDistMatrix>(gkomatrix)->get_dist_matrix();
+             auto factorization = gko::share(factorization_factory->generate(
+                 gko::as<gko::experimental::distributed::Matrix<
+-                    scalar, label, label>>(gkodistmatrix)
++                    gscalar, label, label>>(gkodistmatrix)
+                     ->get_local_matrix()));
+             auto precond_factory =
+                 gko::preconditioner::Ilu<>::build().on(device_exec);
+@@ -241,7 +246,7 @@ public:
+                 gko::as<RepartDistMatrix>(gkomatrix)->get_dist_matrix();
+ 
+             auto factorization_factory =
+-                gko::factorization::ParIlut<scalar, label>::build()
++                gko::factorization::ParIlut<gscalar, label>::build()
+                     .with_skip_sorting(skip_sorting)
+                     .on(device_exec);
+ 
+@@ -267,13 +272,13 @@ public:
+             // upper triangular solver - in this case the previously defined
+             // iterative refinement method.
+             auto precond_factory =
+-                gko::preconditioner::Ilu<ir, ir>::build()
++                gko::preconditioner::Ilu<gscalar, false, label>::build()
+                     .with_l_solver(gko::clone(trisolve_factory))
+                     .with_u_solver(gko::clone(trisolve_factory))
+                     .on(device_exec);
+ 
+             auto factorization_factory =
+-                gko::factorization::Ilu<scalar, label>::build()
++                gko::factorization::Ilu<gscalar, label>::build()
+                     .with_skip_sorting(skip_sorting)
+                     .on(device_exec);
+ 
+@@ -290,14 +295,14 @@ public:
+             MLOG_0(verbose_, msg)
+ 
+             auto factorization_factory =
+-                gko::factorization::Ic<scalar, label>::build()
++                gko::factorization::Ic<gscalar, label>::build()
+                     .with_skip_sorting(skip_sorting)
+                     .on(device_exec);
+             auto gkodistmatrix =
+                 gko::as<RepartDistMatrix>(gkomatrix)->get_dist_matrix();
+             auto factorization = gko::share(factorization_factory->generate(
+                 gko::as<gko::experimental::distributed::Matrix<
+-                    scalar, label, label>>(gkodistmatrix)
++                    gscalar, label, label>>(gkodistmatrix)
+                     ->get_local_matrix()));
+             auto precond_factory =
+                 gko::preconditioner::Ic<>::build().on(device_exec);
+@@ -313,7 +318,7 @@ public:
+             MLOG_0(verbose_, msg)
+ 
+             auto factorization_factory =
+-                gko::factorization::ParIct<scalar, label>::build()
++                gko::factorization::ParIct<gscalar, label>::build()
+                     .with_skip_sorting(skip_sorting)
+                     .on(device_exec);
+ 
+@@ -321,7 +326,7 @@ public:
+                 gko::as<RepartDistMatrix>(gkomatrix)->get_dist_matrix();
+             auto ic_factorization = gko::share(factorization_factory->generate(
+                 gko::as<gko::experimental::distributed::Matrix<
+-                    scalar, label, label>>(gkodistmatrix)
++                    gscalar, label, label>>(gkodistmatrix)
+                     ->get_local_matrix()));
+ 
+             auto precond_factory =
+@@ -339,7 +344,7 @@ public:
+ 
+             auto pre_factory =
+                 gko::preconditioner::Isai<gko::preconditioner::isai_type::spd,
+-                                          scalar, label>::build()
++                                          gscalar, label>::build()
+                     .with_skip_sorting(skip_sorting)
+                     .with_sparsity_power(sparsity_power)
+                     .on(device_exec);
+@@ -355,7 +360,7 @@ public:
+ 
+             auto pre_factory = gko::preconditioner::Isai<
+                                    gko::preconditioner::isai_type::general,
+-                                   scalar, label>::build()
++                                   gscalar, label>::build()
+                                    .with_skip_sorting(skip_sorting)
+                                    .with_sparsity_power(sparsity_power)
+                                    .on(device_exec);
+@@ -375,6 +380,7 @@ public:
+             auto coarseSolver =
+                 d.lookupOrDefault("coarseSolver", word("Jacobi"));
+             auto maxIterS = d.lookupOrDefault("maxIterSmoother", label(1));
++            word precision(d.lookupOrDefault("precision", word("double")));
+ 
+             gko::solver::multigrid::cycle cycle;
+             if (cycleName == "v") cycle = gko::solver::multigrid::cycle::v;
+@@ -424,7 +430,7 @@ public:
+             auto coarse_solve_it = gko::stop::Iteration::build().with_max_iters(
+                 static_cast<gko::uint32>(maxIterCoarseS));
+             auto coarse_solve_norm =
+-                gko::stop::ResidualNorm<scalar>::build().with_reduction_factor(
++                gko::stop::ResidualNorm<gscalar>::build().with_reduction_factor(
+                     solveNorm);
+             auto smoother_it = gko::stop::Iteration::build().with_max_iters(
+                 static_cast<gko::uint32>(maxIterS));
+@@ -466,20 +472,87 @@ public:
+                                          << abort(FatalError);
+                 }
+ 
+-                auto pre_factory =
+-                    mg::build()
+-                        .with_max_levels(static_cast<gko::uint32>(maxLevels))
+-                        .with_cycle(cycle)
+-                        .with_min_coarse_rows(
+-                            static_cast<gko::uint32>(minRowsC))
+-                        .with_pre_smoother(smoother_gen)
+-                        .with_post_uses_pre(true)
+-                        .with_mg_level(
+-                            pgm::build().with_deterministic(false).on(
+-                                device_exec))
+-                        .with_coarsest_solver(coarsest_solver)
+-                        .with_criteria(single_it)
+-                        .on(device_exec);
++                std::unique_ptr<mg::Factory> pre_factory{};
++                if (precision == "double") {
++                    pre_factory =
++                        mg::build()
++                            .with_max_levels(static_cast<gko::uint32>(maxLevels))
++                            .with_cycle(cycle)
++                            .with_min_coarse_rows(
++                                static_cast<gko::uint32>(minRowsC))
++                            .with_pre_smoother(smoother_gen)
++                            .with_post_uses_pre(true)
++                            .with_mg_level(
++                                pgm::build().with_deterministic(false).on(
++                                    device_exec))
++                            .with_coarsest_solver(coarsest_solver)
++                            .with_criteria(single_it)
++                            .on(device_exec);
++                } else {
++                    // mixed precision: float smoother + float coarse (Jacobi)
++                    auto smf = gko::share(
++                        fir::build()
++                            .with_solver(fbj::build()
++                                             .with_max_block_size(1u)
++                                             .with_skip_sorting(true)
++                                             .on(device_exec))
++                            .with_relaxation_factor(
++                                static_cast<float>(relaxFac))
++                            .with_criteria(it::build().with_max_iters(
++                                static_cast<gko::uint32>(maxIterS)))
++                            .on(device_exec));
++                    auto fcof = gko::share(
++                        fcg::build()
++                            .with_preconditioner(fbj::build()
++                                                     .with_max_block_size(1u)
++                                                     .with_skip_sorting(true)
++                                                     .on(device_exec))
++                            .with_criteria(it::build().with_max_iters(
++                                static_cast<gko::uint32>(maxIterCoarseS)))
++                            .on(device_exec));
++                    if (precision == "mixed") {
++                        // DP-SP: double finest level, float coarse levels
++                        pre_factory =
++                            mg::build()
++                                .with_max_levels(
++                                    static_cast<gko::uint32>(maxLevels))
++                                .with_cycle(cycle)
++                                .with_min_coarse_rows(
++                                    static_cast<gko::uint32>(minRowsC))
++                                .with_pre_smoother(smoother_gen, smf)
++                                .with_post_uses_pre(true)
++                                .with_mg_level(
++                                    pgm::build().with_deterministic(false).on(
++                                        device_exec),
++                                    fpgm::build().with_deterministic(false).on(
++                                        device_exec))
++                                .with_level_selector(
++                                    [](const gko::size_type lvl,
++                                       const gko::LinOp *) {
++                                        return lvl == 0 ? 0 : 1;
++                                    })
++                                .with_coarsest_solver(fcof)
++                                .with_criteria(it::build().with_max_iters(1u))
++                                .on(device_exec);
++                    } else {
++                        // single: all levels float
++                        pre_factory =
++                            mg::build()
++                                .with_max_levels(
++                                    static_cast<gko::uint32>(maxLevels))
++                                .with_cycle(cycle)
++                                .with_min_coarse_rows(
++                                    static_cast<gko::uint32>(minRowsC))
++                                .with_pre_smoother(smf)
++                                .with_post_uses_pre(true)
++                                .with_mg_level(
++                                    fpgm::build().with_deterministic(false).on(
++                                        device_exec))
++                                .with_coarsest_solver(fcof)
++                                .with_criteria(it::build().with_max_iters(1u))
++                                .on(device_exec);
++                    }
++                }
+                 return wrap_schwarz(gkomatrix, device_exec,
+                                     std::move(pre_factory));
+             }
+@@ -518,7 +591,7 @@ public:
+                 auto ret = gko::share(
+                     gko::solver::Multigrid::build()
+                         .with_max_levels(maxLevels)
+-                        .with_mg_level(gko::multigrid::Pgm<scalar>::build()
++                        .with_mg_level(gko::multigrid::Pgm<gscalar>::build()
+                                            .with_deterministic(true))
+                         .with_min_coarse_rows(minRowsC)
+                         .with_coarsest_solver(coarsest_solver)
+@@ -594,14 +667,14 @@ public:
+                            DevicePersistentBase<gko::LinOp>>(precond_store_name)
+                         .get_ptr();
+ 
+-#ifdef GINKGO_WITH_OGL_EXTENSION
++#ifdef GINKGO_WITH_OGL_EXTENSIONS
+                 if (name == "Multigrid") {
+                     word msg = "Update Multigrid preconditioner";
+                     MLOG_1(verbose_, msg)
+                     auto gkodistmatrix =
+                         gko::as<RepartDistMatrix>(gkomatrix)->get_dist_matrix();
+                     label rows = gko::as<gko::experimental::distributed::Matrix<
+-                        scalar, label, label>>(gkodistmatrix)
++                        gscalar, label, label>>(gkodistmatrix)
+                                      ->get_local_matrix()
+                                      ->get_size()[0];
+                     if (rows == 0) return ret;
+@@ -615,7 +688,7 @@ public:
+                         gko::as<gko::UpdateMatrixValue>(local_solver)
+                             ->update_matrix_value(
+                                 gko::as<gko::experimental::distributed::Matrix<
+-                                    scalar, label, label>>(gkodistmatrix)
++                                    gscalar, label, label>>(gkodistmatrix)
+                                     ->get_local_matrix());
+                     } else {
+                         gko::as<gko::UpdateMatrixValue>(ret)
+diff --git a/include/OGL/Solver/BiCGStab.hpp b/include/OGL/Solver/BiCGStab.hpp
+index 16aa135..6d50e81 100644
+--- a/include/OGL/Solver/BiCGStab.hpp
++++ b/include/OGL/Solver/BiCGStab.hpp
+@@ -15,13 +15,13 @@ namespace Foam {
+ \*---------------------------------------------------------------------------*/
+ class GKOBiCGStabFactory {
+ private:
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using bicgstab = gko::solver::Bicgstab<scalar>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using bicgstab = gko::solver::Bicgstab<gscalar>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+ 
+     const dictionary &solverControls_;
+ 
+@@ -50,7 +50,7 @@ public:
+         std::shared_ptr<gko::Executor> exec,
+         std::shared_ptr<gko::LinOp> sysmatrix) const
+     {
+-        auto bicgstab = gko::solver::Bicgstab<scalar>::build()
++        auto bicgstab = gko::solver::Bicgstab<gscalar>::build()
+                             .with_criteria(stoppingCriterionVec_)
+                             .on(exec);
+         return gko::share(bicgstab->generate(sysmatrix));
+diff --git a/include/OGL/Solver/CG.hpp b/include/OGL/Solver/CG.hpp
+index 99f5e88..b454d26 100644
+--- a/include/OGL/Solver/CG.hpp
++++ b/include/OGL/Solver/CG.hpp
+@@ -12,13 +12,13 @@ namespace Foam {
+ 
+ class GKOCGFactory {
+ private:
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using cg = gko::solver::Cg<scalar>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using cg = gko::solver::Cg<gscalar>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+ 
+     const dictionary &solverControls_;
+ 
+diff --git a/include/OGL/Solver/GMRES.hpp b/include/OGL/Solver/GMRES.hpp
+index 3f811b1..1258b7c 100644
+--- a/include/OGL/Solver/GMRES.hpp
++++ b/include/OGL/Solver/GMRES.hpp
+@@ -12,14 +12,14 @@ namespace Foam {
+ 
+ class GKOGMRESFactory {
+ private:
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using gmres = gko::solver::Gmres<scalar>;
+-    using val_array = gko::array<scalar>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using gmres = gko::solver::Gmres<gscalar>;
++    using val_array = gko::array<gscalar>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+ 
+     const dictionary &solverControls_;
+ 
+diff --git a/include/OGL/Solver/IR.hpp b/include/OGL/Solver/IR.hpp
+index fe3325c..546de2b 100644
+--- a/include/OGL/Solver/IR.hpp
++++ b/include/OGL/Solver/IR.hpp
+@@ -13,14 +13,14 @@ namespace Foam {
+ 
+ class GKOIRFactory {
+ private:
+-    using ir = gko::solver::Ir<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using cg = gko::solver::Cg<scalar>;
+-    using val_array = gko::array<scalar>;
++    using ir = gko::solver::Ir<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using cg = gko::solver::Cg<gscalar>;
++    using val_array = gko::array<gscalar>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+ 
+     const dictionary &solverControls_;
+ 
+@@ -54,7 +54,7 @@ public:
+     CREATE_SOLVER_METHODS(ir)
+ 
+     std::unique_ptr<ir::Factory,
+-                    std::default_delete<gko::solver::Ir<scalar>::Factory>>
++                    std::default_delete<gko::solver::Ir<gscalar>::Factory>>
+     create_default(std::shared_ptr<gko::Executor> exec,
+                    std::shared_ptr<mtx> gkomatrix, std::shared_ptr<vec> x,
+                    std::shared_ptr<vec> b, const label verbose) const
+@@ -64,7 +64,7 @@ public:
+                 exec, gkomatrix, x, b, verbose, false, 0));
+ 
+ 
+-        auto inner = gko::share(gko::solver::Cg<scalar>::build()
++        auto inner = gko::share(gko::solver::Cg<gscalar>::build()
+                                     .with_criteria(innerStoppingCriterionVec_)
+                                     .on(exec));
+ 
+@@ -76,8 +76,8 @@ public:
+         return ir;
+     }
+ 
+-    std::unique_ptr<gko::solver::Ir<scalar>::Factory,
+-                    std::default_delete<gko::solver::Ir<scalar>::Factory>>
++    std::unique_ptr<gko::solver::Ir<gscalar>::Factory,
++                    std::default_delete<gko::solver::Ir<gscalar>::Factory>>
+     create_scalar_jacobi(std::shared_ptr<gko::Executor> exec,
+                          std::shared_ptr<mtx> gkomatrix, std::shared_ptr<vec> x,
+                          std::shared_ptr<vec> b, const label verbose) const
+diff --git a/include/OGL/Solver/Multigrid.hpp b/include/OGL/Solver/Multigrid.hpp
+index b76674a..3b9962f 100644
+--- a/include/OGL/Solver/Multigrid.hpp
++++ b/include/OGL/Solver/Multigrid.hpp
+@@ -14,20 +14,20 @@ namespace Foam {
+ 
+ class GKOMultigridFactory {
+ private:
+-    using cg = gko::solver::Cg<scalar>;
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using ir = gko::solver::Ir<scalar>;
++    using cg = gko::solver::Cg<gscalar>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using ir = gko::solver::Ir<gscalar>;
+     using mg = gko::solver::Multigrid;
+-    using bj = gko::preconditioner::Jacobi<scalar, label>;
+-    using pgm = gko::multigrid::Pgm<scalar, label>;
++    using bj = gko::preconditioner::Jacobi<gscalar, label>;
++    using pgm = gko::multigrid::Pgm<gscalar, label>;
+     using ras =
+-        gko::experimental::distributed::preconditioner::Schwarz<scalar, label,
++        gko::experimental::distributed::preconditioner::Schwarz<gscalar, label,
+                                                                 label>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+ 
+     const dictionary &solverControls_;
+ 
+@@ -143,7 +143,7 @@ public:
+ 
+         auto gko_local_matrix =
+             gko::as<
+-                gko::experimental::distributed::Matrix<scalar, label, label>>(
++                gko::experimental::distributed::Matrix<gscalar, label, label>>(
+                 gkomatrix)
+                 ->get_local_matrix();
+ 
+@@ -179,7 +179,7 @@ public:
+                 .with_criteria(
+                     gko::stop::Iteration::build().with_max_iters(
+                         coarse_max_iters_),
+-                    gko::stop::ResidualNorm<scalar>::build()
++                    gko::stop::ResidualNorm<gscalar>::build()
+                         .with_baseline(gko::stop::mode::absolute)
+                         .with_reduction_factor(inner_reduction_factor_))
+                 .on(exec));
+@@ -191,7 +191,7 @@ public:
+             mg::build()
+                 .with_max_levels(max_levels_)
+                 .with_mg_level(
+-                    gko::multigrid::Pgm<scalar>::build().with_deterministic(
++                    gko::multigrid::Pgm<gscalar>::build().with_deterministic(
+                         false))
+                 .with_min_coarse_rows(min_coarse_rows_)
+                 .with_coarsest_solver(coarsest_solver)
+diff --git a/include/OGL/Solver/PipeCG.hpp b/include/OGL/Solver/PipeCG.hpp
+index cbdc2f7..10a1da7 100644
+--- a/include/OGL/Solver/PipeCG.hpp
++++ b/include/OGL/Solver/PipeCG.hpp
+@@ -12,13 +12,13 @@ namespace Foam {
+ 
+ class GKOPipeCGFactory {
+ private:
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
+-    using cg = gko::solver::PipeCg<scalar>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
++    using cg = gko::solver::PipeCg<gscalar>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+ 
+     const dictionary &solverControls_;
+ 
+diff --git a/include/OGL/StoppingCriterion.hpp b/include/OGL/StoppingCriterion.hpp
+index 0f70bd8..c906e8b 100644
+--- a/include/OGL/StoppingCriterion.hpp
++++ b/include/OGL/StoppingCriterion.hpp
+@@ -14,12 +14,15 @@ namespace Foam {
+ 
+ 
+ class StoppingCriterion {
+-    using vec = gko::matrix::Dense<scalar>;
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using val_array = gko::array<scalar>;
++    // vec/dist_vec are device value containers -> gscalar (float in full-float).
++    // The residual norms compared against the OpenFOAM tolerances stay scalar
++    // (double): see init_normalised_res_norm_/normalised_res_norm_ below.
++    using vec = gko::matrix::Dense<gscalar>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using val_array = gko::array<gscalar>;
+     using idx_array = gko::array<label>;
+ 
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+ 
+     class OpenFOAMDistStoppingCriterion
+         : public gko::EnablePolymorphicObject<OpenFOAMDistStoppingCriterion,
+diff --git a/include/OGL/common.hpp b/include/OGL/common.hpp
+index a38144a..8307466 100644
+--- a/include/OGL/common.hpp
++++ b/include/OGL/common.hpp
+@@ -16,6 +16,42 @@
+ 
+ namespace Foam {
+ 
++// Full-float (plan D): gscalar is the *device* value type for the GPU solve
++// (matrix, vectors, CG, Schwarz, MG). It is decoupled from Foam::scalar (the
++// host/OpenFOAM type, double). With -DOGL_GSCALAR_FLOAT the device solve runs in
++// FP32 (halves matrix VRAM); by default gscalar==scalar==double so the build is
++// byte-for-byte the previous double behaviour. Conversion happens only at the
++// host<->device value boundaries (matrix ingestion, vector init/update/copy_back).
++#ifdef OGL_GSCALAR_FLOAT
++using gscalar = float;
++#else
++using gscalar = scalar;
++#endif
++
++// Convert a host buffer of Src values into a gko::array<Dst> on the given
++// executor. For Src==Dst this is a plain copy. Used to feed the double host LDU
++// / fields into the float device buffers (and back) at the ingestion boundary.
++template <class Dst, class Src>
++inline gko::array<Dst> convert_value_array(
++    std::shared_ptr<const gko::Executor> exec, const Src *src, gko::size_type n)
++{
++    gko::array<Dst> out(exec, n);
++    Dst *d = out.get_data();
++    for (gko::size_type i = 0; i < n; ++i) {
++        d[i] = static_cast<Dst>(src[i]);
++    }
++    return out;
++}
++
++// Convert n values from a host buffer of Src into an existing host buffer of Dst.
++template <class Dst, class Src>
++inline void convert_value_buffer(const Src *src, Dst *dst, gko::size_type n)
++{
++    for (gko::size_type i = 0; i < n; ++i) {
++        dst[i] = static_cast<Dst>(src[i]);
++    }
++}
++
+ 
+ #define __FILENAME__ \
+     (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+@@ -98,16 +134,16 @@ namespace Foam {
+ 
+ std::ostream &operator<<(
+     std::ostream &os,
+-    const std::shared_ptr<gko::matrix::Dense<scalar>> array_in);
++    const std::shared_ptr<gko::matrix::Dense<gscalar>> array_in);
+ 
+ template <typename ValueType>
+ std::ostream &operator<<(std::ostream &os, const std::vector<ValueType> &in);
+ 
+ void export_mtx(const word fieldName,
+-                std::shared_ptr<const gko::matrix::Coo<scalar, label>> A,
++                std::shared_ptr<const gko::matrix::Coo<gscalar, label>> A,
+                 const objectRegistry &db);
+ 
+-void export_vec(const word fieldName, const gko::matrix::Dense<scalar> *x,
++void export_vec(const word fieldName, const gko::matrix::Dense<gscalar> *x,
+                 const objectRegistry &db);
+ 
+ void set_solve_prev_iters(const word sys_matrix_name, const objectRegistry &db,
+@@ -131,18 +167,18 @@ label get_next_caching(word sys_matrix_name, const objectRegistry &db);
+ std::shared_ptr<gko::array<label>> convert_to_array(
+     const std::vector<label> &in);
+ 
+-std::pair<label, const scalar *> get_val(
+-    std::shared_ptr<const gko::matrix::Coo<scalar, label>> in);
++std::pair<label, const gscalar *> get_val(
++    std::shared_ptr<const gko::matrix::Coo<gscalar, label>> in);
+ 
+ std::pair<label, const label *> get_col(
+-    std::shared_ptr<const gko::matrix::Coo<scalar, label>> in);
++    std::shared_ptr<const gko::matrix::Coo<gscalar, label>> in);
+ 
+ std::pair<label, const label *> get_row(
+-    std::shared_ptr<const gko::matrix::Coo<scalar, label>> in);
++    std::shared_ptr<const gko::matrix::Coo<gscalar, label>> in);
+ 
+ std::vector<label> convert_to_vector(const gko::array<label> &in);
+-std::vector<scalar> convert_to_vector(const gko::array<scalar> &in);
++std::vector<gscalar> convert_to_vector(const gko::array<gscalar> &in);
+ 
+-std::vector<scalar> convert_to_vector(
+-    std::shared_ptr<const gko::matrix::Diagonal<scalar>> in);
++std::vector<gscalar> convert_to_vector(
++    std::shared_ptr<const gko::matrix::Diagonal<gscalar>> in);
+ }  // namespace Foam
+diff --git a/include/OGL/lduLduBase.hpp b/include/OGL/lduLduBase.hpp
+index e584adb..e730de8 100644
+--- a/include/OGL/lduLduBase.hpp
++++ b/include/OGL/lduLduBase.hpp
+@@ -131,15 +131,15 @@ class lduLduBase : public OGL_Info,
+                    public SolverFactory,
+                    public Preconditioner {
+ private:
+-    using dist_vec = gko::experimental::distributed::Vector<scalar>;
++    using dist_vec = gko::experimental::distributed::Vector<gscalar>;
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
+-    using mtx = gko::matrix::Csr<scalar>;
+-    using coo_mtx = gko::matrix::Coo<scalar>;
+-    using csr_mtx = gko::matrix::Csr<scalar>;
+-    using vec = gko::matrix::Dense<scalar>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
++    using mtx = gko::matrix::Csr<gscalar>;
++    using coo_mtx = gko::matrix::Coo<gscalar>;
++    using csr_mtx = gko::matrix::Csr<gscalar>;
++    using vec = gko::matrix::Dense<gscalar>;
+     using idx_array = gko::array<label>;
+-    using val_array = gko::array<scalar>;
++    using val_array = gko::array<gscalar>;
+ 
+     const objectRegistry &db_;
+ 
+@@ -230,7 +230,7 @@ public:
+                                            verbose_};
+         auto dist_A_v = dist_A.get();
+ 
+-        PersistentVector<scalar> dist_b{
++        PersistentVector<gscalar> dist_b{
+             source.begin(),
+             this->fieldName() + "_rhs",
+             db_,
+@@ -241,7 +241,7 @@ public:
+             false  // whether data for init is on device
+         };
+ 
+-        PersistentVector<scalar> dist_x{
++        PersistentVector<gscalar> dist_x{
+             psi.begin(),
+             this->fieldName() + "_initial_guess",
+             db_,
+@@ -260,8 +260,8 @@ public:
+         if (scaling != 1) {
+             auto ref_exec = exec_handler_.get_ref_exec();
+             auto dense_scaling =
+-                gko::share(gko::initialize<gko::matrix::Dense<scalar>>(
+-                    {scaling}, ref_exec));
++                gko::share(gko::initialize<gko::matrix::Dense<gscalar>>(
++                    {static_cast<gscalar>(scaling)}, ref_exec));
+ 
+             TIME_WITH_FIELDNAME(
+                 verbose_, scale_RHS, this->fieldName(),
+diff --git a/src/CommunicationPattern.cpp b/src/CommunicationPattern.cpp
+index 2d9b132..c882f07 100644
+--- a/src/CommunicationPattern.cpp
++++ b/src/CommunicationPattern.cpp
+@@ -129,9 +129,10 @@ AllToAllPattern compute_gather_to_owner_counts(
+ }
+ 
+ 
++template <class T>
+ void communicate_values(const ExecutorHandler &exec_handler,
+                         const AllToAllPattern &comm_pattern,
+-                        const scalar *send_buffer, scalar *recv_buffer)
++                        const T *send_buffer, T *recv_buffer)
+ {
+     auto exec = exec_handler.get_device_exec();
+     auto comm = *exec_handler.get_host_comm().get();
+@@ -179,19 +180,20 @@ void communicate_values(const ExecutorHandler &exec_handler,
+     // }
+ }
+ 
++template <class T>
+ void communicate_values(
+     std::shared_ptr<const gko::Executor> src_exec,
+     std::shared_ptr<const gko::Executor> target_exec,
+     std::shared_ptr<const gko::experimental::mpi::communicator> comm,
+-    const AllToAllPattern &comm_pattern, const scalar *send_buffer,
+-    scalar *recv_buffer, bool force_host_buffer)
++    const AllToAllPattern &comm_pattern, const T *send_buffer, T *recv_buffer,
++    bool force_host_buffer)
+ {
+     if (force_host_buffer && src_exec != target_exec) {
+         // target_exec is not host
+         // gather on host first and then offload
+         if (target_exec != target_exec->get_master()) {
+             label recv_buffer_size = comm_pattern.recv_offsets.back();
+-            auto tmp = gko::array<scalar>(src_exec, recv_buffer_size);
++            auto tmp = gko::array<T>(src_exec, recv_buffer_size);
+ 
+             comm->all_to_all_v(src_exec, send_buffer,
+                                comm_pattern.send_counts.data(),
+@@ -199,7 +201,7 @@ void communicate_values(
+                                comm_pattern.recv_counts.data(),
+                                comm_pattern.recv_offsets.data());
+ 
+-            auto recv_view = gko::array<scalar>::view(
++            auto recv_view = gko::array<T>::view(
+                 target_exec, recv_buffer_size, recv_buffer);
+             recv_view = tmp;
+         }
+@@ -207,9 +209,9 @@ void communicate_values(
+         // copy to host first then communicate
+         if (src_exec != src_exec->get_master()) {
+             label send_size = comm_pattern.send_offsets.back();
+-            auto send_view = gko::array<scalar>::const_view(src_exec, send_size,
+-                                                            send_buffer);
+-            auto tmp = gko::array<scalar>(src_exec, send_size);
++            auto send_view = gko::array<T>::const_view(src_exec, send_size,
++                                                       send_buffer);
++            auto tmp = gko::array<T>(src_exec, send_size);
+ 
+             tmp = send_view;
+             tmp.set_executor(target_exec);
+@@ -266,6 +268,25 @@ void communicate_values(
+     }
+ }
+ 
++// Explicit instantiations for the device value types used by OGL: double (the
++// default build) and float (full-float / OGL_GSCALAR_FLOAT). The value type of
++// the MPI all-to-all matches the device buffer; double->float conversion happens
++// at the call sites (see common.hpp convert_value_*).
++template void communicate_values<double>(const ExecutorHandler &,
++                                         const AllToAllPattern &,
++                                         const double *, double *);
++template void communicate_values<float>(const ExecutorHandler &,
++                                        const AllToAllPattern &, const float *,
++                                        float *);
++template void communicate_values<double>(
++    std::shared_ptr<const gko::Executor>, std::shared_ptr<const gko::Executor>,
++    std::shared_ptr<const gko::experimental::mpi::communicator>,
++    const AllToAllPattern &, const double *, double *, bool);
++template void communicate_values<float>(
++    std::shared_ptr<const gko::Executor>, std::shared_ptr<const gko::Executor>,
++    std::shared_ptr<const gko::experimental::mpi::communicator>,
++    const AllToAllPattern &, const float *, float *, bool);
++
+ std::vector<label> gather_labels_to_owner(const ExecutorHandler &exec_handler,
+                                           const AllToAllPattern &comm_pattern,
+                                           const label *send_buffer,
+diff --git a/src/DevicePersistent/Base.cpp b/src/DevicePersistent/Base.cpp
+index 03e698e..0cf0376 100644
+--- a/src/DevicePersistent/Base.cpp
++++ b/src/DevicePersistent/Base.cpp
+@@ -9,14 +9,14 @@ namespace Foam {
+ // to store the std::shared_ptr<T> in the IO registry the type needs to be
+ // declared
+ defineTemplateTypeNameWithName(
+-    DevicePersistentBase<gko::experimental::distributed::Vector<scalar>>,
++    DevicePersistentBase<gko::experimental::distributed::Vector<gscalar>>,
+     "PersistentScalarVector");
+ defineTemplateTypeNameWithName(DevicePersistentBase<gko::LinOp>,
+                                "PersistentLinOp");
+ 
+ // typedef needed  to avoid confusion with the comma separated template
+ // arguments as macro arguments
+-typedef gko::experimental::distributed::Matrix<scalar, label, label> GkoMatrix;
++typedef gko::experimental::distributed::Matrix<gscalar, label, label> GkoMatrix;
+ defineTemplateTypeNameWithName(DevicePersistentBase<GkoMatrix>,
+                                "PersistentMatrix");
+ }  // namespace Foam
+diff --git a/src/MatrixWrapper/Combination.cpp b/src/MatrixWrapper/Combination.cpp
+index 097ba02..3ada4d3 100644
+--- a/src/MatrixWrapper/Combination.cpp
++++ b/src/MatrixWrapper/Combination.cpp
+@@ -5,12 +5,12 @@
+ #include "OGL/MatrixWrapper/Combination.hpp"
+ 
+ 
+-std::shared_ptr<gko::matrix::Coo<scalar, label>>
++std::shared_ptr<gko::matrix::Coo<gscalar, label>>
+ detail::convert_combination_to_coo(std::shared_ptr<const gko::Executor> exec,
+                                    std::shared_ptr<const gko::LinOp> in)
+ {
+-    auto out = gko::share(gko::matrix::Coo<scalar, label>::create(exec));
+-    gko::as<CombinationMatrix<gko::matrix::Coo<scalar, label>>>(in)->convert_to(
++    auto out = gko::share(gko::matrix::Coo<gscalar, label>::create(exec));
++    gko::as<CombinationMatrix<gko::matrix::Coo<gscalar, label>>>(in)->convert_to(
+         out.get());
+ 
+     return out;
+diff --git a/src/MatrixWrapper/Distributed.cpp b/src/MatrixWrapper/Distributed.cpp
+index 72eaae4..b91a1a2 100644
+--- a/src/MatrixWrapper/Distributed.cpp
++++ b/src/MatrixWrapper/Distributed.cpp
+@@ -14,7 +14,7 @@ std::vector<std::shared_ptr<gko::LinOp>> generate_inner_linops(
+     const ExecutorHandler &exec_handler, gko::dim<2> dim,
+     const std::vector<std::vector<label>> &rowss,
+     const std::vector<std::vector<label>> &colss, const std::vector<label> &ids,
+-    std::map<label, scalar *> &linops, bool fuse)
++    std::map<label, gscalar *> &linops, bool fuse)
+ {
+     OGL_ASSERT_EQ(rowss.size(), colss.size());
+     auto exec = exec_handler.get_device_exec();
+@@ -31,9 +31,9 @@ std::vector<std::shared_ptr<gko::LinOp>> generate_inner_linops(
+         const auto &rows = rowss[i];
+         const auto &cols = colss[i];
+         OGL_ASSERT_EQ(rows.size(), cols.size());
+-        gko::array<scalar> coeffs(exec, rows.size());
++        gko::array<gscalar> coeffs(exec, rows.size());
+         coeffs.fill(0.0);
+-        auto mtx_data = gko::device_matrix_data<scalar, label>(
++        auto mtx_data = gko::device_matrix_data<gscalar, label>(
+             exec->get_master(), dim,
+             gko::array<label>(exec->get_master(), rows.begin(), rows.end()),
+             gko::array<label>(exec->get_master(), cols.begin(), cols.end()),
+@@ -56,7 +56,7 @@ void generate_pairwise_update_data(
+     std::shared_ptr<const HostMatrixWrapper> host_A,
+     std::shared_ptr<SparsityPattern> in,  // repartitioned_sparsity on owner
+     bool fuse, std::shared_ptr<const Repartitioner> repartitioner,
+-    std::map<label, scalar *> linops, size_t start_offset,
++    std::map<label, gscalar *> linops, size_t start_offset,
+     std::vector<RepartDistMatrix::pairwise_data> &update_data)
+ {
+     // iterate interface data from sparsity pattern
+@@ -86,7 +86,7 @@ void generate_pairwise_update_data(
+             repartitioner->get_owner_rank(in->get_comm_rank()[i]) == rank;
+ 
+         linop_id = id;
+-        scalar *recv_ptr = nullptr;
++        gscalar *recv_ptr = nullptr;
+         if (!owner) {
+             mode = 0;  // send
+             comm_rank = repartitioner->get_owner_rank(in->get_orig_rank()[i]);
+@@ -116,7 +116,7 @@ void generate_pairwise_update_data(
+ template <typename MatrixType>
+ void generate_alltoall_update_data(
+     const ExecutorHandler &exec_handler, std::shared_ptr<SparsityPattern> in,
+-    std::map<label, scalar *> linops, bool fuse, bool owner,
++    std::map<label, gscalar *> linops, bool fuse, bool owner,
+     label ranks_per_owner,
+     std::vector<RepartDistMatrix::all_to_all_data> &update_data)
+ {
+@@ -152,7 +152,7 @@ void compute_pad(const std::vector<std::vector<label>> &rows,
+     for (auto i = 0; i < linops.size(); i++) {
+         pads.push_back(std::vector<label>{});
+         if constexpr (std::is_same_v<MatrixType,
+-                                     gko::matrix::Ell<scalar, label>>) {
++                                     gko::matrix::Ell<gscalar, label>>) {
+             auto mtx = gko::as<MatrixType>(linops[i]);
+             auto &pad = pads[i];
+             label end = mtx->get_num_stored_elements();
+@@ -256,15 +256,15 @@ void RepartDistMatrix::write(const ExecutorHandler &exec_handler,
+                              bool write_global) const
+ {
+     auto local = gko::share(
+-        gko::matrix::Coo<scalar, label>::create(exec_handler.get_ref_exec()));
++        gko::matrix::Coo<gscalar, label>::create(exec_handler.get_ref_exec()));
+     auto non_local = gko::share(
+-        gko::matrix::Coo<scalar, label>::create(exec_handler.get_ref_exec()));
++        gko::matrix::Coo<gscalar, label>::create(exec_handler.get_ref_exec()));
+ 
+ 
+     if (fuse_) {
+         gko::as<LocalMatrixType>(dist_mtx_->get_local_matrix())
+             ->convert_to(local.get());
+-        gko::as<gko::matrix::Coo<scalar, label>>(
++        gko::as<gko::matrix::Coo<gscalar, label>>(
+             dist_mtx_->get_non_local_matrix())
+             ->convert_to(non_local.get());
+     } else {
+@@ -323,23 +323,23 @@ void RepartDistMatrix::write(const ExecutorHandler &exec_handler,
+ void reorder_interface_impl(const ExecutorHandler &exec_handler,
+                             std::shared_ptr<const gko::array<label>> map,
+                             std::shared_ptr<const gko::array<label>> pad,
+-                            scalar *dst_data)
++                            gscalar *dst_data)
+ {
+-    using vec = gko::matrix::Dense<scalar>;
++    using vec = gko::matrix::Dense<gscalar>;
+     using dim_type = gko::dim<2>::dimension_type;
+ 
+     label recv_size = map->get_size();
+     auto device_exec = exec_handler.get_device_exec();
+ 
+-    auto dst_view = gko::array<scalar>::view(device_exec, recv_size, dst_data);
++    auto dst_view = gko::array<gscalar>::view(device_exec, recv_size, dst_data);
+ 
+     if (pad->get_size() == 0) {
+         // No padding needed
+         // a dense view into into dst
+         // this allows to row_gather
+-        auto row_collection = gko::share(gko::matrix::Dense<scalar>::create(
++        auto row_collection = gko::share(gko::matrix::Dense<gscalar>::create(
+             device_exec, gko::dim<2>{static_cast<dim_type>(recv_size), 1},
+-            gko::array<scalar>::view(device_exec, recv_size, dst_data), 1));
++            gko::array<gscalar>::view(device_exec, recv_size, dst_data), 1));
+ 
+         auto dense_vec = row_collection->clone();
+ 
+@@ -350,26 +350,26 @@ void reorder_interface_impl(const ExecutorHandler &exec_handler,
+         // required for example for ELL matrices
+         label coo_length = recv_size;
+         label ell_length = pad->get_size();
+-        auto recv_view = gko::share(gko::matrix::Dense<scalar>::create(
++        auto recv_view = gko::share(gko::matrix::Dense<gscalar>::create(
+             device_exec, gko::dim<2>{static_cast<dim_type>(coo_length), 1},
+-            gko::array<scalar>::view(device_exec, coo_length, dst_data), 1));
++            gko::array<gscalar>::view(device_exec, coo_length, dst_data), 1));
+         auto dense_vec = recv_view->clone();
+ 
+-        auto tmp_row_collection = gko::share(gko::matrix::Dense<scalar>::create(
++        auto tmp_row_collection = gko::share(gko::matrix::Dense<gscalar>::create(
+             device_exec, gko::dim<2>{static_cast<dim_type>(ell_length), 1},
+-            gko::array<scalar>(device_exec, ell_length), 1));
++            gko::array<gscalar>(device_exec, ell_length), 1));
+         tmp_row_collection->fill(0.0);
+-        auto tmp_coo = gko::share(gko::matrix::Dense<scalar>::create(
++        auto tmp_coo = gko::share(gko::matrix::Dense<gscalar>::create(
+             device_exec, gko::dim<2>{static_cast<dim_type>(coo_length), 1},
+-            gko::array<scalar>::view(device_exec, coo_length,
+-                                     tmp_row_collection->get_values()),
++            gko::array<gscalar>::view(device_exec, coo_length,
++                                      tmp_row_collection->get_values()),
+             1));
+         dense_vec->row_gather(map.get(), tmp_coo.get());
+ 
+         // now row gather into final view
+-        auto row_collection = gko::share(gko::matrix::Dense<scalar>::create(
++        auto row_collection = gko::share(gko::matrix::Dense<gscalar>::create(
+             device_exec, gko::dim<2>{static_cast<dim_type>(ell_length), 1},
+-            gko::array<scalar>::view(device_exec, pad->get_size(), dst_data),
++            gko::array<gscalar>::view(device_exec, pad->get_size(), dst_data),
+             1));
+         tmp_row_collection->row_gather(pad.get(), row_collection.get());
+     }
+@@ -381,7 +381,7 @@ void update_impl(
+     std::vector<RepartDistMatrix::all_to_all_data> &all_to_all_update_data,
+     std::vector<RepartDistMatrix::pairwise_data> &pairwise_update_data,
+     std::vector<RepartDistMatrix::reorder_map_type> &reorder_maps, bool fuse,
+-    std::map<label, scalar *> linops, label verbose)
++    std::map<label, gscalar *> linops, label verbose)
+ {
+     auto comm = exec_handler.get_host_comm();
+     // auto repart_comm = exec_handler.get_repart_comm();
+@@ -397,8 +397,16 @@ void update_impl(
+                               force_host_buffer]() {
+         for (auto [id, comm_pattern, data_ptr] : all_to_all_update_data) {
+             auto [length, send_data_ptr] = host_A->get_interface_data(id);
+-            communicate_values(ref_exec, device_exec, comm, comm_pattern,
+-                               send_data_ptr, data_ptr, force_host_buffer);
++            // Host LDU values are double (Foam::scalar); the device matrix
++            // buffer (data_ptr) is gscalar. Convert the send buffer to gscalar
++            // on the host so the MPI all-to-all type matches the device buffer
++            // (no double->float on the device side => no extra device VRAM).
++            gko::size_type send_size = comm_pattern.send_offsets.back();
++            auto send_g = convert_value_array<gscalar>(ref_exec, send_data_ptr,
++                                                       send_size);
++            communicate_values<gscalar>(ref_exec, device_exec, comm,
++                                        comm_pattern, send_g.get_const_data(),
++                                        data_ptr, force_host_buffer);
+         }
+     };
+ 
+@@ -423,22 +431,26 @@ void update_impl(
+                                  force_host_buffer]() {
+         for (auto [id, mode, comm_rank, length, send_id, recv_ptr] :
+              pairwise_update_data) {
+-            std::vector<scalar> send_buffer;
++            // recv_ptr is gscalar* (device matrix buffer); host LDU send data
++            // is double. All ranks run the same build, so pairwise comm is
++            // gscalar<->gscalar; the double->gscalar convert happens here when
++            // building the send buffer.
++            std::vector<gscalar> send_buffer;
+             send_buffer.reserve(length);
+ 
+             if (mode == 0) {
+                 const scalar *send_ptr = get_send_ptr(send_id, id);
+                 for (size_t i = 0; i < length; i++) {
+-                    send_buffer.push_back(-send_ptr[i]);
++                    send_buffer.push_back(static_cast<gscalar>(-send_ptr[i]));
+                 }
+                 comm->send(ref_exec, send_buffer.data(), length, comm_rank, 0);
+             }
+             if (mode == 1) {
+                 if (force_host_buffer) {
+-                    auto tmp = gko::array<scalar>(ref_exec, length);
++                    auto tmp = gko::array<gscalar>(ref_exec, length);
+                     comm->recv(ref_exec, tmp.get_data(), length, comm_rank, 0);
+                     auto recv_view =
+-                        gko::array<scalar>::view(device_exec, length, recv_ptr);
++                        gko::array<gscalar>::view(device_exec, length, recv_ptr);
+                     recv_view = tmp;
+                 } else {
+                     comm->recv(device_exec, recv_ptr, length, comm_rank, 0);
+@@ -447,13 +459,13 @@ void update_impl(
+             if (mode == 2) {
+                 const scalar *send_ptr = get_send_ptr(send_id, id);
+                 for (size_t i = 0; i < length; i++) {
+-                    send_buffer.push_back(-send_ptr[i]);
++                    send_buffer.push_back(static_cast<gscalar>(-send_ptr[i]));
+                 }
+                 // create views into src and dst
+-                auto src_view = gko::array<scalar>::const_view(
++                auto src_view = gko::array<gscalar>::const_view(
+                     ref_exec, length, send_buffer.data());
+                 auto dst_view =
+-                    gko::array<scalar>::view(device_exec, length, recv_ptr);
++                    gko::array<gscalar>::view(device_exec, length, recv_ptr);
+                 dst_view = src_view;
+             }
+         }
+@@ -486,7 +498,7 @@ void RepartDistMatrix::update(const ExecutorHandler &exec_handler,
+ 
+ 
+ template <typename LocalMatrixType,
+-          typename NonLocalMatrixType = gko::matrix::Coo<scalar, label>>
++          typename NonLocalMatrixType = gko::matrix::Coo<gscalar, label>>
+ std::shared_ptr<RepartDistMatrix> create_impl(
+     const ExecutorHandler &exec_handler,
+     std::shared_ptr<const Repartitioner> repartitioner,
+@@ -494,7 +506,7 @@ std::shared_ptr<RepartDistMatrix> create_impl(
+     bool fuse, label verbose)
+ {
+     using dist_mtx =
+-        gko::experimental::distributed::Matrix<scalar, label, label>;
++        gko::experimental::distributed::Matrix<gscalar, label, label>;
+     using dim_type = gko::dim<2>::dimension_type;
+     label rank = exec_handler.get_host_rank();
+     auto exec = exec_handler.get_ref_exec();
+@@ -528,7 +540,7 @@ std::shared_ptr<RepartDistMatrix> create_impl(
+     bool reparts = ranks_per_owner > 1;
+     // TODO rename this to something useful
+     // this is the part of the update data structure
+-    std::map<label, scalar *> linops;
++    std::map<label, gscalar *> linops;
+     auto [loc_rows, loc_cols, loc_map, loc_ids] =
+         (fuse) ? repart_loc_sparsity->get_fused_vecs(false)
+                : repart_loc_sparsity->get_vecs(false, reparts);
+@@ -689,11 +701,11 @@ void write_distributed(const ExecutorHandler &exec_handler, word field_name,
+ {
+     auto matrix_format{dist_A->get_matrix_format()};
+     if (matrix_format == "Coo") {
+-        return dist_A->write<gko::matrix::Coo<scalar, label>>(
++        return dist_A->write<gko::matrix::Coo<gscalar, label>>(
+             exec_handler, field_name, db, write_global);
+     }
+     if (matrix_format == "Csr") {
+-        return dist_A->write<gko::matrix::Csr<scalar, label>>(
++        return dist_A->write<gko::matrix::Csr<gscalar, label>>(
+             exec_handler, field_name, db, write_global);
+     }
+ }
+@@ -704,16 +716,16 @@ void update_distributed(const ExecutorHandler &exec_handler,
+                         word matrix_format, label verbose)
+ {
+     if (matrix_format == "Ell") {
+-        return dist_A->update<gko::matrix::Ell<scalar, label>>(exec_handler,
+-                                                               host_A, verbose);
++        return dist_A->update<gko::matrix::Ell<gscalar, label>>(
++            exec_handler, host_A, verbose);
+     }
+     if (matrix_format == "Coo") {
+-        return dist_A->update<gko::matrix::Coo<scalar, label>>(exec_handler,
+-                                                               host_A, verbose);
++        return dist_A->update<gko::matrix::Coo<gscalar, label>>(
++            exec_handler, host_A, verbose);
+     }
+     if (matrix_format == "Csr") {
+-        return dist_A->update<gko::matrix::Csr<scalar, label>>(exec_handler,
+-                                                               host_A, verbose);
++        return dist_A->update<gko::matrix::Csr<gscalar, label>>(
++            exec_handler, host_A, verbose);
+     }
+ }
+ 
+@@ -724,17 +736,17 @@ std::shared_ptr<RepartDistMatrix> create_distributed(
+     bool fuse, label verbose)
+ {
+     if (matrix_format == "Ell") {
+-        return create_impl<gko::matrix::Ell<scalar, label>>(
++        return create_impl<gko::matrix::Ell<gscalar, label>>(
+             exec_handler, repartitioner, hostMatrix, matrix_format, fuse,
+             verbose);
+     }
+     if (matrix_format == "Coo") {
+-        return create_impl<gko::matrix::Coo<scalar, label>>(
++        return create_impl<gko::matrix::Coo<gscalar, label>>(
+             exec_handler, repartitioner, hostMatrix, matrix_format, fuse,
+             verbose);
+     }
+     if (matrix_format == "Csr") {
+-        return create_impl<gko::matrix::Csr<scalar, label>>(
++        return create_impl<gko::matrix::Csr<gscalar, label>>(
+             exec_handler, repartitioner, hostMatrix, matrix_format, fuse,
+             verbose);
+     }
+diff --git a/src/MatrixWrapper/HostMatrix.cpp b/src/MatrixWrapper/HostMatrix.cpp
+index 23f5025..be0f46d 100644
+--- a/src/MatrixWrapper/HostMatrix.cpp
++++ b/src/MatrixWrapper/HostMatrix.cpp
+@@ -236,7 +236,7 @@ std::shared_ptr<SparsityPattern> HostMatrixWrapper::compute_interface_sparsity(
+ #ifdef WITH_ESI_VERSION
+             const label neighbPatchId = patch.neighbPatchID();
+ #else
+-            const label neighbPatchId = patch.nbrPatchID();
++            const label neighbPatchId = patch.nbrPatchIndex();
+ #endif
+             const labelUList &cols = addr_.patchAddr(neighbPatchId);
+ 
+diff --git a/src/StoppingCriterion.cpp b/src/StoppingCriterion.cpp
+index 38f9c13..93ab3c1 100644
+--- a/src/StoppingCriterion.cpp
++++ b/src/StoppingCriterion.cpp
+@@ -15,10 +15,10 @@ void StoppingCriterion::OpenFOAMDistStoppingCriterion::compute_Axref_dist(
+     std::shared_ptr<const dist_vec> x, std::shared_ptr<dist_vec> res) const
+ {
+     auto xAvg =
+-        gko::initialize<gko::matrix::Dense<scalar>>(1, {0}, device_exec);
++        gko::initialize<gko::matrix::Dense<gscalar>>(1, {0}, device_exec);
+     x->compute_mean(xAvg.get());
+ 
+-    auto xAvg_host = gko::initialize<gko::matrix::Dense<scalar>>(
++    auto xAvg_host = gko::initialize<gko::matrix::Dense<gscalar>>(
+         1, {0}, device_exec->get_master());
+     xAvg->move_to(xAvg_host);
+     auto xAvg_vec = gko::share(dist_vec::create(
+@@ -49,7 +49,7 @@ StoppingCriterion::OpenFOAMDistStoppingCriterion::compute_normfactor_dist(
+                        Axref);
+ 
+     auto unity =
+-        gko::initialize<gko::matrix::Dense<scalar>>(1, {1.0}, device_exec);
++        gko::initialize<gko::matrix::Dense<gscalar>>(1, {1.0}, device_exec);
+ 
+     auto b_sub_xstar = b->clone();
+     b_sub_xstar->sub_scaled(unity.get(), Axref.get());
+@@ -96,8 +96,8 @@ bool StoppingCriterion::OpenFOAMDistStoppingCriterion::check_impl(
+     if (updater.residual_ == nullptr) {
+         dense_r_vec = parameters_.b->clone();
+ 
+-        auto one{gko::initialize<gko::matrix::Dense<scalar>>({1}, exec)};
+-        auto neg_one{gko::initialize<gko::matrix::Dense<scalar>>({-1}, exec)};
++        auto one{gko::initialize<gko::matrix::Dense<gscalar>>({1}, exec)};
++        auto neg_one{gko::initialize<gko::matrix::Dense<gscalar>>({-1}, exec)};
+         parameters_.gkomatrix->apply(neg_one, updater.solution_, one,
+                                      dense_r_vec);
+     }
+diff --git a/src/common.cpp b/src/common.cpp
+index 0e81895..5244f62 100644
+--- a/src/common.cpp
++++ b/src/common.cpp
+@@ -15,14 +15,14 @@
+ 
+ namespace Foam {
+ 
+-void export_x(const std::string fn, const gko::matrix::Dense<scalar> *x)
++void export_x(const std::string fn, const gko::matrix::Dense<gscalar> *x)
+ {
+     std::ofstream stream_x{fn};
+     LOG_1(1, "Writing " + fn)
+     gko::write(stream_x, x);
+ }
+ 
+-void export_vec(const word fieldName, const gko::matrix::Dense<scalar> *x,
++void export_vec(const word fieldName, const gko::matrix::Dense<gscalar> *x,
+                 const objectRegistry &db)
+ {
+     std::string folder{db.time().timePath()};
+@@ -31,7 +31,7 @@ void export_vec(const word fieldName, const gko::matrix::Dense<scalar> *x,
+ }
+ 
+ void export_mtx(const word fieldName,
+-                std::shared_ptr<const gko::matrix::Coo<scalar, label>> A,
++                std::shared_ptr<const gko::matrix::Coo<gscalar, label>> A,
+                 const objectRegistry &db)
+ {
+     std::string folder{db.time().timePath()};
+@@ -125,22 +125,22 @@ std::shared_ptr<gko::array<label>> convert_to_array(
+                                                in.begin(), in.end());
+ }
+ 
+-std::pair<label, const scalar *> get_val(
+-    std::shared_ptr<const gko::matrix::Coo<scalar, label>> in)
++std::pair<label, const gscalar *> get_val(
++    std::shared_ptr<const gko::matrix::Coo<gscalar, label>> in)
+ {
+     return std::make_pair(in->get_num_stored_elements(),
+                           in->get_const_values());
+ }
+ 
+ std::pair<label, const label *> get_col(
+-    std::shared_ptr<const gko::matrix::Coo<scalar, label>> in)
++    std::shared_ptr<const gko::matrix::Coo<gscalar, label>> in)
+ {
+     return std::make_pair(in->get_num_stored_elements(),
+                           in->get_const_col_idxs());
+ }
+ 
+ std::pair<label, const label *> get_row(
+-    std::shared_ptr<const gko::matrix::Coo<scalar, label>> in)
++    std::shared_ptr<const gko::matrix::Coo<gscalar, label>> in)
+ {
+     return std::make_pair(in->get_num_stored_elements(),
+                           in->get_const_row_idxs());
+@@ -152,22 +152,22 @@ std::vector<label> convert_to_vector(const gko::array<label> &in)
+                               in.get_const_data() + in.get_size());
+ }
+ 
+-std::vector<scalar> convert_to_vector(const gko::array<scalar> &in)
++std::vector<gscalar> convert_to_vector(const gko::array<gscalar> &in)
+ {
+-    return std::vector<scalar>(in.get_const_data(),
+-                               in.get_const_data() + in.get_size());
++    return std::vector<gscalar>(in.get_const_data(),
++                                in.get_const_data() + in.get_size());
+ }
+ 
+-std::vector<scalar> convert_to_vector(
+-    std::shared_ptr<const gko::matrix::Diagonal<scalar>> in)
++std::vector<gscalar> convert_to_vector(
++    std::shared_ptr<const gko::matrix::Diagonal<gscalar>> in)
+ {
+-    return std::vector<scalar>(in->get_const_values(),
+-                               in->get_const_values() + in->get_size()[0]);
++    return std::vector<gscalar>(in->get_const_values(),
++                                in->get_const_values() + in->get_size()[0]);
+ }
+ 
+ 
+ std::ostream &operator<<(std::ostream &os,
+-                         const std::shared_ptr<gko::matrix::Dense<scalar>> in)
++                         const std::shared_ptr<gko::matrix::Dense<gscalar>> in)
+ {
+     auto ref_exec = gko::ReferenceExecutor::create();
+     auto array = in->clone(ref_exec);

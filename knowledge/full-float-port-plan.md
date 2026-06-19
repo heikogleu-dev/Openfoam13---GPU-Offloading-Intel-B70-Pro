@@ -1,5 +1,41 @@
 # Full-float solve — port plan (D, the VRAM lever for 30–35M)
 
+## ★★★ DONE + VALIDATED 2026-06-19 — 34M FITS ON ONE 32 GB B70
+
+Full-float implemented as a **compile-time toggle** `OGL_FULL_FLOAT` (CMake option →
+`-DOGL_GSCALAR_FLOAT`), default OFF = byte-identical double behaviour (regression
+guard). Device value type `gscalar` (=float when ON) is decoupled from `Foam::scalar`
+(host/OpenFOAM double); conversion happens ONLY at host↔device value boundaries
+(matrix all-to-all ingestion + vector init/update/copy_back). OGL-only rebuild
+(all float distributed `Vector/Matrix/Schwarz` + the C-AMG-reuse extension
+`update_matrix_value`/`get_local_solver` were already instantiated in libginkgo —
+verified via `nm` — so **no Ginkgo rebuild**). Patch: `findings/code/ogl-patches/full-float-stack.patch`.
+
+**Same-session A/B (run-fullfloat.sh, precision single + caching, GKOCG/MG):**
+| mesh | np | double VRAM | float VRAM | iters (float vs double) |
+|---|---|---|---|---|
+| 7.1M | 8 | 7.45 GB | 8.18 GB (+0.73) | identical (18,15,13,13,11,12,14…) |
+| 17.2M | 16 | 16.97 GB | **12.77 GB (−25%)** | near-identical |
+| 34M | 16 | OOM (>32, decke ~28-30M) | **28.06 GB → FITS** | 25,21,17,15,15,13… healthy |
+
+- **Accuracy:** FP32 outer reproduces FP64 convergence (Carson-Higham: FP64 RHS/tol +
+  FP32 solve). iters match double essentially exactly. **No creep, no stall.**
+- **Perf (7.1M):** float p-solve ~10–15% faster, wall ~3% faster (bandwidth).
+- **VRAM:** per-cell slope **halved** (double ~0.94 → float ~0.45 GB/Mcell on 7.1→17.2).
+  The +0.73 GB at 7.1M is a fixed-offset artifact (crossover ~8.6M); float wins big at
+  scale. **Ceiling raised ~28-30M (double) → ≥34M (float). GOAL MET.**
+- **Caveat:** VRAM steepens 17.2→34M (also np 8→16 between the 7.1M and ≥17.2M points,
+  so the small-mesh slope isn't apples-to-apples). 34M still fits with ~4 GB headroom.
+- **Rollback:** installed libs backed up — `libOGL.so.D-fullfloat-20260619` (float),
+  `libOGL.so.C-working-20260619` (double). Instant `cp` swap. Currently FLOAT installed.
+- **Build:** `cmake -B build/release -DOGL_FULL_FLOAT=ON -DGINKGO_WITH_OGL_EXTENSIONS=ON
+  && ninja -C build/release && ninja -C build/release install` (install is mandatory).
+- **NEXT:** converged forces (Cd/Cz) A/B float vs double at a target mesh; consider
+  per-cell VRAM re-measure at fixed np; 34M production run now unblocked.
+
+---
+
+
 **Goal:** run the *whole* GPU pressure-solve (matrix + vectors + CG + Schwarz) in
 FP32, not just the preconditioner. Primary win = **VRAM** (FP32 matrix halves the
 dominant storage → fits the 34M mesh on one 32 GB card). Secondary = ~5–10% extra
