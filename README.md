@@ -15,7 +15,8 @@
 > |---|---|---|
 > | CPU GAMG (np=16) | 22.1 | 5–9 |
 > | GPU Multigrid, double (np=16) | 22.7 | ~13 |
-> | **GPU Multigrid, single precision (np=16)** | **20.9** ✅ | ~13 |
+> | GPU Multigrid, single precision (np=16) | 20.9 | ~13 |
+> | **GPU MG, single + AMG-reuse (np=16)** | **18.67** ✅ ~1.18× | ~13 |
 >
 > The May-2026 verdict ("software not ready, CPU wins 1.5×") is kept below as the
 > historical record — it was true for the Ginkgo-1.11/BJ(1) stack. Two months of

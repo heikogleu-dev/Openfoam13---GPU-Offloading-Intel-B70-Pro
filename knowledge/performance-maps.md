@@ -121,3 +121,14 @@ The AMG values-only reuse port works. Caching A/B, 7.1M single np=8 (same sessio
 p-solve is a bigger fraction there) — measurement pending. This replaces the earlier
 projection for C with measured data; the ~15–20% projection was optimistic at 7.1M
 (~8% measured) but may hold at 17.2M.
+
+### C at 17.2M (np16 single) — bigger gain than at 7.1M (2026-06-19)
+| caching | init_precond | s/step | vs CPU GAMG (22.1) |
+|---|---|---|---|
+| 0 (full rebuild) | 1646 ms | 21.00 | 1.05× |
+| **2** | **924 ms (−44%)** | **18.67 (−11.1%)** | **~1.18×** |
+Iters identical/healthy. As predicted, the wall-clock gain is larger at 17.2M
+(−11%) than 7.1M (−8%) because the GPU pressure-solve is a bigger fraction of the
+step. **New GPU best at 17.2M = 18.67 s/step (single-MG + AMG-reuse) → ~1.18× faster
+than CPU GAMG** (was 20.9 = 1.06× without caching). The audit projection (~16–17 /
+~1.3×) was a touch optimistic; measured ~1.18×.
