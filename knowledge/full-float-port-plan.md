@@ -106,3 +106,28 @@ only a fallback if the vector/CG/Schwarz re-template proves problematic.
    (create_impl/update device_matrix_data build) + `DevicePersistent/Vector.hpp` (vector
    init converts the double OpenFOAM source → float device). 5. `ninja && ninja install` (!).
 6. Accuracy test 7.1M (double vs full-float, same fields/iters). 7. VRAM 17.2M (−35-40%) → 34M.
+
+## ★ Code-level ingestion crux (2026-06-19) — confirmed deep, two conversion paths
+
+Read the ingestion. The conversion (host double → device float) needs work in BOTH:
+1. **Vector path** (`DevicePersistent/Vector.hpp`): `VectorInitFunctor<T>` /
+   `PersistentVector<T>` conflate the **source pointer type** and the **device value
+   type** (both `T`; internal `dist_vec=Vector<scalar>`). The OpenFOAM source is
+   `double*`. → Either (a) convert the OpenFOAM double source → a float host buffer
+   and pass `PersistentVector<float>` (simplest, small host copy per solve), or (b)
+   refactor VectorInitFunctor to separate Tsrc(double) from Tdev(float) + convert in
+   `communicate_values`. (a) is the contained approach.
+2. **Matrix path** (`src/MatrixWrapper/Distributed.cpp` create_impl/update): builds
+   `device_matrix_data<scalar,label>` from `HostMatrixWrapper` (double LDU). → build
+   `device_matrix_data<float,label>` reading the double host values (typed copy
+   converts). HostMatrixWrapper stays double (host); only the device data goes float.
+3. Then the solve types (cg/ras/dist_vec/dist_mtx, create_dist_solver, StoppingCriterion)
+   → float, and the Schwarz-wrapped MG is already float-capable (single patch).
+
+**VRAM note:** must build the device matrix float *directly* (NOT double-then-convert)
+— a device-side convert would hold double+float simultaneously = MORE VRAM, defeating
+the goal. So the ingestion must produce float.
+
+**Rollback secured (2026-06-19):** installed C-libs backed up
+(`<lib>.C-working-20260619`, instant `cp` rollback), OGL sources `*.bak-fullfloat`,
+git tag `c-amg-reuse-working` (=80f3d28). Always returnable to the working C state.
