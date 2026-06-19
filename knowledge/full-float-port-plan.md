@@ -79,3 +79,30 @@ vector re-template), store ONLY the matrix in FP32 via Ginkgo `range_accessors`
 verify Ginkgo's distributed Csr SpMV supports a mixed storage/compute accessor (uncertain;
 the research listed it as a *potential* alternative). If supported, it's simpler +
 safer than full-float and may suffice for the VRAM goal.
+
+## ★ Memory-accessor feasibility VERDICT (2026-06-19) — go full-float instead
+
+Checked. Mechanism: NOT the `range_accessors` (those are CB-GMRES Krylov-basis +
+the dense-vector reads in mixed apply). The real "FP32 matrix / FP64 solve" path =
+**Matrix<float> + mixed-precision apply** — and distributed::Matrix DOES support it
+(`mixed_precision_dispatch_real_complex`, core/distributed/matrix.cpp:453/516). So
+Matrix<float> × Vector<double> is technically feasible. **But:**
+1. `GINKGO_MIXED_PRECISION` is **OFF** in our build → mixed apply is conversion-based
+   (per-SpMV double↔float temp conversion = overhead) → would need it ON = Ginkgo rebuild.
+2. Still needs the same **matrix-ingestion double→float** conversion (the create_impl crux).
+3. Saves **less VRAM** (matrix only, not the vectors).
+4. Its only edge (FP64-accuracy) is **MOOT** — FP32 is already proven accurate here
+   (single-precond MG converges in the same ~13 iters).
+
+**→ Go full-float** (uniform FP32): saves more VRAM (matrix+vectors), no mixed-apply
+overhead, no GINKGO_MIXED_PRECISION rebuild, same proven precision. Memory-accessor is
+only a fallback if the vector/CG/Schwarz re-template proves problematic.
+
+### Fresh-session execution order (full-float)
+1. Backup the OGL files (`*.bak-fullfloat`). 2. Add OGL-local `gscalar=float` aliases.
+3. Re-template the solve types: `dist_vec`/`dist_mtx` (lduLduBase), `cg`/`ras`
+   (Preconditioner), `dist_vec` (StoppingCriterion), create_dist_solver (GKOlduBase) → gscalar.
+4. **The crux:** matrix-ingestion double→float in `src/MatrixWrapper/Distributed.cpp`
+   (create_impl/update device_matrix_data build) + `DevicePersistent/Vector.hpp` (vector
+   init converts the double OpenFOAM source → float device). 5. `ninja && ninja install` (!).
+6. Accuracy test 7.1M (double vs full-float, same fields/iters). 7. VRAM 17.2M (−35-40%) → 34M.
