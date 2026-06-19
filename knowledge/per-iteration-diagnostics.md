@@ -243,3 +243,35 @@ caching=2, 17.2M np16, per-step (avg×occurrences/steps):
   is the **next C-style lever**: cache the device-matrix structure (build once, refresh
   values), which (a) saves p's call_init, and (b) makes U/k/omega offload viable →
   feeds the idle GPU → attacks the CPU half. This is the path to a *bigger* jump than C.
+
+## ★ Final p-only ceiling analysis (2026-06-19) — what CAN'T be offloaded
+
+Fine ordered SIMPLE-step decomposition (17.2M np16, single+caching=2, 18.67 s/step):
+| phase (order) | CPU/GPU | lever |
+|---|---|---|
+| UEqn assembly (FVM) | CPU | ❌ inherent (GPU-FVM = full rewrite) |
+| U solve Ux/Uy/Uz | CPU | ❌ **1 iter, trivial** |
+| pEqn assembly (rAU/flux/div) | CPU | ❌ inherent FVM |
+| p call_update (H2D + gather) ×3 | GPU+MPI | ❌ no lever (below) |
+| p init_precond ×3 | GPU | ✅ C done (−36%) |
+| p solve (CG/SpMV) ×3 | GPU | 🔵 full-float (bandwidth) |
+| k/omega assembly+solve | CPU | ❌ **1 iter, trivial** |
+| flux/field updates | CPU | ❌ inherent |
+
+**Key findings:**
+1. **ALL solves (Ux/Uy/Uz/k/omega) converge in 1 iteration** (DILU + under-relaxation).
+   So the offloadable work (linear solves) is already ~ms → **full-offload is dead**
+   (it would offload trivial solves at a transfer/setup loss; the earlier "3× slower"
+   was a step-1 one-time-build artifact, but the steady-state logic is also unfavorable).
+2. **CPU ~60% = FVM assembly + flux/field-updates + MPI** — inherent OpenFOAM CPU work,
+   not offloadable without a GPU-FVM-assembly rewrite (AMD MI300A / SPUMA approach).
+3. **Communication has no lever:** GPU-aware-MPI (`forceHostBuffer false`) crashes on xe;
+   `SYCL_UR_USE_LEVEL_ZERO_V2=0` + copy-engine env give no gain (19.0 vs 18.67).
+4. **GPU only ~30% utilized → CPU-bound.** p-only GPU offload is **near its ceiling
+   (~1.2× vs GAMG)**. The remaining real lever is full-float (VRAM → enables 34M, where
+   the GPU is best-fed → biggest offload payoff; FVM-bandwidth-bound solve gets a modest
+   speedup too).
+
+**call_init** (device-matrix construction) is **one-time** (~10s @17.2M step 1 only,
+amortizes) — NOT a per-step lever; relevant only for iteration cadence / as a future
+full-offload enabler (6 matrices × 10s startup).
