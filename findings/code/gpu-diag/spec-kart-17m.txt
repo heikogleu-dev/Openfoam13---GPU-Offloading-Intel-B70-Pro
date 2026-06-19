@@ -1,0 +1,14 @@
+4|n4mgScg|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 3;
+4|n4mgMix|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision mixed; caching 3;
+4|n4mgSjac|preconditioner Multigrid; coarseSolver Jacobi; maxIterCoarse 20; precision single; caching 3;
+8|n8mgScg|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 3;
+8|n8mgMix|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision mixed; caching 3;
+8|n8mgSjac|preconditioner Multigrid; coarseSolver Jacobi; maxIterCoarse 20; precision single; caching 3;
+12|n12mgScg|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 3;
+12|n12mgMix|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision mixed; caching 3;
+12|n12mgSjac|preconditioner Multigrid; coarseSolver Jacobi; maxIterCoarse 20; precision single; caching 3;
+16|n16mgScg|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 3;
+16|n16mgMix|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision mixed; caching 3;
+16|n16mgSjac|preconditioner Multigrid; coarseSolver Jacobi; maxIterCoarse 20; precision single; caching 3;
+16|n16bj|preconditioner BJ; maxBlockSize 1; precision single;
+16|n16ilu|preconditioner ILU; iterations 0;

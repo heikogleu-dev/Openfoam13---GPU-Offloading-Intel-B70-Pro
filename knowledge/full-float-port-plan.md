@@ -39,6 +39,17 @@ verified via `nm` — so **no Ginkgo rebuild**). Patch: `findings/code/ogl-patch
   && ninja -C build/release && ninja -C build/release install` (install is mandatory).
 - **NEXT:** converged forces (Cd/Cz) A/B float vs double at a target mesh; consider
   per-cell VRAM re-measure at fixed np; 34M production run now unblocked.
+- **★ PAUSED 2026-06-19 — full-float Kartierung (ranks × precond) to RESUME next time:**
+  harness `findings/code/gpu-diag/sweep-fullfloat.sh` (captures s/step, iters, init_precond
+  build/reuse, solve, comm[all2all/pairwise/reorder/copyback], util[ccs/rcs/bcs], VRAM →
+  CSV). Specs saved: `spec-kart-17m.txt` (ranks 4/8/12/16 × {MG-single-CG, MG-mixed,
+  MG-single-Jacobi-coarse} + BJ/ILU ref), `spec-caching-34m.txt`. Plan: 17.2M full matrix
+  → best config(s) on 34M. Run: `sweep-fullfloat.sh <case> <spec> 12 75`. Note: harness
+  re-decomposes per np (17.2M ~4 min each); only got to "decompose np=4" before stop (no
+  data lost). **Before resuming, read [why-no-speedup-at-34M.md](why-no-speedup-at-34M.md)** —
+  the bottleneck (superlinear AMG build vs sublinear GAMG; 64% CPU-rest) is already mapped,
+  so the Kartierung should focus on the levers there (AMG build-reuse, Chebyshev smoother,
+  CPU-side), not just re-confirming MG-single-CG wins.
 
 ---
 

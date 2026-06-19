@@ -1,0 +1,4 @@
+16|c2|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 2;
+16|c3|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 3;
+16|c4|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 4;
+16|c5|preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching 5;
