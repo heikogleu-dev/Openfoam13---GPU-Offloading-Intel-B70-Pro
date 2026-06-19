@@ -103,3 +103,21 @@ CPU GAMG + freeing CPU cores.
 
 **Uncertainties:** C's payoff depends on the value-refill cost + iteration-creep
 (untested); D's bandwidth gain is estimated; the CPU floor is firm.
+
+## ★ AMG-reuse (Plan C) — MEASURED + WORKING (2026-06-19)
+
+The AMG values-only reuse port works. Caching A/B, 7.1M single np=8 (same session):
+| caching | init_precond | s/step | convergence |
+|---|---|---|---|
+| 0 (full rebuild) | 486 ms | 8.00 | 12–15 iters |
+| 1 | 356 ms (−27%) | 7.67 (−4%) | healthy |
+| **2 (sweet spot)** | **309 ms (−36%)** | **7.33 (−8.4%)** | healthy |
+| 3 | 295 ms (−39%) | 7.33 (−8.4%) | healthy |
+
+**No convergence penalty** (iters identical to full rebuild). Reuse-solve init_precond
+≈ 363 ms vs build ≈ 670 ms (−46% per cache-hit). Plateau at caching=2–3.
+**GPU single-MG + C at 7.1M = 7.33 s/step vs CPU GAMG 8.5–9.3 → ~1.2–1.3× faster**
+(was ~1.1× without caching). At 17.2M the wall-clock gain should be larger (GPU
+p-solve is a bigger fraction there) — measurement pending. This replaces the earlier
+projection for C with measured data; the ~15–20% projection was optimistic at 7.1M
+(~8% measured) but may hold at 17.2M.

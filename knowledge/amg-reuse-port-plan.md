@@ -155,3 +155,20 @@ hard Ginkgo port is done; the OGL caching wiring is the open piece.**
 
 Source restored to the clean values-only port (matches amg-reuse-2.0-port.patch);
 diagnostics removed; production unaffected (`caching` unset = full rebuild).
+
+## ✅ RESOLVED + WORKING (2026-06-19) — the bug was a missing `ninja install`
+
+The port was correct all along. The day's "cross-step divergence" was **not** a port
+bug: foamRun loads the **installed** libOGL/libginkgo (`CMAKE_INSTALL_PREFIX` =
+OpenFOAM lib dir), and I had only run `ninja` (build dir), never `ninja install`. So
+every caching test ran the **stale** lib from the prior day (no `update_matrix_value`)
+→ caching returned a stale precond → divergence. (See config-pitfalls.md.)
+
+After `ninja install`, the port loads + works: `update_matrix_value` is called
+(verified: `name='Multigrid'`, active rank `rows=7118582`), convergence is preserved
+(iters 12–15, no 201/NaN), and it saves time — caching=2 at 7.1M single np=8:
+**init_precond 486→309 ms (−36%), s/step 8.00→7.33 (−8.4%)**, plateauing at caching=2–3.
+GPU single-MG + C = ~1.2–1.3× faster than CPU GAMG at 7.1M. **Plan C is DONE and
+beneficial.** Remaining: measure at 17.2M; the distributed Pgm branch (untested, Schwarz
+uses the non-distributed local path) can stay as-is. Patch unchanged
+(amg-reuse-2.0-port.patch is the working values-only port).

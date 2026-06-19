@@ -66,3 +66,15 @@ init_precond stays high and you'll wrongly conclude caching "does nothing".
 Correct: `preconditioner { preconditioner Multigrid; ... caching 3; }`. (Found
 2026-06-19 while validating the AMG-reuse port — the port worked; the *test config*
 had `caching` in the wrong dict.)
+
+## `ninja install` is REQUIRED — foamRun loads the INSTALLED lib, not the build dir
+
+foamRun loads `libOGL.so` (+ libginkgo) from the **OpenFOAM lib path**
+(`~/OpenFOAM/heiko-13/platforms/linux64GccDPInt32Opt/lib/`, = `CMAKE_INSTALL_PREFIX`),
+NOT from `/opt/ogl-src/build/release/`. A `ninja` rebuild alone does NOT affect the
+running solver — you MUST `ninja install` to copy the rebuilt libOGL+libginkgo (with
+RPATH fixup) into the OpenFOAM lib dir. **Cost a full day on Plan C (2026-06-19):**
+every caching test ran against the stale installed lib from the day before (no AMG-reuse
+symbols) → looked like the port diverged, when it was never loaded. Verify after building:
+`nm -C <installed>/libginkgo.so.2.0.0 | grep -c update_matrix_value` and check the
+installed libOGL mtime. Always `ninja install` before testing a Ginkgo/OGL code change.
