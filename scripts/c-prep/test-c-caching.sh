@@ -14,9 +14,9 @@ solvers
 {
     p {
         solver GKOCG; executor sycl; verbose 2; matrixFormat Csr;
-        preconditioner { preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; }
+        preconditioner { preconditioner Multigrid; coarseSolver CG; maxIterCoarse 20; precision single; caching $1; }
         forceHostBuffer true; ranksPerGPU 8; tolerance 1e-6; relTol 0.01; maxIter 200;
-        caching $1; adaptMinIter true; relaxationFactor 0.8; updateInitGuess true;
+        adaptMinIter true; relaxationFactor 0.8; updateInitGuess true;
     }
     U { solver PBiCGStab; preconditioner DILU; tolerance 1e-7; relTol 0.1; maxIter 50; }
     k { solver PBiCGStab; preconditioner DILU; tolerance 1e-6; relTol 0.1; maxIter 50; }

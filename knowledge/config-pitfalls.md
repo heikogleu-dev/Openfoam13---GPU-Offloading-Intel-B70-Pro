@@ -55,3 +55,14 @@ run. Pairs with [ogl-ginkgo-config-reference.md](ogl-ginkgo-config-reference.md)
 - **Per-phase timing before optimizing.** The OGL `verbose 2` timers (init_precond /
   solve / call_update / call_init / copy_x_back) tell you whether the cost is setup
   or solve — we found 72% setup, which redirected effort. Always look before patching.
+
+## `caching` belongs in the `preconditioner { }` sub-dict, NOT the solver block
+
+OGL reads `caching N` from the **preconditioner sub-dictionary**
+(`init_preconditioner`: `d.lookupOrDefault<label>("caching", 0)` where `d` is the
+preconditioner dict), not from the top-level p-solver block. If you put it in the
+solver block it is silently ignored (defaults to 0 = full rebuild every solve) —
+init_precond stays high and you'll wrongly conclude caching "does nothing".
+Correct: `preconditioner { preconditioner Multigrid; ... caching 3; }`. (Found
+2026-06-19 while validating the AMG-reuse port — the port worked; the *test config*
+had `caching` in the wrong dict.)
