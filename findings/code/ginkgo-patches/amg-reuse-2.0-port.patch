@@ -1,0 +1,393 @@
+# AMG values-only reuse — Ginkgo 2.0 (develop) port + OGL fix
+# Implemented 2026-06-19. Compiles clean (core TUs + OGL Preconditioner.cpp).
+# Files: gko::UpdateMatrixValue interface + Pgm/Multigrid update_matrix_value
+#        + Schwarz::get_local_solver getter; OGL #ifdef ...EXTENSION->...EXTENSIONS.
+# Approach: reuse cached agg_ + prolong/restrict; recompute Galerkin coarse values
+#          (distributed coarse_imap/off_diag_map recomputed from agg_, no new members).
+
+--- a/ginkgo/include/ginkgo/core/multigrid/multigrid_level.hpp	2026-06-19 07:18:05.244538671 +0200
++++ include/ginkgo/core/multigrid/multigrid_level.hpp	2026-06-19 07:18:05.239538606 +0200
+@@ -17,6 +17,24 @@
+ 
+ 
+ namespace gko {
++
++
++/**
++ * Interface for operators whose numerical values can be refreshed in place
++ * while keeping their structure fixed. Used for AMG hierarchy reuse: the
++ * aggregation and prolong/restrict operators are kept, and only the Galerkin
++ * coarse-operator values are recomputed when the system matrix values change
++ * but its sparsity does not (OGL `caching`). Ported from the hpsim Ginkgo 1.11
++ * fork extension to Ginkgo 2.0 (develop).
++ */
++class UpdateMatrixValue {
++public:
++    virtual void update_matrix_value(std::shared_ptr<const gko::LinOp>) = 0;
++
++    virtual ~UpdateMatrixValue() = default;
++};
++
++
+ /**
+  * @brief The multigrid components namespace.
+  *
+--- a/ginkgo/include/ginkgo/core/multigrid/pgm.hpp	2026-06-19 07:18:05.244538671 +0200
++++ include/ginkgo/core/multigrid/pgm.hpp	2026-06-19 07:18:05.239538606 +0200
+@@ -49,7 +49,8 @@
+  */
+ template <typename ValueType = default_precision, typename IndexType = int32>
+ class Pgm : public EnableLinOp<Pgm<ValueType, IndexType>>,
+-            public EnableMultigridLevel<ValueType> {
++            public EnableMultigridLevel<ValueType>,
++            public UpdateMatrixValue {
+     friend class EnableLinOp<Pgm>;
+     friend class EnablePolymorphicObject<Pgm, LinOp>;
+     GKO_ASSERT_SUPPORTED_VALUE_AND_INDEX_TYPE;
+@@ -91,6 +92,16 @@
+         return agg_.get_const_data();
+     }
+ 
++    /**
++     * Refresh the coarse-operator values in place, reusing the cached
++     * aggregation (agg_) and the existing prolong/restrict operators. Only the
++     * Galerkin coarse operator is recomputed (sparsity fixed). Used for AMG
++     * hierarchy reuse via OGL `caching`.
++     *
++     * @param new_matrix  the system matrix with updated values (same sparsity)
++     */
++    void update_matrix_value(std::shared_ptr<const LinOp> new_matrix) override;
++
+     GKO_CREATE_FACTORY_PARAMETERS(parameters, Factory)
+     {
+         /**
+--- a/ginkgo/core/multigrid/pgm.cpp	2026-06-19 07:18:05.243823995 +0200
++++ core/multigrid/pgm.cpp	2026-06-19 07:19:21.077490247 +0200
+@@ -489,6 +489,129 @@
+ }
+ 
+ 
++template <typename ValueType, typename IndexType>
++void Pgm<ValueType, IndexType>::update_matrix_value(
++    std::shared_ptr<const LinOp> new_matrix)
++{
++    using csr_type = matrix::Csr<ValueType, IndexType>;
++    system_matrix_ = new_matrix;
++#if GINKGO_BUILD_MPI
++    if (std::dynamic_pointer_cast<
++            const experimental::distributed::DistributedBase>(system_matrix_)) {
++        // Distributed branch (completeness). The OGL Schwarz path calls this on
++        // the local solver with a local Csr, i.e. the non-distributed branch.
++        auto convert_fine_op = [&](auto matrix) {
++            using global_index_type = typename std::decay_t<
++                decltype(*matrix)>::result_type::global_index_type;
++            auto exec = as<LinOp>(matrix)->get_executor();
++            auto comm = as<experimental::distributed::DistributedBase>(matrix)
++                            ->get_communicator();
++            auto fine = share(
++                experimental::distributed::
++                    Matrix<ValueType, IndexType, global_index_type>::create(
++                        exec, comm,
++                        matrix::Csr<ValueType, IndexType>::create(exec),
++                        matrix::Csr<ValueType, IndexType>::create(exec)));
++            matrix->convert_to(fine);
++            this->set_fine_op(fine);
++        };
++        auto setup_fine_op = [&](auto matrix) {
++            auto diag_csr = std::dynamic_pointer_cast<const csr_type>(
++                matrix->get_diag_matrix());
++            auto off_diag_csr = std::dynamic_pointer_cast<const csr_type>(
++                matrix->get_off_diag_matrix());
++            if (!parameters_.skip_sorting || !diag_csr || !off_diag_csr) {
++                using global_index_type =
++                    typename std::decay_t<decltype(*matrix)>::global_index_type;
++                convert_fine_op(
++                    as<ConvertibleTo<experimental::distributed::Matrix<
++                        ValueType, IndexType, global_index_type>>>(matrix));
++            }
++        };
++        using fst_mtx_type =
++            experimental::distributed::Matrix<ValueType, IndexType, IndexType>;
++        using snd_mtx_type =
++            experimental::distributed::Matrix<ValueType, IndexType, int64>;
++        if (auto obj =
++                std::dynamic_pointer_cast<const fst_mtx_type>(system_matrix_)) {
++            setup_fine_op(obj);
++        } else if (auto obj = std::dynamic_pointer_cast<const snd_mtx_type>(
++                       system_matrix_)) {
++            setup_fine_op(obj);
++        } else {
++            run<ConvertibleTo, fst_mtx_type, snd_mtx_type>(system_matrix_,
++                                                           convert_fine_op);
++        }
++        auto distributed_update = [&](auto matrix) {
++            using global_index_type =
++                typename std::decay_t<decltype(*matrix)>::global_index_type;
++            auto exec = gko::as<LinOp>(matrix)->get_executor();
++            auto comm =
++                gko::as<experimental::distributed::DistributedBase>(matrix)
++                    ->get_communicator();
++            auto pgm_local_op =
++                gko::as<const csr_type>(matrix->get_diag_matrix());
++            // local number of aggregates from the existing coarse operator
++            auto coarse_mtx = gko::as<experimental::distributed::Matrix<
++                ValueType, IndexType, global_index_type>>(this->get_coarse_op());
++            auto num_agg = static_cast<IndexType>(
++                coarse_mtx->get_diag_matrix()->get_size()[0]);
++            // recompute the local Galerkin coarse with new values, reuse agg_
++            auto coarse_local =
++                generate_coarse(exec, pgm_local_op.get(), num_agg, agg_);
++            // recompute coarse partition + off-diag mapping from agg_; the
++            // structure is fixed (identical to generate()), only values differ
++            auto coarse_partition = gko::share(
++                experimental::distributed::build_partition_from_local_size<
++                    IndexType, global_index_type>(
++                    exec, comm, static_cast<int64>(num_agg)));
++            auto off_diag_agg =
++                communicate_off_diag_agg(matrix, coarse_partition, agg_);
++            auto coarse_imap =
++                experimental::distributed::index_map<IndexType,
++                                                     global_index_type>(
++                    exec, coarse_partition, comm.rank(), off_diag_agg);
++            auto off_diag_map = coarse_imap.map_to_local(
++                off_diag_agg,
++                experimental::distributed::index_space::non_local);
++            auto off_diag_csr =
++                as<const csr_type>(matrix->get_off_diag_matrix());
++            auto result_off_diag_csr = generate_coarse(
++                exec, off_diag_csr.get(), num_agg, agg_,
++                static_cast<IndexType>(coarse_imap.get_non_local_size()),
++                off_diag_map);
++            auto coarse = share(
++                experimental::distributed::
++                    Matrix<ValueType, IndexType, global_index_type>::create(
++                        exec, comm, std::move(coarse_imap), coarse_local,
++                        result_off_diag_csr));
++            // reuse existing prolong/restrict (aggregation unchanged)
++            this->set_multigrid_level(this->get_prolong_op(), coarse,
++                                      this->get_restrict_op());
++        };
++        run<fst_mtx_type, snd_mtx_type>(this->get_fine_op(), distributed_update);
++    } else
++#endif  // GINKGO_BUILD_MPI
++    {
++        // Non-distributed branch (the OGL Schwarz local-solver path).
++        auto exec = this->get_executor();
++        auto pgm_op = std::dynamic_pointer_cast<const csr_type>(system_matrix_);
++        if (!parameters_.skip_sorting || !pgm_op) {
++            pgm_op = convert_to_with_sorting<csr_type>(
++                exec, system_matrix_, parameters_.skip_sorting);
++        }
++        // refresh the fine op so the smoothers see the new values
++        this->set_fine_op(pgm_op);
++        auto num_agg =
++            static_cast<IndexType>(this->get_coarse_op()->get_size()[0]);
++        // recompute the Galerkin coarse with the new values, reuse agg_
++        auto coarse_matrix = generate_coarse(exec, pgm_op.get(), num_agg, agg_);
++        this->set_multigrid_level(this->get_prolong_op(), coarse_matrix,
++                                  this->get_restrict_op());
++    }
++}
++
++
+ #define GKO_DECLARE_PGM(ValueType, IndexType) class Pgm<ValueType, IndexType>
+ GKO_INSTANTIATE_FOR_EACH_VALUE_AND_INDEX_TYPE(GKO_DECLARE_PGM);
+ 
+--- a/ginkgo/include/ginkgo/core/solver/multigrid.hpp	2026-06-19 07:18:05.244538671 +0200
++++ include/ginkgo/core/solver/multigrid.hpp	2026-06-19 07:18:05.239538606 +0200
+@@ -107,7 +107,8 @@
+ class Multigrid : public EnableLinOp<Multigrid>,
+                   public EnableSolverBase<Multigrid>,
+                   public EnableIterativeBase<Multigrid>,
+-                  public EnableApplyWithInitialGuess<Multigrid> {
++                  public EnableApplyWithInitialGuess<Multigrid>,
++                  public UpdateMatrixValue {
+     friend class EnableLinOp<Multigrid>;
+     friend class EnablePolymorphicObject<Multigrid, LinOp>;
+     friend class EnableApplyWithInitialGuess<Multigrid>;
+@@ -423,6 +424,16 @@
+      */
+     void generate();
+ 
++    /**
++     * Refresh the hierarchy values in place: reuse the existing MultigridLevels
++     * (aggregation + transfer operators) and recompute only the coarse-operator
++     * values + the smoothers/coarsest solver. Used for AMG hierarchy reuse via
++     * OGL `caching` when the system-matrix sparsity is fixed.
++     *
++     * @param new_matrix  the system matrix with updated values (same sparsity)
++     */
++    void update_matrix_value(std::shared_ptr<const LinOp> new_matrix) override;
++
+     explicit Multigrid(std::shared_ptr<const Executor> exec);
+ 
+     explicit Multigrid(const Factory* factory,
+--- a/ginkgo/core/solver/multigrid.cpp	2026-06-19 07:18:05.244538671 +0200
++++ core/solver/multigrid.cpp	2026-06-19 07:18:05.239538606 +0200
+@@ -868,6 +868,155 @@
+ }
+ 
+ 
++void Multigrid::update_matrix_value(std::shared_ptr<const LinOp> new_matrix)
++{
++    this->set_system_matrix(new_matrix);
++    auto matrix = this->get_system_matrix();
++    // smoothers depend on the (changed) level matrix values -> regenerate
++    pre_smoother_list_.clear();
++    mid_smoother_list_.clear();
++    post_smoother_list_.clear();
++    for (size_type i = 0; i < mg_level_list_.size(); i++) {
++        auto mg_level = mg_level_list_.at(i);
++        // refresh this level's coarse operator values, reusing its aggregation
++        // and prolong/restrict operators (structure fixed). mg_level_list_ holds
++        // const ptrs -> const_cast to call the (mutating) update_matrix_value.
++        std::const_pointer_cast<UpdateMatrixValue>(
++            as<UpdateMatrixValue>(mg_level))
++            ->update_matrix_value(matrix);
++        run<gko::multigrid::EnableMultigridLevel, float, double,
++#if GINKGO_ENABLE_HALF
++            float16, std::complex<float16>,
++#endif
++#if GINKGO_ENABLE_BFLOAT16
++            bfloat16, std::complex<bfloat16>,
++#endif
++            std::complex<float>, std::complex<double>>(
++            mg_level,
++            [this](auto mg_level, auto index, auto matrix) {
++                using value_type =
++                    typename std::decay_t<decltype(*mg_level)>::value_type;
++                handle_list<value_type>(
++                    index, matrix, parameters_.pre_smoother, pre_smoother_list_,
++                    parameters_.smoother_iters, parameters_.smoother_relax);
++                if (parameters_.mid_case ==
++                    multigrid::mid_smooth_type::standalone) {
++                    handle_list<value_type>(
++                        index, matrix, parameters_.mid_smoother,
++                        mid_smoother_list_, parameters_.smoother_iters,
++                        parameters_.smoother_relax);
++                }
++                if (!parameters_.post_uses_pre) {
++                    handle_list<value_type>(
++                        index, matrix, parameters_.post_smoother,
++                        post_smoother_list_, parameters_.smoother_iters,
++                        parameters_.smoother_relax);
++                }
++            },
++            i, mg_level->get_fine_op());
++        matrix = mg_level->get_coarse_op();
++    }
++    if (parameters_.post_uses_pre) {
++        post_smoother_list_ = pre_smoother_list_;
++    }
++    auto level = mg_level_list_.size();
++    auto last_mg_level = mg_level_list_.back();
++    // the coarsest-grid solver wraps the last (changed) coarse op -> regenerate
++    run<gko::multigrid::EnableMultigridLevel, float, double,
++#if GINKGO_ENABLE_HALF
++        float16, std::complex<float16>,
++#endif
++#if GINKGO_ENABLE_BFLOAT16
++        bfloat16, std::complex<bfloat16>,
++#endif
++        std::complex<float>, std::complex<double>>(
++        last_mg_level,
++        [this](auto mg_level, auto level, auto matrix) {
++            using value_type =
++                typename std::decay_t<decltype(*mg_level)>::value_type;
++            auto exec = this->get_executor();
++            auto gen_default_solver = [&]() -> std::unique_ptr<LinOp> {
++#if GINKGO_BUILD_MPI
++                if (gko::detail::is_distributed(matrix.get())) {
++                    using absolute_value_type = remove_complex<value_type>;
++                    using experimental::distributed::Matrix;
++                    return run<Matrix<value_type, int32, int32>,
++                               Matrix<value_type, int32, int64>,
++                               Matrix<value_type, int64,
++                                      int64>>(matrix, [exec](auto matrix) {
++                        using Mtx = typename decltype(matrix)::element_type;
++                        return solver::Gmres<value_type>::build()
++                            .with_criteria(
++                                stop::Iteration::build().with_max_iters(
++                                    matrix->get_size()[0]),
++                                stop::ResidualNorm<value_type>::build()
++                                    .with_reduction_factor(
++                                        std::numeric_limits<
++                                            absolute_value_type>::epsilon() *
++                                        absolute_value_type{10}))
++                            .with_krylov_dim(
++                                std::min(size_type(100), matrix->get_size()[0]))
++                            .with_preconditioner(
++                                experimental::distributed::preconditioner::
++                                    Schwarz<value_type,
++                                            typename Mtx::local_index_type,
++                                            typename Mtx::global_index_type>::
++                                        build()
++                                            .with_local_solver(
++                                                preconditioner::Jacobi<
++                                                    value_type>::build()
++                                                    .with_max_block_size(1u)))
++                            .on(exec)
++                            ->generate(matrix);
++                    });
++                }
++#endif
++                if (dynamic_cast<const DpcppExecutor*>(exec.get())) {
++                    using absolute_value_type = remove_complex<value_type>;
++                    return solver::Gmres<value_type>::build()
++                        .with_criteria(
++                            stop::Iteration::build().with_max_iters(
++                                matrix->get_size()[0]),
++                            stop::ResidualNorm<value_type>::build()
++                                .with_reduction_factor(
++                                    std::numeric_limits<
++                                        absolute_value_type>::epsilon() *
++                                    absolute_value_type{10}))
++                        .with_krylov_dim(
++                            std::min(size_type(100), matrix->get_size()[0]))
++                        .with_preconditioner(
++                            preconditioner::Jacobi<value_type>::build()
++                                .with_max_block_size(1u))
++                        .on(exec)
++                        ->generate(matrix);
++                } else {
++                    return experimental::solver::Direct<value_type,
++                                                        int32>::build()
++                        .with_factorization(
++                            experimental::factorization::Lu<value_type,
++                                                            int32>::build())
++                        .on(exec)
++                        ->generate(matrix);
++                }
++            };
++            if (parameters_.coarsest_solver.size() == 0) {
++                coarsest_solver_ = gen_default_solver();
++            } else {
++                auto temp_index = solver_selector_(level, matrix.get());
++                GKO_ENSURE_IN_BOUNDS(temp_index,
++                                     parameters_.coarsest_solver.size());
++                auto solver = parameters_.coarsest_solver.at(temp_index);
++                if (solver == nullptr) {
++                    coarsest_solver_ = gen_default_solver();
++                } else {
++                    coarsest_solver_ = solver->generate(matrix);
++                }
++            }
++        },
++        level, matrix);
++}
++
++
+ void Multigrid::apply_impl(const LinOp* b, LinOp* x) const
+ {
+     this->apply_with_initial_guess_impl(b, x,
+a/OGL/Preconditioner.hpp	2026-06-18 23:01:42.203244114 +0200
++++ /opt/ogl-src/include/OGL/Preconditioner.hpp	2026-06-19 07:14:57.463118637 +0200
+@@ -664,7 +664,7 @@
+                            DevicePersistentBase<gko::LinOp>>(precond_store_name)
+                         .get_ptr();
+ 
+-#ifdef GINKGO_WITH_OGL_EXTENSION
++#ifdef GINKGO_WITH_OGL_EXTENSIONS
+                 if (name == "Multigrid") {
+                     word msg = "Update Multigrid preconditioner";
+                     MLOG_1(verbose_, msg)
