@@ -15,6 +15,19 @@ via the pure-L0 reproducer `diag-mpi-l0` LD-switched to the 26.22 release artifa
 in NEO `libze_intel_gpu` 26.22, not gmmlib. **Perf unchanged** vs 26.05 (7.1M: 7.08→7.09
 s/step, identical iters — IGC 2.36.3/LLVM17 gives no SYCL-kernel speedup; our bottleneck
 is algorithmic+bandwidth+CPU-bound, not codegen). **No regression.**
+- **Multigrid (our actual solver) — measured, not just inferred** (the A/B *was* the
+  GKOCG+Multigrid path). `init_precond` sequences (ms), caching 2, build/reuse/reuse:
+  ```
+  cr05:  506 225 213 | 494 219 216 | 487 ...   -> steady build ~480-506
+  cr22: 2196 216 213 | 686 218 214 | 518 512 ... 482 480 481  -> settles to ~480
+         ^cold-JIT     ^warming                  ^identical to cr05
+  ```
+  **Steady AMG build identical (~480 ms), V-cycle apply identical (264→265 ms).** The
+  only delta is a **one-time cold-JIT compile** (2196 vs 506 ms first build on IGC 2.36.3),
+  cacheable via `neo_compiler_cache` — a tiny negative, not a win. Reason a newer compiler
+  can't help: PGM-SpGEMM build + V-cycle SpMV are **bandwidth-bound** (~530 GB/s ≈ roofline,
+  clpeak/Ginkgo #2013) — codegen can't beat the memory wall. The Multigrid levers are the
+  same algorithmic/Ginkgo ones (RS-coarsening, Chebyshev smoother, build-reuse), NOT driver.
 - **Adopt off the 26.05 pin:** (a) LD-switch to `~/intel-cr-26.22` (`scripts/cr2622-shell.sh`,
   proven, no sudo) — note this switches only the L0/SYCL backend, not the OpenCL ICD
   (`/etc/OpenCL/vendors` absolute path); or (b) system-install CR 26.22 + IGC 2.36.3 (sudo,
