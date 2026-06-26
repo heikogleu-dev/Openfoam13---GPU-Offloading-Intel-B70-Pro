@@ -1,6 +1,30 @@
 # Intel Compute Runtime & xe driver
 
-## The CR 26.14–26.18 multi-process `zeInit` abort (the multi-rank blocker)
+## ★★★ RESOLVED in CR 26.22.38646.4 (verified 2026-06-26)
+**CR 26.22.38646.4 (+ IGC 2.36.3) fixes the multi-rank `resource_info.cpp:15` abort**
+(our issue #922 / GSD-12696). Intel (@ola2308, 2026-06-18) asked us to test it; we did,
+via the pure-L0 reproducer `diag-mpi-l0` LD-switched to the 26.22 release artifacts:
+
+| Stack (L0 backend) | np=1 | np=8 |
+|---|---|---|
+| CR 26.18.38308.1 (system) | abort | abort |
+| CR 26.05 (our pin) | OK | OK |
+| **CR 26.22.38646.4** | **OK** | **OK** |
+
+`sycl-ls` on the switch: `... B70 ... [1.15.38646+4]`. gmmlib unchanged (22.10.0) → fix is
+in NEO `libze_intel_gpu` 26.22, not gmmlib. **Perf unchanged** vs 26.05 (7.1M: 7.08→7.09
+s/step, identical iters — IGC 2.36.3/LLVM17 gives no SYCL-kernel speedup; our bottleneck
+is algorithmic+bandwidth+CPU-bound, not codegen). **No regression.**
+- **Adopt off the 26.05 pin:** (a) LD-switch to `~/intel-cr-26.22` (`scripts/cr2622-shell.sh`,
+  proven, no sudo) — note this switches only the L0/SYCL backend, not the OpenCL ICD
+  (`/etc/OpenCL/vendors` absolute path); or (b) system-install CR 26.22 + IGC 2.36.3 (sudo,
+  also fixes OpenCL ICD). Our workload is L0/SYCL → (a) suffices.
+- Setup: `gh release download 26.22.38646.4 -R intel/compute-runtime` (libze-intel-gpu1,
+  intel-opencl-icd, intel-ocloc, libigdgmm12) + `v2.36.3 -R intel/intel-graphics-compiler`
+  (intel-igc-core-2, intel-igc-opencl-2) → `dpkg-deb -x` into `~/intel-cr-26.22/`.
+- **#922 reply drafted** (findings/issue-922-reply-draft.md) — NOT yet posted (Heiko posts).
+
+## The CR 26.14–26.18 multi-process `zeInit` abort (the multi-rank blocker) [HISTORICAL — fixed in 26.22]
 
 Intel Compute Runtime **≥ 26.14** calls `abort()` during `zeInit`
 whenever **≥2 processes** share the GPU (i.e. the normal MPI mode),

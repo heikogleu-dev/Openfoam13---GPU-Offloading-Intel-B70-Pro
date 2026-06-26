@@ -9,7 +9,7 @@ set -u
 CASE=${1:?case}; NP=${2:?np}; ENDT=${3:?endTime}; LABEL=${4:-timing}; WIN=${5:-75}
 DIAG=/home/heiko/gpu-diag/build
 cd "$CASE" || exit 1
-source /home/heiko/github/intel-arc-pro-b70-openfoam/scripts/cr2605-shell.sh >/dev/null 2>&1
+source "${CR_SHELL:-/home/heiko/github/intel-arc-pro-b70-openfoam/scripts/cr2605-shell.sh}" >/dev/null 2>&1
 ranks(){ for p in $(pgrep -f "foamRun -parallel" 2>/dev/null); do [ "$(cat /proc/$p/comm 2>/dev/null)" = foamRun ] && echo $p; done; }
 sed -i -E "s/^endTime[[:space:]]+[0-9]+;/endTime         $ENDT;/" system/controlDict
 sed -i -E "s/^startTime[[:space:]]+[0-9]+;/startTime       0;/" system/controlDict
