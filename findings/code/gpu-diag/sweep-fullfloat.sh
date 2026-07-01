@@ -55,6 +55,10 @@ while IFS='|' read -r NP LABEL BODY; do
       rm -rf processor* 2>/dev/null
       decomposePar -force < /dev/null > log.dec-$NP 2>&1
       [ -d processor0 ] || { echo "  decompose FAIL np=$NP"; LAST_NP=""; continue; }
+      # renumberMesh (RCM) = standard prep: ~20x matrix-bandwidth reduction (cache
+      # hygiene). No measured wall-clock speedup on B70 @17.2M (CPU not cache-bound),
+      # but standard best practice + harmless. See findings/plugin-max-session.
+      mpirun -np $NP renumberMesh -parallel -overwrite < /dev/null >> log.dec-$NP 2>&1 || echo "  (renumber skipped)"
     fi
     LAST_NP=$NP
   else

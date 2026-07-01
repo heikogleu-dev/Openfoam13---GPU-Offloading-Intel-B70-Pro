@@ -1,5 +1,17 @@
 # Performance maps: (preconditioner × ranks) → util / VRAM / iters / wall-clock
 
+## ★ PLUGIN CEILING VERDICT (2026-06-26) — 1.18× is the practical max, cheap levers give ~0
+Measured the cheap tuning levers at 17.2M mixed (baseline 18.73 s/step = 1.18× vs CPU-GAMG):
+**D2H copy-offload-off = −4.5% (worse); renumberMesh RCM = 0 (band −22.5× but CPU not
+cache-bound); decomp tuning = no headroom (scotch already 0.77% inter-rank faces); AMG-reuse
+already in baseline (~1.12×).** → The plan's 1.45-1.5× is NOT reachable via tuning. Bottleneck
+= ~64% CPU-rest (assembly/U-k-omega/MPI, neither cache- nor halo-bound) + algorithmic GPU-AMG
+(bandwidth-bound ≈ roofline). Past 1.18× needs architecture: GPU-resident assembly (NeoN),
+GPU-aware MPI (#922, now CR-26.22-unblocked), RS-AMG/Chebyshev (Ginkgo-side). Full analysis:
+`findings/plugin-max-session/RESULTS.md`. renumberMesh adopted as standard prep anyway (hygiene).
+
+
+
 Measured with `gpu-diag/compare-mesh.sh <case>` (np=8 = ranksPerGPU 8;
 CR 26.05; from uniform init; tolerance 1e-6, relTol 0.01; steady = step2→3
 ExecutionTime delta). GPU util = compute-engine (drm-cycles-ccs) busy %.
